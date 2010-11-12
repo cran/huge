@@ -1,66 +1,66 @@
 \name{huge.scr}
 \alias{huge.scr}
 \title{
-Graph screening and Graph Estimation via Correlation Approximation function
+Graph Sure Screening (GSS) and Graph Approximation via Correlation Thresholding (GACT)
 }
 \description{
-Implements (1) The neighborhood preselection by thresholding sample correlation (graph screening) and (2) The graph estimation by thresholding sample correaltion (Graph Estimation via Correlation Approximation)
+Implements (1) the Graph Sure Screening (GSS) which preselects neighborhoods by thresholding sample correlation and (2) the Graph Approximation via Correlation Thresholding (GACT) which approximate the graph by thresholding sample correaltion.
 }
 \usage{
-huge.scr(x, ind.group = NULL, scr.num = NULL, approx = FALSE, n.lambda = 30, 
-lambda.min = 1e-4, lambda = NULL, verbose = TRUE)
+huge.scr(x, ind.group = NULL, scr.num = NULL, approx = FALSE, nlambda = 30, 
+lambda.min.ratio = 0.05, lambda = NULL, verbose = TRUE)
 }
 \arguments{
   \item{x}{
 The \code{n} by \code{d} data matrix representing \code{n} observations in \code{d} dimensions
 }
   \item{ind.group}{
-A \code{k} dimensional vector indexing a subset of all \code{d} variables. Only applicable when estimating a subgraph of the whole graph. The default value is \code{c(1:d)}.
+A \code{k} dimensional vector indexing a subset of all \code{d} variables. ONLY applicable when estimating a subgraph of the whole graph. The default value is \code{c(1:d)}.
 }
   \item{scr.num}{
-The neighborhood size after the graph screening (the number of remaining neighbors). The default value is \code{n-1} when \code{d>n} and \code{d-1} (equivalent to disabling graph screening procedure) when \code{n>=d}. An alternative value is \code{n/log(n)}. Only applicable when \code{approx = FALSE}.
+The neighborhood size after the GSS (the number of remaining neighbors). The default value is \code{n-1} when \code{d>n} and \code{d-1} (equivalent to disabling the GSS) when \code{n>=d}. An alternative value is \code{n/log(n)}. ONLY applicable when \code{approx = FALSE}.
 }
   \item{approx}{
-If \code{approx = FALSE}, the graph screening procedure is implemented. If \code{approx = TRUE}, Graph Estimation via Correlation Approximation (GECA) is implemented. The defaulty value is \code{approx = FALSE}. 
+If \code{approx = FALSE}, the GSS is implemented. If \code{approx = TRUE}, the GACT is implemented. The default value is \code{approx = FALSE}. 
 }
   \item{lambda}{
-A sequence of decresing positive numbers to control the thresholding in GECA. Typical usage is to leave the input \code{lambda = NULL} and have the program compute its own \code{lambda} sequence based on \code{n.lambda} and \code{lambda.min}. Users can also specify a sequence to override it.
+A sequence of decresing positive numbers to control the thresholding in the GACT. Typical usage is to leave the input \code{lambda = NULL} and have the program compute its own \code{lambda} sequence based on \code{nlambda} and \code{lambda.min.ratio}. Users can also specify a sequence to override it.
 }
-  \item{n.lambda}{
-The number of thresholding paramters. The default value is \code{30}.Only application when \code{approx = TRUE}.
+  \item{nlambda}{
+The number of thresholding paramters. The default value is \code{30}.ONLY application when \code{approx = TRUE}.
 }
-  \item{lambda.min}{
-The smallest value for \code{lambda}, as a fraction of the uppperbound (\code{MAX}) of the thresholding parameter which makes all estimates equal to \code{0}. The program can automatically generate \code{lambda} as a sequence of length = \code{n.lambda} starting from \code{MAX} to \code{lambda.min*MAX} in log scale. The default value is \code{1e-4}. 
+  \item{lambda.min.ratio}{
+The smallest value for \code{lambda}, as a fraction of the uppperbound (\code{MAX}) of the thresholding parameter which makes all estimates equal to \code{0}. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda} starting from \code{MAX} to \code{lambda.min.ratio*MAX} in log scale. The default value is \code{0.05}. 
 }
   \item{verbose}{
 If \code{verbose = FALSE}, printing the tracing information is disabled. The default value is \code{TRUE}.
 }
 }
 \details{
-The graph screening procedure is applied to preselect the neighborhood under ultrahigh-dimensional setting before covariance selection using lasso. With the dimensionality reduced from ultra-high to a medium level (usually below the sample size), variable selection can be accomplished by some refined varaible selection method such as the Lasso, elastic-net. Graph screening can greatly reduce the computational burden and often achieves almost equally or better covariance selection without using screening.\cr
-Under the assumption of sparsity, Graph Estimation via Correlation Approximation (GECA) is the most efficient way to study the underlying structure of Gaussian graphical models. As an approximation of paritial correlation graph estimation, GECA also performs well. It can generate some dense graphs, while the sparsity level generated by L1 regularization methods usually depends on the sample size.
+The GSS is applied to preselect the neighborhood under ultrahigh-dimensional setting before Meinshausen & Buhlmann Graph Estimation via Lasso (GEL). With the dimensionality reduced from ultra-high to a medium level (usually below the sample size), variable selection can be accomplished by some refined varaible selection method such as the Lasso, the elastic-net. The GSS can greatly reduce the computational burden and often achieves equally or better estimation without using the GSS.\cr
+Under the assumption of sparsity, the GACT is the most efficient way to study the underlying structure of Gaussian graphical models. As an approximation of paritial correlation graph estimation, the GACT also performs well. It can generate some dense graphs, while the sparsity level generated by L1 regularization methods usually depends on the sample size.
 }
 \value{
 An object with S3 class "scr" is returned:
   \item{path}{
-The solution path generated by GECA corresponding to the sequence of thresholding paramters \code{lambda}. Only applicable when \code{approx = TRUE}.
+The solution path generated by the GACT corresponding to the sequence of thresholding paramters \code{lambda}. ONLY applicable when \code{approx = TRUE}.
 }
   \item{lambda}{
-The sequence of thresholding parameters used in GECA. Only applicable when \code{approx = TRUE}.
+The sequence of thresholding parameters used in the GACT. ONLY applicable when \code{approx = TRUE}.
 }
   \item{sparsity}{
-The sparsity levels of the solution path. Only applicable when \code{approx = TRUE}.
+The sparsity levels of the solution path. ONLY applicable when \code{approx = TRUE}.
 }
   \item{approx}{
-The GECA indicator from the input
+The GACT indicator from the input
 }
   \item{ind.mat}{
-A \code{scr.num} by \code{k} matrix is returned. Each column corresponds to a variable in \code{ind.group} and contains the indices of the remaining neighbors after the graph screening. Only applicable when \code{approx = FALSE}.
+A \code{scr.num} by \code{k} matrix is returned. Each column corresponds to a variable in \code{ind.group} and contains the indices of the remaining neighbors after the graph screening. ONLY applicable when \code{approx = FALSE}.
 }
 }
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
-Maintainers: Tuo Zhao<tourzhao@gmail.com>; Han Liu <hanliu@cs.jhu.edu>
+Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
 }
 \references{
 Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. \emph{Technical Report}, Carnegie Mellon University, 2010\cr
@@ -68,7 +68,7 @@ Jianqing Fan and Jinchi Lv. Sure independence screening for ultra-high dimension
 Jerome Friedman, Trevor Hastie and Rob Tibshiran. Applications of the lasso and grouped lasso to the estimation of sparse graphical models, \emph{Technical Report}, Stanford University, 2010
 }
 \note{
-This function can only work under the setting \code{d > 2}, and \code{scr.num > 1}.
+This function can ONLY work under the setting \code{d > 2}, and \code{scr.num > 1}.
 }
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
@@ -76,23 +76,16 @@ This function can only work under the setting \code{d > 2}, and \code{scr.num > 
 \code{\link{huge}} and \code{\link{huge-package}}
 }
 \examples{
-#generate data
-n = 50
-L = huge.generator(n = n, d = 100, graph = "hub")
+# generate data
+L = huge.generator(graph = "hub", g = 5)
+ind.group = c(1:30)
 
-#subset indices
-ind.group = c(1:40)
-
-#graph screening for a subset of variables
+# the Graph Sure Screening (GSS)
 out.scr = huge.scr(L$data, ind.group = ind.group)
 summary(out.scr)
 
-#graph screening using alternative neighborhood size
-scr.num = n/log(n)
-ind.mat = huge.scr(L$data, scr.num = scr.num)$ind.mat
-
-#GECA
-out.approx = huge.scr(L$data, approx = TRUE, n.lambda = 10)
+# the Graph Approximation via Correlation Threholding (GACT)
+out.approx = huge.scr(L$data, approx = TRUE, nlambda = 20)
 summary(out.approx)
 plot(out.approx)
 }

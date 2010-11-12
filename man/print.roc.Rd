@@ -19,8 +19,8 @@ System reserved (No specific usage)
 }
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
-Maintainers: Tuo Zhao<tourzhao@gmail.com>; Han Liu <hanliu@cs.jhu.edu>
+Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
 }
 \seealso{
-\code{\link{huge.roc}}
+\code{\link{huge.roc}} and \code{\link{huge}}
 }

@@ -1,15 +1,17 @@
 #-----------------------------------------------------------------------#
 # Package: High-dimensional Undirected Graph Estimation (HUGE)          #
-# huge(): Onestep estimate of the high-dimensional undirected graph     #
+# huge(): Onestep estimation for high-dimensional undirected graph      #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
-# Date: Nov 9th 2010                                                    #
-# Version: 0.7                                                          #
+# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
+# Date: Nov 12th 2010                                                   #
+# Version: 0.8                                                          #
 #-----------------------------------------------------------------------#
 
-huge = function(L, ind.group = NULL, lambda = NULL, n.lambda = NULL, lambda.min = NULL, alpha = 1, sym = "or", npn = TRUE, npn.func = "shrinkage", npn.thresh = NULL, approx = FALSE, scr = TRUE, scr.num = NULL, verbose = TRUE){	
+## Main function
+huge = function(L, ind.group = NULL, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, alpha = 1, sym = "or", npn = TRUE, npn.func = "shrinkage", npn.thresh = NULL, approx = FALSE, scr = TRUE, scr.num = NULL, verbose = TRUE){	
 	
 	est = list()
+	est$approx = approx
 	
 	if(is.list(L)){
 		est$data = L$data
@@ -44,75 +46,66 @@ huge = function(L, ind.group = NULL, lambda = NULL, n.lambda = NULL, lambda.min 
 			class(est) = "huge"
 			return(est)
 		}
-		
-	if(verbose){
-		cat("Onestep estimate of the high-dimensional undirected graph....\n")
-		if(npn)	cat("The nonparanormal transformation: on\n")
-		if(!npn) cat("The nonparanormal transformation: off\n")
-		if(approx) cat("Using Graph Estimation via Correlation Approximation....")
-		if(!approx){
-			if(scr)	cat("The graph screening: on\n")
-			if(!scr) cat("The graph screening: off\n")
-			if(alpha == 1) cat("Using Meinshausen & Buhlmann Graph Estimation via Lasso....\n")
-			if(alpha < 1) cat("Using Meinshausen & Buhlmann graph estimation via elastic net....\n")
-		}
-	}
-	
 	
 	
 	# Nonparanormal transformation
 	if(npn){
 		if(is.null(npn.thresh))	npn.thresh = 1/(4*(n^0.25)*sqrt(pi*log(n)))
-		est$data = huge.npn(est$data,npn.func,npn.thresh,verbose)$data
+		est$data = huge.npn(est$data,npn.func,npn.thresh,verbose = verbose)$data
 		rm(npn.thresh,npn.func)
 		gc(gcinfo(verbose = FALSE))
 	}
 	
 	if(approx){
-		if(is.null(n.lambda)) n.lambda = 30
-		if(is.null(lambda.min)) lambda.min = 1e-4
-		fit = huge.scr(est$data, ind.group, scr.num, approx, n.lambda, lambda.min, lambda, verbose)
+		if(is.null(nlambda)) nlambda = 30
+		if(is.null(lambda.min.ratio)) lambda.min.ratio = 0.05
+		fit = huge.scr(est$data, ind.group, scr.num, approx, nlambda, lambda.min.ratio, lambda, verbose = verbose)
 		est$path = fit$path
 		est$lambda = fit$lambda
-		est$approx = fit$approx
 		est$sparsity = fit$sparsity
 		rm(fit)
 		gc(gcinfo(verbose = FALSE))
 	}
 	
 	if(!approx){
-		if(is.null(n.lambda)) n.lambda = 10
-		if(is.null(lambda.min)) lambda.min = 0.1	
+		if(is.null(nlambda)) nlambda = 10
+		if(is.null(lambda.min.ratio)) lambda.min.ratio = 0.1		
 		if(scr){
-			if(is.null(scr.num)) scr.num = min(c(n-1,d-1))
-			ind.mat = huge.scr(est$data, ind.group = ind.group, scr.num = scr.num, verbose = verbose)$ind.mat
+			if(is.null(scr.num)&&(n >= d)){
+				ind.mat = NULL
+				est$scr = FALSE
+			}
+			if(is.null(scr.num)&&(n < d)){
+				scr.num = min(n-1)
+				ind.mat = huge.scr(est$data, ind.group = ind.group, scr.num = scr.num, verbose = verbose)$ind.mat
+				est$scr = scr
+			}
 		}
-		if(!scr) ind.mat = NULL
-		fit = huge.subgraph(est$data, ind.group = ind.group, ind.mat = ind.mat, alpha = alpha, lambda = lambda, n.lambda = n.lambda, lambda.min = lambda.min, sym = sym, verbose = verbose)
+		if(!scr){
+			ind.mat = NULL
+			est$scr = scr
+		}
+		fit = huge.subgraph(est$data, ind.group, ind.mat, alpha, lambda, nlambda, lambda.min.ratio, sym, verbose)
 		est$path = fit$path
 		est$lambda = fit$lambda
 		est$sparsity = fit$sparsity
 		est$rss = fit$rss
 		est$df = fit$df
-		est$sigma2hat = fit$rss/(n-1-est$df)
 		rm(fit)
 		gc(gcinfo(verbose = FALSE))
 		
-		est$ind.group = ind.group
 		est$ind.mat = ind.mat
 		est$alpha = alpha
 		est$sym = sym
-		est$approx = approx
 		rm(ind.mat,alpha,sym,approx)
 		gc(gcinfo(verbose = FALSE))
 	}
 	est$ind.group = ind.group
-	if(k<d) est$type = "subgraph solution path"
-	if(k==d) est$type = "fullgraph solution path"
+	if(k<d) est$type = "Subgraph solution path"
+	if(k==d) est$type = "Fullgraph solution path"
 	est$npn = npn
-	est$scr = scr
 	
-	rm(ind.group,n,k,d,npn,scr,lambda,lambda.min,n.lambda)
+	rm(ind.group,n,k,d,npn,scr,lambda,lambda.min.ratio,nlambda)
 	gc(gcinfo(verbose = FALSE))	
 	
 	est$marker = "Successful"
@@ -128,24 +121,24 @@ print.huge = function(x, ...){
 		return("Please refer to the manual")
 	}
 	
-	if(x$approx) cat("Model: Graph Estimation via Correlation Approximation --->",x$type,"\n")
+	if(x$approx) cat("Model: Graph Approximation via Correlation Thresholding (GACT) --->",x$type,"\n")
 	
 	if(!x$approx){
-		if(x$alpha <1) cat("Model: Meinshausen &Buhlmann graph estimation via elastic net --->",x$type,"\n")
-		if(x$alpha ==1) cat("Model: Meinshausen &Buhlmann Graph Estimation via Lasso --->",x$type,"\n")
+		if(x$alpha <1) cat("Model: Meinshausen &Buhlmann Graph Estimation via Elastic Net --->",x$type,"\n")
+		if(x$alpha ==1) cat("Model: Meinshausen &Buhlmann Graph Estimation via Lasso (GEL) --->",x$type,"\n")
 	}
 	
-	if(x$npn) cat("Nonparanormal transformed\n")
+	if(x$npn) cat("Nonparanormal (NPN) transformation: on\n")
 	
-	if(!x$approx&&x$scr) cat("Graph screened\n")
+	if(!x$approx&&x$scr) cat("Graph SURE Screening (GSS): on\n")
 
 	if(is.null(x$theta)) cat("True graph: not included\n")
 	if(!is.null(x$theta)) cat("True graph: included\n")
 	
-	cat("path length:",length(x$lambda),"\n")
-	cat("subgraph dimension:",length(x$ind.group),"\n")
-	cat("fullgraph dimension:",ncol(x$data),"\n")
-	cat("sparsity level:",min(x$sparsity),"----->",max(x$sparsity),"\n")
+	cat("Path length:",length(x$lambda),"\n")
+	cat("Subgraph dimension:",length(x$ind.group),"\n")
+	cat("Fullgraph dimension:",ncol(x$data),"\n")
+	cat("Sparsity level:",min(x$sparsity),"----->",max(x$sparsity),"\n")
 }
 
 summary.huge = function(object, ...){
@@ -154,24 +147,23 @@ summary.huge = function(object, ...){
 		cat("huge() has been terminated\n")
 		return("Please refer to the manual")
 	}
-	if(object$approx) cat("Model: Graph Estimation via Correlation Approximation --->",object$type,"\n")
+	if(object$approx) cat("Model: Graph Approximation via Correlation Thresholding (GACT) --->",object$type,"\n")
 	
 	if(!object$approx){
-		if(object$alpha <1) cat("Model: Meinshausen &Buhlmann graph estimation via elastic net --->",object$type,"\n")
-		if(object$alpha ==1) cat("Model: Meinshausen &Buhlmann Graph Estimation via Lasso --->",object$type,"\n")
+		if(object$alpha <1) cat("Model: Meinshausen &Buhlmann Graph Estimation via Elastic Net --->",object$type,"\n")
+		if(object$alpha ==1) cat("Model: Meinshausen &Buhlmann Graph Estimation via Lasso (GEL)--->",object$type,"\n")
 	}
 	
-	if(object$npn) cat("Nonparanormal transformed\n")
-	
-	if(!object$approx&&object$scr) cat("Graph screened\n")
+	if(object$npn) cat("Nonparanormal (NPN) transformation: on\n")
+	if(!object$approx&&object$scr) cat("Graph SURE Screening (GSS): on\n")
 
 	if(is.null(object$theta)) cat("True graph: not included\n")
 	if(!is.null(object$theta)) cat("True graph: included\n")
 	
-	cat("path length:",length(object$lambda),"\n")
-	cat("subgraph dimension:",length(object$ind.group),"\n")
-	cat("fullgraph dimension:",ncol(object$data),"\n")
-	cat("sparsity level:",min(object$sparsity),"----->",max(object$sparsity),"\n")
+	cat("Path length:",length(object$lambda),"\n")
+	cat("Subgraph dimension:",length(object$ind.group),"\n")
+	cat("Fullgraph dimension:",ncol(object$data),"\n")
+	cat("Sparsity level:",min(object$sparsity),"----->",max(object$sparsity),"\n")
 }
 
 plot.huge = function(x, align = FALSE, ...){

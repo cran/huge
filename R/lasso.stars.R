@@ -2,9 +2,9 @@
 # Package: High-dimensional Undirected Graph Estimation (HUGE)          #
 # lasso.stars(): StARS for lasso                                        #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
-# Date: Nov 9th, 2010                                                   #
-# Verision: 0.7                                                         #
+# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
+# Date: Nov 12th, 2010                                                  #
+# Verision: 0.8                                                         #
 #-----------------------------------------------------------------------#
 lasso.stars = function(x, y, rep.num = 20, lambda = NULL, n.lambda = 100, lambda.min = 0.001, stars.thresh = 0.1, sample.ratio = NULL, alpha = 1, verbose = TRUE){
 	

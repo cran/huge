@@ -1,16 +1,15 @@
 \name{huge.plot}
 \alias{huge.plot}
 \title{
-Graph plotting function
+Graph visualization function
 }
 \description{
-A function of "huge" package to automatically organize and plot the graph using adjacency matrix.
+A function of "huge" package to automatically organize 2Dl embedding and plot the graph using adjacency matrix.
 }
 \usage{
 huge.plot(G, epsflag = FALSE, graph.name = "default", cur.num = 1, 
 location)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{G}{
 The adjaceny matrix corresponding to the graph.
@@ -33,10 +32,10 @@ The user can change \code{cur.num} to plot several figures and select the best o
 }
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
-Maintainers: Tuo Zhao<tourzhao@gmail.com>; Han Liu <hanliu@cs.jhu.edu>
+Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
 }
 \references{
-Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. Technical Report, Carnegie Mellon University, 2010
+Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. \emph{Technical Report}, Carnegie Mellon University, 2010
 }
 %%\note{
 %%  ~~further notes~~
@@ -48,15 +47,20 @@ Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Esti
 \code{\link{huge}} and \code{\link{huge-package}}
 }
 \examples{
-#generate data
-L = huge.generator()
+## visualize the hub graph
+L = huge.generator(graph = "hub")
+huge.plot(L$theta)
 
-#plot the graph
+## visualize the band graph
+L = huge.generator(graph = "band",g=5)
+huge.plot(L$theta)
+
+## visualize the cluster graph
+L = huge.generator(graph = "cluster")
 huge.plot(L$theta)
 
 #show working directory
 getwd()
-
 #plot 5 graphs and save the plots as eps files in the working directory  
 huge.plot(L$theta, epsflag = TRUE, cur.num = 5)
 }

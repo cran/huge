@@ -2,9 +2,9 @@
 # Package: High-dimensional Undirected Graph Estimation (HUGE)          #
 # huge(): Draw ROC Curve for a solution path                            #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
-# Date: Nov 9th 2010                                                    #
-# Version: 0.7                                                          #
+# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
+# Date: Nov 12th 2010                                                   #
+# Version: 0.8                                                          #
 #-----------------------------------------------------------------------#
 
 huge.roc = function(est, theta, ind.group, verbose = TRUE){

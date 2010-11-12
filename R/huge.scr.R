@@ -1,14 +1,16 @@
 #-----------------------------------------------------------------------#
 # Package: High-dimensional Undirected Graph Estimation (HUGE)          #
-# huge.graph.scr(): The graph screening and Graph Estimation via        # 
-#                   Correlation Approximation function                  #
+# huge.scr():                                                           #
+# (1) Graph SURE Screening (GSS)                                        #
+# (2) Graph Approximation via Correlation Thresholding (GACT)           # 
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
-# Date: Nov 9th 2010                                                    #
-# Version: 0.7                                                          #
+# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
+# Date: Nov 12th 2010                                                   #
+# Version: 0.8                                                          #
 #-----------------------------------------------------------------------#
-#Main function
-huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, n.lambda = 30, lambda.min = 1e-4, lambda = NULL, verbose = TRUE){
+
+##Main function
+huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, nlambda = 30, lambda.min.ratio = 0.05, lambda = NULL, verbose = TRUE){
 	
 	n = nrow(x)
   	d = ncol(x)
@@ -35,7 +37,7 @@ huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, n.lambd
 		}
   	
   	fit$approx = approx
-  	pdot = ceiling(k/30)
+  	
   	
   	if(approx){
   		
@@ -47,22 +49,31 @@ huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, n.lambd
   		S = abs(cov(xt))
   		diag(S) = 0
 		lambda.max = max(S) 
-		lambda.min = lambda.min*lambda.max
+		lambda.min = lambda.min.ratio*lambda.max
 		
-		lambda = 1-exp(seq(log(1-lambda.max),log(1-lambda.min),length = n.lambda))
-		rm(lambda.max,lambda.min)
+		lambda = 1-exp(seq(log(1-lambda.max),log(1-lambda.min),length = nlambda))
+		rm(lambda.max,lambda.min.ratio,lambda.min)
 		gc(gcinfo(verbose = FALSE))
-		
-		if(verbose) cat("Conducting Graph Estimation via Correlation Approximation....")	
+			
 		fit$path = list()
-		for(i in 1:n.lambda)	fit$path[[i]] = Matrix(0,k,k)
-		for(i in 1:n.lambda){
-			if(verbose) cat(".")		
+		for(i in 1:nlambda)	fit$path[[i]] = Matrix(0,k,k)
+		for(i in 1:nlambda){
+			if(verbose){
+   				mes <- paste(c("Conducting Graph Approximation via Correlation Thresholding (GACT)....in progress:", floor(100*i/nlambda), "%"), collapse="")
+   				cat(mes, "\r")
+            	flush.console()
+            }
 			fit$path[[i]][S > lambda[i]] = 1
 		}
+		if(verbose){
+			mes = "Conducting Graph Approximation via Correlation Thresholding (GACT)....done.             "
+        	cat(mes, "\r")
+        	cat("\n")
+        	flush.console()
+        }
 		
-		fit$sparsity = rep(0,n.lambda)
-		for(i in 1:n.lambda) fit$sparsity[i] = sum(fit$path[[i]])/k/(k-1)
+		fit$sparsity = rep(0,nlambda)
+		for(i in 1:nlambda) fit$sparsity[i] = sum(fit$path[[i]])/k/(k-1)
 		
 		fit$lambda = lambda
 		rm(lambda,xt)
@@ -72,7 +83,7 @@ huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, n.lambd
 	
 	if(!approx){
 		if(is.null(scr.num))	scr.num = min(n-1,d-1)
-		if(verbose) cat("Conducting the graph screening....")
+		if(verbose) cat("Conducting Graph SURE Screening (GSS)....")
 		
 		fit$ind.mat = matrix(0,scr.num,k)
 		
@@ -96,12 +107,12 @@ huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, n.lambd
 			rm(cor.block)
 		}
 		rm(x)
+		if(verbose) cat("done.\n")
 	}
 	
 	fit$marker = "Successful"
 	
 	gc(gcinfo(verbose = FALSE))
-	if(verbose) cat("done.\n")
 	class(fit) = "scr"
 	return(fit)
 }
@@ -112,9 +123,9 @@ print.scr = function(x, ...){
 		cat("huge.scr() has been terminated\n")
 		return("Please refer to the manual")
 	}
-	if(x$approx) cat("This is a solution path using Graph Estimation via Correlation Approximation and length = ", length(x$path), "\n")
+	if(x$approx) cat("This is a solution path using Graph Approximation via Correlation Thresholding (GACT) and length = ", length(x$path), "\n")
 	if(!x$approx) cat("The dimension of prelected neighborhood after screening = ", nrow(x$ind.mat), "\n")
-	cat("huge.scr is an internal function, please refer to huge() and huge.select()")
+	cat("huge.scr() is an internal function, please refer to huge() and huge.select()")
 }
 
 # Default summary function
@@ -123,9 +134,9 @@ summary.scr = function(object, ...){
 		cat("huge.scr() has been terminated\n")
 		return("Please refer to the manual")
 	}
-	if(object$approx) cat("This is a solution path using Graph Estimation via Correlation Approximation and length = ", length(object$path), "\n")
+	if(object$approx) cat("This is a solution path using Graph Approximation via Correlation Thresholding (GACT) and length = ", length(object$path), "\n")
 	if(!object$approx) cat("The dimension of preselected neighborhood after screening = ", nrow(object$ind.mat), "\n")
-	cat("huge.scr is an internal function, please refer to huge() and huge.select()")
+	cat("huge.scr() is an internal function, please refer to huge() and huge.select()")
 }
 
 # Default plot function
@@ -137,8 +148,8 @@ plot.scr = function(x, ...){
 	if(x$approx){
 		par(mfrow = c(1,1))
 		tmp = (x$lambda > 0)
-		plot(x$lambda[tmp], x$sparsity[tmp], log = "x", xlab = "Regularization Parameters", ylab = "Sparsity Level", type = "l",xlim = rev(range(x$lambda)))
+		plot(x$lambda[tmp], x$sparsity[tmp], log = "x", xlab = "Regularization Parameters", ylab = "Sparsity Level", type = "b",xlim = rev(range(x$lambda)))
 	}
-	if(!x$approx) cat("No plot information avaiable","\n")
-	cat("huge.scr is an internal function, please refer to huge() and huge.select()")
+	if(!x$approx) cat("No plot information avaiable for the Graph SURE Screening (GSS)","\n")
+	cat("huge.scr() is an internal function. For more information, please refer to huge() and huge.select()")
 }

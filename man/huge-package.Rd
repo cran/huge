@@ -11,23 +11,24 @@ A package for high-dimensional undirected graph estimation
 \tabular{ll}{
 Package: \tab huge\cr
 Type: \tab Package\cr
-Version: \tab 0.7\cr
-Date: \tab 2010-11-09\cr
+Version: \tab 0.8\cr
+Date: \tab 2010-11-12\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }
-The package "huge" provides 7 main functions:\cr
+The package "huge" provides 8 main functions:\cr
 (1) The data generator creates random samples from multivariate normal distributions with different graph structures.\cr
 (2) The nonparanormal transformation helps relax the normality assumption.\cr
 (3) The graph screening helps reduce the computation burden by preselecting the neighborhood of each node by thresholding sample correlation.\cr
-(4) Graph Estimation via Correlation Approximation (GECA).\cr 
-(5) Meinshausen & Buhlmann graph estimation via Lasso (GEL).\cr
-(6) Model selection for high-dimensional undirected graph estimation using the stability approach (StARS) and extended Bayesian information criterion with the pseudo-likelihood.\cr
-(7) Model select for high-dimensional undirected graph estimation using the stability approach (StARS)
+(4) Graph Approximation via Correlation Thresholding(GACT).\cr 
+(5) Meinshausen & Buhlmann Graph Estimation via Lasso(GEL).\cr
+(6) Model select using the Stability Approach to Regularization Selection(StARS)
+(7) Model select using the Permutation Information Criterion (PIC).
+(8) Model selection using the Extended Bayesian Information Criterion(EBIC)based on the pseudo-likelihood.\cr
 }
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
-Maintainers: Tuo Zhao<tourzhao@gmail.com>; Han Liu <hanliu@cs.jhu.edu>
+Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
 }
 \references{
 Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. \emph{Technical Report}, Carnegie Mellon University, 2010\cr

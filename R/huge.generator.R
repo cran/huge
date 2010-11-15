@@ -4,11 +4,12 @@
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
 # Date: Nov 12th, 2010                                                  #
-# Version: 0.8                                                          #
+# Version: 0.8.1                                                          #
 #-----------------------------------------------------------------------#
 
 ## Main function
 huge.generator = function(n = 200, d = 50, graph = "random", v = NULL, u = NULL, g = NULL, prob = NULL, vis = FALSE, verbose = TRUE){	
+	gcinfo(FALSE)
 	if(verbose) cat("Generating data from the multivariate normal distribution with the", graph,"graph structure....")
 	if(is.null(g)){
 		g = 1
@@ -40,7 +41,7 @@ huge.generator = function(n = 200, d = 50, graph = "random", v = NULL, u = NULL,
 	g.list = c(rep(n.small,g.small),rep(n.large,g.large))
 	g.ind = rep(c(1:g),g.list)
 	rm(g.large,g.small,n.small,n.large,g.list)
-	gc(gcinfo(verbose = FALSE))
+	gc()
 	
 	# build the graph structure
 	theta = matrix(0,d,d);
@@ -61,7 +62,7 @@ huge.generator = function(n = 200, d = 50, graph = "random", v = NULL, u = NULL,
 		 	tmp2 = tmp2 + t(tmp2)		 	
 		 	theta[tmp,tmp][tmp2<prob] = 1
 		 	rm(tmp,tmp2)
-		 	gc(gcinfo(verbose = FALSE))
+		 	gc()
 		}
 	}
 	if(graph == "hub"){
@@ -72,7 +73,7 @@ huge.generator = function(n = 200, d = 50, graph = "random", v = NULL, u = NULL,
 		 	theta[tmp[1],tmp] = 1
 		 	theta[tmp,tmp[1]] = 1
 		 	rm(tmp)
-		 	gc(gcinfo(verbose = FALSE))
+		 	gc()
 		}
 	}
 	if(graph == "random"){
@@ -84,7 +85,7 @@ huge.generator = function(n = 200, d = 50, graph = "random", v = NULL, u = NULL,
 		theta[tmp < prob] = 1
 		#theta[tmp >= tprob] = 0
 		rm(tmp)
-		gc(gcinfo(verbose = FALSE))
+		gc()
 	}
 	diag(theta) = 0
 	omega = theta*v
@@ -112,11 +113,11 @@ huge.generator = function(n = 200, d = 50, graph = "random", v = NULL, u = NULL,
 
 		fullfig[4] = image(sigmahat, col = gray.colors(256), main = "Empirical Matrix")
 		rm(fullfig,g,layout.grid)
-		gc(gcinfo(verbose = FALSE))
+		gc()
 	}
 	if(verbose) cat("done.\n")
 	rm(vis,verbose)
-	gc(gcinfo(verbose = FALSE))
+	gc()
 	
 	sim = list(data = x, sigma = sigma, sigmahat = sigmahat, omega = omega, theta = Matrix(theta,sparse = TRUE), sparsity= sum(theta)/(d*(d-1)), graph.type=graph)
 	class(sim) = "sim" 
@@ -140,15 +141,16 @@ summary.sim = function(object, ...){
 	cat("Sparsity level:", sum(object$theta)/ncol(object$data)/(ncol(object$data)-1),"\n")
 }
 
-plot.sim = function(x, ...){	
-   par = par(mfrow = c(2, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
-   image(as.matrix(x$theta), col = gray.colors(256),  main = "Adjacency Matrix")
+plot.sim = function(x, ...){
+	gcinfo(FALSE)	
+   	par = par(mfrow = c(2, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
+   	image(as.matrix(x$theta), col = gray.colors(256),  main = "Adjacency Matrix")
 	image(x$sigma, col = gray.colors(256), main = "Covariance Matrix")
 	g = graph.adjacency(x$theta, mode="undirected", diag=FALSE)
 	layout.grid = layout.fruchterman.reingold(g)
 	
 	plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA,main = "Graph Pattern")
 	rm(g, layout.grid)
-	gc(gcinfo(verbose = FALSE))
+	gc()
 	image(x$sigmahat, col = gray.colors(256), main = "Empirical Covariance Matrix")
 }

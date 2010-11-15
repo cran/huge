@@ -4,12 +4,12 @@
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
 # Date: Nov 12th 2010                                                   #
-# Version: 0.8                                                          #
+# Version: 0.8.1                                                         #
 #-----------------------------------------------------------------------#
 
 ## Main function
-huge = function(L, ind.group = NULL, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, alpha = 1, sym = "or", npn = TRUE, npn.func = "shrinkage", npn.thresh = NULL, approx = FALSE, scr = TRUE, scr.num = NULL, verbose = TRUE){	
-	
+huge = function(L, ind.group = NULL, lambda = NULL, nlambda = NULL, lambda.min.ratio = 0.1, alpha = 1, sym = "or", npn = TRUE, npn.func = "shrinkage", npn.thresh = NULL, approx = FALSE, scr = TRUE, scr.num = NULL, verbose = TRUE){	
+	gcinfo(FALSE)
 	est = list()
 	est$approx = approx
 	
@@ -25,7 +25,7 @@ huge = function(L, ind.group = NULL, lambda = NULL, nlambda = NULL, lambda.min.r
 		d = ncol(L)
 	}
 	rm(L)
-	gc(gcinfo(verbose = FALSE))	
+	gc()	
 	
 	if(is.null(ind.group))	ind.group = c(1:d)
 	k = length(ind.group)
@@ -50,55 +50,65 @@ huge = function(L, ind.group = NULL, lambda = NULL, nlambda = NULL, lambda.min.r
 	
 	# Nonparanormal transformation
 	if(npn){
-		if(is.null(npn.thresh))	npn.thresh = 1/(4*(n^0.25)*sqrt(pi*log(n)))
-		est$data = huge.npn(est$data,npn.func,npn.thresh,verbose = verbose)$data
+		est$data = huge.npn(est$data,npn.func = npn.func, npn.thresh = npn.thresh, verbose = verbose)$data
 		rm(npn.thresh,npn.func)
-		gc(gcinfo(verbose = FALSE))
+		gc()
 	}
 	
 	if(approx){
 		if(is.null(nlambda)) nlambda = 30
-		if(is.null(lambda.min.ratio)) lambda.min.ratio = 0.05
-		fit = huge.scr(est$data, ind.group, scr.num, approx, nlambda, lambda.min.ratio, lambda, verbose = verbose)
+		fit = huge.scr(est$data, ind.group = ind.group, approx = approx, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, verbose = verbose)
 		est$path = fit$path
 		est$lambda = fit$lambda
 		est$sparsity = fit$sparsity
 		rm(fit)
-		gc(gcinfo(verbose = FALSE))
+		gc()
 	}
 	
-	if(!approx){
-		if(is.null(nlambda)) nlambda = 10
-		if(is.null(lambda.min.ratio)) lambda.min.ratio = 0.1		
+	if(!approx){		
+		if(!scr){
+			ind.mat = NULL
+			est$scr = scr
+		}
+		
 		if(scr){
 			if(is.null(scr.num)&&(n >= d)){
 				ind.mat = NULL
 				est$scr = FALSE
 			}
+			
 			if(is.null(scr.num)&&(n < d)){
-				scr.num = min(n-1)
-				ind.mat = huge.scr(est$data, ind.group = ind.group, scr.num = scr.num, verbose = verbose)$ind.mat
-				est$scr = scr
+				scr.num = n-1
+				est$scr = FALSE
+			}
+			
+			if(!is.null(scr.num)){
+				if(scr.num >= (d-1)){
+					if(verbose) cat("The specified scr.num >= (d-1) and Graph SURE Screening will be skipped.\n")
+					ind.mat = NULL
+				}
+				if(scr.num < (d-1)){
+					ind.mat = huge.scr(est$data, ind.group = ind.group, scr.num = scr.num, verbose = verbose)$ind.mat
+					est$scr = scr
+				}
 			}
 		}
-		if(!scr){
-			ind.mat = NULL
-			est$scr = scr
-		}
-		fit = huge.subgraph(est$data, ind.group, ind.mat, alpha, lambda, nlambda, lambda.min.ratio, sym, verbose)
+		if(is.null(nlambda)) nlambda = 10
+		
+		fit = huge.subgraph(est$data, ind.group = ind.group, ind.mat = ind.mat, alpha = alpha, lambda = lambda, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, sym = sym, verbose = verbose)
 		est$path = fit$path
 		est$lambda = fit$lambda
 		est$sparsity = fit$sparsity
 		est$rss = fit$rss
 		est$df = fit$df
 		rm(fit)
-		gc(gcinfo(verbose = FALSE))
+		gc()
 		
 		est$ind.mat = ind.mat
 		est$alpha = alpha
 		est$sym = sym
 		rm(ind.mat,alpha,sym,approx)
-		gc(gcinfo(verbose = FALSE))
+		gc()
 	}
 	est$ind.group = ind.group
 	if(k<d) est$type = "Subgraph solution path"
@@ -106,7 +116,7 @@ huge = function(L, ind.group = NULL, lambda = NULL, nlambda = NULL, lambda.min.r
 	est$npn = npn
 	
 	rm(ind.group,n,k,d,npn,scr,lambda,lambda.min.ratio,nlambda)
-	gc(gcinfo(verbose = FALSE))	
+	gc()	
 	
 	est$marker = "Successful"
 	
@@ -167,51 +177,65 @@ summary.huge = function(object, ...){
 }
 
 plot.huge = function(x, align = FALSE, ...){
+	gcinfo(FALSE)
 	if(x$marker == "Terminated"){
 		cat("huge() has been terminated\n")
 		return("Please refer to the manual")
 	}
 	
-	z.max = max(x$sparsity)
-	z.min = min(x$sparsity)
-	z = z.max - z.min
-	z1 = which(x$sparsity>=(z.min + 0.03*z))[1]
-	z2 = which(x$sparsity>=(z.min + 0.07*z))[1]
-	z3 = which(x$sparsity>=(z.min + 0.15*z))[1]
+	if(length(x$lambda) == 1)	par(mfrow = c(1, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
+	if(length(x$lambda) == 2)	par(mfrow = c(1, 3), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
+	if(length(x$lambda) >= 3)	par(mfrow = c(2, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
 	
-	par(mfrow = c(2, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
+	
+	
+	if(length(x$lambda) <= 3)	z.final = 1:length(x$lambda)
+	
+	if(length(x$lambda) >=4){
+		z.max = max(x$sparsity)
+		z.min = min(x$sparsity)
+		z = z.max - z.min
+		z.unique = unique(c(which(x$sparsity>=(z.min + 0.03*z))[1],which(x$sparsity>=(z.min + 0.07*z))[1],which(x$sparsity>=(z.min + 0.15*z))[1]))
+		
+		if(length(z.unique) == 1){
+			if(z.unique<(length(x$lambda)-1))	z.final = c(z.unique,z.unique+1,z.unique+2)
+			if(z.unique==(length(x$lambda)-1)) z.final = c(z.unique-1,z.unique,z.unique+1)
+			if(z.unique==length(x$lambda)) 	z.final = c(z.unique-2,z.unique-1,z.unique)
+		}
+		
+		if(length(z.unique) == 2){
+			if(diff(z.unique)==1){
+				if(z.unique[2]<length(x$lambda)) z.final = c(z.unique,z.unique[2]+1) 
+				if(z.unique[2]==length(x$lambda)) z.final = c(z.unique[1]-1,z.unique)
+			}
+			if(diff(z.unique)>1) z.final = c(z.unique[1],z.unique[1]+1,z.unique[2])
+		}
+		
+		if(length(z.unique) == 3) z.final = z.unique
+		
+		rm(z.max,z.min,z)
+		gc()
+	}
 	
 	plot(x$lambda, x$sparsity, log = "x", xlab = "Regularization Parameters", ylab = "Sparsity Level", type = "l",xlim = rev(range(x$lambda)), main = "Sparsity vs. Regularization")
 	
-	lines(x$lambda[c(z1,z2,z3)],x$sparsity[c(z1,z2,z3)],type = "p")
+	lines(x$lambda[c(z.final)],x$sparsity[c(z.final)],type = "p")
 	
 	if(align){
-		g1 = graph.adjacency(as.matrix(x$path[[z1]]), mode="undirected", diag=FALSE)
-		g2 = graph.adjacency(as.matrix(x$path[[z2]]), mode="undirected", diag=FALSE)
-		g3 = graph.adjacency(as.matrix(x$path[[z3]]), mode="undirected", diag=FALSE)
-		layout.grid3 = layout.fruchterman.reingold(g3)
-	
-		plot(g1, layout=layout.grid3, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[z1],3)),sep = ""))
-	
-		plot(g2, layout=layout.grid3, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[z2],3)),sep = ""))
-	
-		plot(g3, layout=layout.grid3, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[z3],3)),sep = ""))
+		layout.grid = layout.fruchterman.reingold(graph.adjacency(as.matrix(x$path[[z.final[length(z.final)]]]), mode="undirected", diag=FALSE))
+		for(i in z.final){
+			g = graph.adjacency(as.matrix(x$path[[i]]), mode="undirected", diag=FALSE)
+			plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[i],3)),sep = ""))
+		}
 	}
-	
 	if(!align){
-		g1 = graph.adjacency(as.matrix(x$path[[z1]]), mode="undirected", diag=FALSE)
-		layout.grid1 = layout.fruchterman.reingold(g1)
-		
-		g2 = graph.adjacency(as.matrix(x$path[[z2]]), mode="undirected", diag=FALSE)
-		layout.grid2 = layout.fruchterman.reingold(g2)
-	
-		g3 = graph.adjacency(as.matrix(x$path[[z3]]), mode="undirected", diag=FALSE)
-		layout.grid3 = layout.fruchterman.reingold(g3)
-	
-		plot(g1, layout=layout.grid1, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[z1],3)),sep = ""))
-	
-		plot(g2, layout=layout.grid2, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[z2],3)),sep = ""))
-	
-		plot(g3, layout=layout.grid3, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[z3],3)),sep = ""))
+		for(i in z.final){
+			g = graph.adjacency(as.matrix(x$path[[i]]), mode="undirected", diag=FALSE)
+			layout.grid = layout.fruchterman.reingold(g)
+			plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[i],3)),sep = ""))
+		}
 	}
+	rm(g,layout.grid)
+	gc()
+	if(!align) cat("Three plotted graphs are aligned according to the third graph\n")
 }

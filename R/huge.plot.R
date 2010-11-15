@@ -4,10 +4,11 @@
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
 # Date: Nov 12th, 2010                                                  #
-# Version: 0.8                                                          #
+# Version: 0.8.1                                                         #
 #-----------------------------------------------------------------------#
 
 huge.plot = function(G, epsflag = FALSE, graph.name = "default", cur.num = 1, location=NULL){
+	gcinfo(FALSE)
 	if(missing(location))	location = getwd()
 	setwd(location)
 	g = graph.adjacency(as.matrix(G), mode="undirected", diag=FALSE)
@@ -17,6 +18,6 @@ huge.plot = function(G, epsflag = FALSE, graph.name = "default", cur.num = 1, lo
 	par(mfrow = c(1,1))
 	plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA)
 	rm(g,location)	
-   	gc(gcinfo(verbose = FALSE))
+   	gc()
    	if(epsflag == TRUE) dev.off()
 }

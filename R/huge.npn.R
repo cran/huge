@@ -4,12 +4,12 @@
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
 # Date: Nov 12th, 2010                                                  #
-# Version: 0.8                                                          #
+# Version: 0.8.1                                                          #
 #-----------------------------------------------------------------------#
 
 ## Main function
 huge.npn = function(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE){
-	
+	gcinfo(FALSE)
 	n = nrow(x)
   	d = ncol(x)
   	xt = list()
@@ -23,7 +23,7 @@ huge.npn = function(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE
 		xt$data = x/sd(x[,1])
 		if(verbose) cat("done.\n")
 		rm(n, d, verbose)
-   		gc(gcinfo(verbose = FALSE)) 	
+   		gc()	
 	}
 	
 	# Truncation transformation
@@ -41,7 +41,7 @@ huge.npn = function(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE
     	if(verbose) cat("done.\n")
     	
     	rm(n,d,tmp,npn.func,npn.thresh,verbose)
-   		gc(gcinfo(verbose = FALSE))
+   		gc()
 	}
 	
 	# Output class "npn"

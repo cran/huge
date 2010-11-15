@@ -7,8 +7,8 @@ StARS Regularization Parameter Selection for Lasso
 Implements the Stability Approach to Regularization Selection (StARS) for Lasso
 }
 \usage{
-lasso.stars(x, y, rep.num = 20, lambda = NULL, n.lambda = 100, 
-lambda.min = 0.001, stars.thresh = 0.1, sample.ratio = NULL, 
+lasso.stars(x, y, rep.num = 20, lambda = NULL, nlambda = 100, 
+lambda.min.ratio = 0.001, stars.thresh = 0.1, sample.ratio = NULL, 
 alpha = 1, verbose = TRUE)
 }
 \arguments{
@@ -22,13 +22,13 @@ The \code{n}-dimensional response vector
 The number of subsampling for StARS. The default value is \code{20}.
 }
   \item{lambda}{
-A sequence of decresing positive numbers to control regularization. Typical usage is to leave the input \code{lambda = NULL} and have the program compute its own \code{lambda} sequence based on \code{n.lambda} and \code{lambda.min}. Users can also specify a sequence to override this. Use with care - it is better to supply a decreasing sequence values than a single (small) value.
+A sequence of decresing positive numbers to control regularization. Typical usage is to leave the input \code{lambda = NULL} and have the program compute its own \code{lambda} sequence based on \code{nlambda} and \code{lambda.min.ratio}. Users can also specify a sequence to override this. Use with care - it is better to supply a decreasing sequence values than a single (small) value.
 }
-  \item{n.lambda}{
+  \item{nlambda}{
 The number of regularization paramters. The default value is \code{100}.
 }
-  \item{lambda.min}{
-The smallest value for \code{lambda}, as a fraction of the uppperbound (\code{MAX}) of the regularization parameter which makes all estimates equal to \code{0}. The program can automatically generate \code{lambda} as a sequence of length = \code{n.lambda} starting from \code{MAX} to \code{lambda.min*MAX} in log scale. The default value is \code{0.001}. 
+  \item{lambda.min.ratio}{
+The smallest value for \code{lambda}, as a fraction of the uppperbound (\code{MAX}) of the regularization parameter which makes all estimates equal to \code{0}. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda} starting from \code{MAX} to \code{lambda.min.ratio*MAX} in log scale. The default value is \code{0.001}. 
 }
   \item{stars.thresh}{
 The threshold of the variability in StARS. The default value is \code{0.1}. The alternative value is \code{0.05}. Only applicable when \code{criterion = "stars"}
@@ -49,7 +49,7 @@ StARS selects the optimal regularization parameter based on the variability of t
 \value{
 An object with S3 class "stars" is returned:
   \item{path}{
-The solution path of regression coefficients (in an \code{d} by \code{n.lambda} matrix)
+The solution path of regression coefficients (in an \code{d} by \code{nlambda} matrix)
 }
   \item{lambda}{
 The regularization parameters used in Lasso
@@ -84,7 +84,7 @@ This function can only work under the setting when \code{d>1}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{huge.select}}, \code{\link{huge.stars}}, \code{\link{glmnet}}, \code{\link{huge}} and \code{\link{huge-package}}
+\code{\link{huge.select}}, \code{\link{glmnet}}, \code{\link{huge}} and \code{\link{huge-package}}
 }
 \examples{
 #generate data

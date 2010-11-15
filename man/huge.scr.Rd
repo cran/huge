@@ -8,7 +8,7 @@ Implements (1) the Graph Sure Screening (GSS) which preselects neighborhoods by 
 }
 \usage{
 huge.scr(x, ind.group = NULL, scr.num = NULL, approx = FALSE, nlambda = 30, 
-lambda.min.ratio = 0.05, lambda = NULL, verbose = TRUE)
+lambda.min.ratio = 0.1, lambda = NULL, verbose = TRUE)
 }
 \arguments{
   \item{x}{
@@ -30,7 +30,7 @@ A sequence of decresing positive numbers to control the thresholding in the GACT
 The number of thresholding paramters. The default value is \code{30}.ONLY application when \code{approx = TRUE}.
 }
   \item{lambda.min.ratio}{
-The smallest value for \code{lambda}, as a fraction of the uppperbound (\code{MAX}) of the thresholding parameter which makes all estimates equal to \code{0}. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda} starting from \code{MAX} to \code{lambda.min.ratio*MAX} in log scale. The default value is \code{0.05}. 
+The smallest value for \code{lambda}, as a fraction of the uppperbound (\code{MAX}) of the thresholding parameter which makes all estimates equal to \code{0}. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda} starting from \code{MAX} to \code{lambda.min.ratio*MAX} in log scale. The default value is \code{0.1}. 
 }
   \item{verbose}{
 If \code{verbose = FALSE}, printing the tracing information is disabled. The default value is \code{TRUE}.
@@ -88,4 +88,8 @@ summary(out.scr)
 out.approx = huge.scr(L$data, approx = TRUE, nlambda = 20)
 summary(out.approx)
 plot(out.approx)
+
+out.scr = huge.scr(L$data, ind.group = ind.group, approx = TRUE)
+huge.plot(out.scr$path[[15]])
+
 }

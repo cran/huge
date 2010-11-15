@@ -4,10 +4,10 @@
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
 # Date: Nov 12th, 2010                                                  #
-# Verision: 0.8                                                         #
+# Verision: 0.8.1                                                        #
 #-----------------------------------------------------------------------#
-lasso.stars = function(x, y, rep.num = 20, lambda = NULL, n.lambda = 100, lambda.min = 0.001, stars.thresh = 0.1, sample.ratio = NULL, alpha = 1, verbose = TRUE){
-	
+lasso.stars = function(x, y, rep.num = 20, lambda = NULL, nlambda = 100, lambda.min.ratio = 0.001, stars.thresh = 0.1, sample.ratio = NULL, alpha = 1, verbose = TRUE){
+	gcinfo(FALSE)
 	est = list()
 	if(!is.matrix(x)){
 		cat("Only 1 variable and lasso.stars() will be teminated....\n")
@@ -25,8 +25,10 @@ lasso.stars = function(x, y, rep.num = 20, lambda = NULL, n.lambda = 100, lambda
 	
 	if(is.null(lambda)){
 		lambda.max = max(abs(t(y)%*%x))/(alpha*n)
-		lambda = lambda.max*exp(seq(log(1),log(lambda.min),length = n.lambda))
+		lambda = lambda.max*exp(seq(log(1),log(lambda.min.ratio),length = nlambda))
 	}
+	
+	nlambda = length(lambda)
 		
 	if(is.null(sample.ratio)){
 		if(n>144) sample.ratio = 10*sqrt(n)/n
@@ -35,7 +37,6 @@ lasso.stars = function(x, y, rep.num = 20, lambda = NULL, n.lambda = 100, lambda
 	
 	fit = glmnet(x, y, lambda = lambda)
 
-	n.lambda = length(lambda)
 	
 	R.path = list()
 	for(k in 1:rep.num){
@@ -43,22 +44,22 @@ lasso.stars = function(x, y, rep.num = 20, lambda = NULL, n.lambda = 100, lambda
     	out.subglm = glmnet(x[ind.sample,],y[ind.sample], lambda = fit$lambda, alpha = alpha)
     	R.path[[k]] = out.subglm$beta
     	rm(out.subglm)
-		gc(gcinfo(verbose = FALSE)) 
+		gc() 
 	}
 	
 	if(verbose) cat('Statbility selection....')
 	
-	P = matrix(0,d,n.lambda)
+	P = matrix(0,d,nlambda)
 	for(j in 1:rep.num)	P = P + abs(sign(R.path[[j]]))
 	P = P/rep.num
 	V = 2*apply(P*(1-P),2,sum)/d
 	rm(P,rep.num)
-	gc(gcinfo(verbose = FALSE))
+	gc()
 	
-	for(i in 1:n.lambda) V[i] = max(V[1:i])
+	for(i in 1:nlambda) V[i] = max(V[1:i])
 	opt.index = which.min(V<=stars.thresh)
-	rm(n.lambda,R.path)
-	gc(gcinfo(verbose = FALSE))
+	rm(nlambda,R.path)
+	gc()
 
 	if(verbose) cat('done.\n')
 	
@@ -99,7 +100,7 @@ plot.stars = function(x, ...){
 	}
 	par(mfrow = c(1,1))
 	d = nrow(x$path)
-	n.lambda = length(x$lambda)
+	nlambda = length(x$lambda)
 	plot(x$lambda, x$path[1,], log = "x", xlab = "Regularization Parameter", ylab = "Coefficients", type = "l",xlim = rev(range(x$lambda)),ylim = c(min(x$path),max(x$path)), main = "Regularization path")
 	for(j in 2:d)	lines(x$lambda, x$path[j,],xlim = rev(range(x$lambda)))
 	lines(c(x$opt.lambda,x$opt.lambda),c(min(x$path),max(x$path)))

@@ -6,12 +6,14 @@
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
 # Date: Nov 12th, 2010                                                  #
-# Version: 0.8                                                          #
+# Version: 0.8.1                                                          #
 #-----------------------------------------------------------------------#
 
 ## Main Function
 huge.select = function(est, criterion = NULL, r.num = 200, EBIC.gamma = 0.5, stars.thresh = 0.1, stars.subsample.ratio = NULL, stars.rep.num = 20, verbose = TRUE){
 
+	gcinfo(FALSE)
+	
 	if(est$marker == "Terminated"){
 		cat("huge.select() will be terminated....\n")
 		class(est) = "select"
@@ -71,9 +73,8 @@ huge.select = function(est, criterion = NULL, r.num = 200, EBIC.gamma = 0.5, sta
 		lambda.min = min(lambda.all)
 		lambda = exp(seq(log(lambda.max),log(lambda.min),length = 5))/n/est$alpha
 		est$opt.lambda = lambda.min/n/est$alpha
-		if(verbose) cat("\n")
 		if(verbose) cat("Computing the optimal graph\n")
-		est$refit = huge.subgraph(est$data,est$ind.group,est$ind.mat,est$alpha,lambda,sym = est$sym,verbose = verbose)$path[[5]]
+		est$refit = huge.subgraph(est$data, ind.group = est$ind.group, ind.mat = est$ind.mat, alpha = est$alpha,lambda = lambda,sym = est$sym, verbose = verbose)$path[[5]]
 		est$opt.sparsity=sum(est$refit)/k/(k-1)
 	}
 	
@@ -98,6 +99,8 @@ huge.select = function(est, criterion = NULL, r.num = 200, EBIC.gamma = 0.5, sta
         }	
 		
 		est$EBIC.score = apply(EBIC.ind,2,sum)
+		rm(EBIC.ind)
+		gc()
 		est$opt.index = which.min(est$EBIC.score)
 		est$refit = est$path[[est$opt.index]]
   		est$opt.lambda = est$lambda[est$opt.index]
@@ -111,7 +114,9 @@ huge.select = function(est, criterion = NULL, r.num = 200, EBIC.gamma = 0.5, sta
 			if(est$n<=144) stars.subsample.ratio = 0.8
 		} 
 	
-		R.path = list()
+		est$merge = list()
+		for(i in 1:nlambda) est$merge[[i]] = Matrix(0,k,k)
+		
   		for(i in 1:stars.rep.num){
   			if(verbose){
 				mes <- paste(c("Conducting Subsampling....in progress:", floor(100*i/stars.rep.num), "%"), collapse="")
@@ -122,29 +127,31 @@ huge.select = function(est, criterion = NULL, r.num = 200, EBIC.gamma = 0.5, sta
     		
     		if(!est$approx){
     			if(is.null(est$ind.mat))
-    				R.path[[i]] = huge.subgraph(est$data[ind.sample,],ind.group = est$ind.group, alpha = est$alpha, lambda = est$lambda, sym = est$sym, verbose = FALSE)$path
+    				tmp = huge.subgraph(est$data[ind.sample,],ind.group = est$ind.group, alpha = est$alpha, lambda = est$lambda, sym = est$sym, verbose = FALSE)$path
     			if(!is.null(est$ind.mat))
-    				R.path[[i]] = huge.subgraph(est$data[ind.sample,],ind.group = est$ind.group, ind.mat = est$ind.mat, alpha = est$alpha, lambda = est$lambda, sym = est$sym, verbose = FALSE)$path
+    				tmp = huge.subgraph(est$data[ind.sample,],ind.group = est$ind.group, ind.mat = est$ind.mat, alpha = est$alpha, lambda = est$lambda, sym = est$sym, verbose = FALSE)$path
     		}
        		if(est$approx)
-    			R.path[[i]] = huge.scr(est$data[ind.sample,],ind.group = est$ind.group,lambda = est$lambda, approx = TRUE,verbose = FALSE)$path
-
-    		rm(ind.sample)
-   			gc(gcinfo(verbose = FALSE))
+    			tmp = huge.scr(est$data[ind.sample,],ind.group = est$ind.group,lambda = est$lambda, approx = TRUE,verbose = FALSE)$path
+    			
+    		for(i in 1:nlambda)	est$merge[[i]] = est$merge[[i]] + tmp[[i]]
+    		rm(ind.sample,tmp)
+   			gc()
 		}
+		
 		if(verbose){
 			mes = "Conducting Subsampling....done.                 "
         	cat(mes, "\r")
         	cat("\n")
         	flush.console()
         }
-
-  		est$opt.index = huge.stars(R.path, stars.thresh, verbose)
-  		est$merge = Matrix(0,k,k)
-  		for(i in 1:stars.rep.num)
-  			est$merge = est$merge + R.path[[i]][[est$opt.index]]
-  		rm(R.path)
-   		gc(gcinfo(verbose = FALSE))
+        
+        est$variability = rep(0,nlambda)
+		for(i in 1:nlambda){
+			est$merge[[i]] = est$merge[[i]]/stars.rep.num
+    		est$variability[i] = 4*sum(est$merge[[i]]*(1-est$merge[[i]]))/(k*(k-1))
+    	}
+       	est$opt.index = max(which.max(est$variability >= stars.thresh)[1]-1,1)
    		est$refit = est$path[[est$opt.index]]
   		est$opt.lambda = est$lambda[est$opt.index]
   		est$opt.sparsity = est$sparsity[est$opt.index]
@@ -152,42 +159,6 @@ huge.select = function(est, criterion = NULL, r.num = 200, EBIC.gamma = 0.5, sta
     est$criterion = criterion
   	class(est) = "select"
     return(est)  	
-}
-
-
-
-
-huge.stars = function(R.path, stars.thresh = 0.1, verbose = TRUE){
-		
-	if(verbose) cat('Conducting Statbility Approach to Regularization Selection (StARS)....')
-	n.subs = length(R.path)
-  	nlambda = length(R.path[[1]])
-  	d = ncol(R.path[[1]][[1]])
-
-	D = rep(0,nlambda)
-	for(i in 1:nlambda){
-		P = matrix(0, d, d)
-		for(j in 1:n.subs){
-			P = P + R.path[[j]][[i]]
-		}
-		P = P/n.subs
-		D[i] = 4*sum(P*(1-P))/(d*(d-1))
-		rm(P)
-   		gc(gcinfo(verbose = FALSE))
-		D[i] = max(D[1:i])
-		if(D[i]>stars.thresh){
-			if(i==1) cat("\n The threshold is too small! Try a different set of regularization/thresholding parameters....\n")
-			rm(n.subs,nlambda,d, R.path,D)
-   			gc(gcinfo(verbose = FALSE))
-   			opt.index = max(c(1,i-1))
-   			if(verbose) cat("done.\n")
-			return(opt.index)
-		}
-	}
-	rm(n.subs,nlambda,d,R.path)
-   	gc(gcinfo(verbose = FALSE))
-   	if(verbose) cat("done.\n")
-   	return(i)
 }
 
 #-----------------------------------------------------------------------#

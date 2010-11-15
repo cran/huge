@@ -7,7 +7,7 @@ High-dimensional undirected graph estimation in one-step mode
 The main function for high-dimensional undirected graph estimation. It allows the user to load \code{huge.npn(), huge.scr(),huge.subgraph()} sequentially as a pipeline to analyze data.
 }
 \usage{
-huge(L, ind.group = NULL, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, 
+huge(L, ind.group = NULL, lambda = NULL, nlambda = NULL, lambda.min.ratio = 0.1, 
 alpha = 1, sym = "or", npn = TRUE, npn.func = "shrinkage", npn.thresh = NULL, 
 approx = FALSE, scr = TRUE, scr.num = NULL, verbose = TRUE)
 }
@@ -25,7 +25,7 @@ A sequence of decresing positive numbers to control the regularization in Meinsh
 The number of regularization/thresholding paramters. The default value is \code{30} if \code{approx = TRUE} and \code{10} if \code{approx = FALSE}.
 }
   \item{lambda.min.ratio}{
-The smallest value for \code{lambda}, as a fraction of the uppperbound (\code{MAX}) of the regularization/thresholding parameter which makes all estimates equal to \code{0}. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda} starting from \code{MAX} to \code{lambda.min.ratio*MAX} in log scale. The default value is \code{0.1} when \code{approx = FALSE} and \code{0.05} when \code{approx = TRUE}. 
+The smallest value for \code{lambda}, as a fraction of the uppperbound (\code{MAX}) of the regularization/thresholding parameter which makes all estimates equal to \code{0}. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda} starting from \code{MAX} to \code{lambda.min.ratio*MAX} in log scale. The default value is \code{0.1}. 
 }
   \item{alpha}{
 The tuning parameter for the elastic-net regression. The default value is \code{1} (lasso). When some dense pattern exists in the graph or some variables are highly correlated, the elastic-net is encouraged for its grouping effect. ONLY applicable when \code{approx = FALSE}.
@@ -139,14 +139,16 @@ out1 = huge(L, ind.group = ind.group)
 summary(out1)
 plot(out1)
 plot(out1, align = TRUE)
+huge.plot(out1$path[[3]])
+plot(out1$lambda,out1$sparsity)
 
 #subgraph solution path estimation using the GACT
-out3 = huge(L$data, ind.group = ind.group, approx = TRUE)
-summary(out3)
-plot(out3)
+out2 = huge(L$data, ind.group = ind.group, approx = TRUE)
+summary(out2)
+plot(out2)
 
 #fullgraph solution path estimation using elastic net
-out4 = huge(L, alpha = 0.7)
-summary(out4)
-plot(out4)
+out3 = huge(L, alpha = 0.3)
+summary(out3)
+plot(out3)
 }

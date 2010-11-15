@@ -80,17 +80,21 @@ This function can ONLY work under the setting \code{d > 2} and \code{is.matrix(i
 L = huge.generator(graph = "hub")
 ind.group = c(1:30)
 ind.mat = huge.scr(L$data, ind.group)$ind.mat
-lambda = exp(seq(log(0.8),log(0.01),length=30))
+lambda = exp(seq(log(0.8),log(0.1),length=12))
 
-#subgraph solution path estimation with the preselected neighborhood
+#subgraph solution path estimation with the preselected neighborhood and specified lambda sequence
 sub.path = huge.subgraph(L$data, ind.group = ind.group, ind.mat = ind.mat, lambda = lambda)
 summary(sub.path)
 plot(sub.path)
 
 #subgraph solution path estimation with specified lambda.min.ratio and nlambda
 sub.path = huge.subgraph(L$data, ind.group = ind.group, ind.mat = ind.mat, 
-nlambda = 20, lambda.min.ratio = 0.01)
+nlambda = 8, lambda.min.ratio = 0.01)
+summary(sub.path)
+plot(sub.path)
 
 #graph solution path estimation using elastic net
 sub.path = huge.subgraph(L$data, ind.group = ind.group, alpha = 0.7)
+summary(sub.path)
+plot(sub.path)
 }

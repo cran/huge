@@ -4,18 +4,17 @@
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
 # Date: Nov 12th 2010                                                   #
-# Version: 0.8                                                          #
+# Version: 0.8.1                                                         #
 #-----------------------------------------------------------------------#
 
 ## Main function
 huge.subgraph = function(x, ind.group = NULL, ind.mat = NULL, alpha = 1, lambda = NULL, nlambda = 10, lambda.min.ratio = 0.1, sym = "or", verbose = TRUE){
 
+	gcinfo(FALSE)
+	fit = list()
 	n = nrow(x)
 	d = ncol(x)
-	fit = list()
-	if(is.null(ind.group))	ind.group = c(1:d)
-  	k = length(ind.group)
-  	
+	
 	if(d < 3){
 		cat("The fullgraph dimension < 3 and huge.subgraph() will be teminated....\n")
 		cat("Please refer to Pearson's product-moment correlation....\n")
@@ -32,6 +31,9 @@ huge.subgraph = function(x, ind.group = NULL, ind.mat = NULL, alpha = 1, lambda 
 			class(fit) = "subgraph"
 			return(fit)
 	}
+	
+	if(is.null(ind.group))	ind.group = c(1:d)
+  	k = length(ind.group)
 		
 	x = scale(x)
 	if(is.null(lambda)){
@@ -40,14 +42,14 @@ huge.subgraph = function(x, ind.group = NULL, ind.mat = NULL, alpha = 1, lambda 
 			for (i in 1:k)	tmp[i] = max(abs(t(x[,ind.mat[,i]])%*%x[,ind.group[i]]))
 			lambda = max(tmp)/n/alpha*exp(seq(log(1), log(lambda.min.ratio), length = nlambda))
 			rm(tmp)
-			gc(gcinfo(verbose = FALSE))
+			gc()
 		}
 		if(is.null(ind.mat)){
 			tmp = rep(0,k)
 			for (i in 1:k)	tmp[i] = max(abs(t(x[,-ind.group[i]])%*%x[,ind.group[i]]))
 			lambda = max(tmp)/n/alpha*exp(seq(log(1), log(lambda.min.ratio), length = nlambda))
 			rm(tmp)
-			gc(gcinfo(verbose = FALSE))
+			gc()
 		}
 	}
 	fit$lambda = lambda
@@ -58,7 +60,6 @@ huge.subgraph = function(x, ind.group = NULL, ind.mat = NULL, alpha = 1, lambda 
 
    	fit$path = list()
    	for(i in 1:nlambda)	fit$path[[i]] = Matrix(0,k,k)
-    #if(verbose)	pb <- txtProgressBar(min = 0, max = k, style = 1)
    	if(is.null(ind.mat)){
    		
    		for(i in 1:k){
@@ -83,7 +84,7 @@ huge.subgraph = function(x, ind.group = NULL, ind.mat = NULL, alpha = 1, lambda 
    			#if(verbose)	setTxtProgressBar(pb, i)
       	}
    		rm(x,n,d,ind.group,lambda,tmp,out.glm)
-   		gc(gcinfo(verbose = FALSE))
+   		gc()
    	}
    	
    	if(!is.null(ind.mat)){
@@ -110,7 +111,7 @@ huge.subgraph = function(x, ind.group = NULL, ind.mat = NULL, alpha = 1, lambda 
    			#if(verbose)	setTxtProgressBar(pb, i)
    		}
    		rm(x,n,d,ind.group,ind.mat,lambda,tmp,out.glm)
-   		gc(gcinfo(verbose = FALSE))
+   		gc()
    	}
    	#if(verbose)	close(pb)
 	if(verbose&&alpha == 1)
@@ -135,7 +136,7 @@ huge.subgraph = function(x, ind.group = NULL, ind.mat = NULL, alpha = 1, lambda 
    		}
    		
    	rm(verbose,nlambda,k)
-   	gc(gcinfo(verbose = FALSE))
+   	gc()
    	fit$marker = "Successful"
    	class(fit) = "subgraph"
    	return(fit)

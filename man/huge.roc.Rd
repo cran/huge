@@ -61,17 +61,13 @@ Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Esti
 }
 \examples{
 #generate data
-L = huge.generator(d = 200)
-
-#subset indices
-ind.group = c(1:80)
-
-#subgraph estimations using lasso
+L = huge.generator(d = 200, graph = "cluster", prob = 0.3)
+ind.group = c(1:40)
 out1 = huge(L, ind.group = ind.group)
 
 #draw ROC curve
 Z1 = huge.roc(out1)
 
-#Compare the maximum F1 score
+#Maximum F1 score
 max(Z1$F1)
 }

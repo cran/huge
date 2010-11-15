@@ -4,11 +4,11 @@
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
 # Date: Nov 12th 2010                                                   #
-# Version: 0.8                                                          #
+# Version: 0.8.1                                                         #
 #-----------------------------------------------------------------------#
 
 huge.roc = function(est, theta, ind.group, verbose = TRUE){
-	
+	gcinfo(verbose = FALSE)
 	if(class(est) == "huge"){
 		G = est$path
 		ind.group = est$ind.group
@@ -17,7 +17,7 @@ huge.roc = function(est, theta, ind.group, verbose = TRUE){
 	}
 	if(class(est) != "huge") G = est
 	rm(est)
-	gc(gcinfo(verbose = FALSE))
+	gc()
 	
 	ROC = list()
 	
@@ -26,12 +26,12 @@ huge.roc = function(est, theta, ind.group, verbose = TRUE){
 	
 	sub.theta = as.matrix(theta[ind.group,ind.group])
 	rm(theta)
-   	gc(gcinfo(verbose = FALSE))	
+   	gc()	
 	
 	sub.G = list()
 	for(i in 1:length(G)) sub.G[[i]] = G[[i]][ind.group,ind.group]
 	rm(G,ind.group)
-   	gc(gcinfo(verbose = FALSE))
+   	gc()
 	
 	pos.total = sum(sub.theta!=0)
 	neg.total = k*(k-1) - pos.total
@@ -58,7 +58,7 @@ huge.roc = function(est, theta, ind.group, verbose = TRUE){
 	if(verbose) cat("done.\n")
 		
 	rm(precision,recall,tp.all,fp.all,sub.G,sub.theta,fn)
-   	gc(gcinfo(verbose = FALSE))	
+   	gc()	
 		
 	ord.fp = order(ROC$fp)
 	
@@ -69,7 +69,7 @@ huge.roc = function(est, theta, ind.group, verbose = TRUE){
 	ROC$AUC = sum(diff(tmp1)*(tmp2[-1]+tmp2[-length(tmp2)]))/2
 	
 	rm(ord.fp, tmp1, tmp2)
-	gc(gcinfo(verbose = FALSE))
+	gc()
 	class(ROC) = "roc"
 	return(ROC)
 }

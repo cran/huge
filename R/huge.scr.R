@@ -6,12 +6,13 @@
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
 # Date: Nov 12th 2010                                                   #
-# Version: 0.8                                                          #
+# Version: 0.8.1                                                         #
 #-----------------------------------------------------------------------#
 
 ##Main function
-huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, nlambda = 30, lambda.min.ratio = 0.05, lambda = NULL, verbose = TRUE){
+huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, nlambda = 30, lambda.min.ratio = 0.1, lambda = NULL, verbose = TRUE){
 	
+	gcinfo(FALSE)
 	n = nrow(x)
   	d = ncol(x)
   	fit = list()
@@ -41,19 +42,25 @@ huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, nlambda
   	
   	if(approx){
   		
-  		xt = x[,ind.group]
+  		xt = scale(x[,ind.group])
+  		
   		rm(x)
-		gc(gcinfo(verbose = FALSE))	
-		xt = scale(xt)
- 				  		
-  		S = abs(cov(xt))
-  		diag(S) = 0
-		lambda.max = max(S) 
-		lambda.min = lambda.min.ratio*lambda.max
+		gc()
+ 		
+		S = abs(t(xt)%*%xt)/(n-1)
+ 		diag(S) = 0
+ 		
+ 		if(is.null(lambda)){
+ 			if(is.null(nlambda)) nlambda = 30
+ 			if(is.null(lambda.min.ratio)) lambda.min.ratio = 0.05		  		
+  			lambda.max = max(S) 
+			lambda.min = lambda.min.ratio*lambda.max
+			lambda = 1-exp(seq(log(1-lambda.max),log(1-lambda.min),length = nlambda))
+			rm(lambda.max,lambda.min.ratio,lambda.min)
+			gc()
+		}
 		
-		lambda = 1-exp(seq(log(1-lambda.max),log(1-lambda.min),length = nlambda))
-		rm(lambda.max,lambda.min.ratio,lambda.min)
-		gc(gcinfo(verbose = FALSE))
+		nlambda = length(lambda)
 			
 		fit$path = list()
 		for(i in 1:nlambda)	fit$path[[i]] = Matrix(0,k,k)
@@ -76,8 +83,8 @@ huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, nlambda
 		for(i in 1:nlambda) fit$sparsity[i] = sum(fit$path[[i]])/k/(k-1)
 		
 		fit$lambda = lambda
-		rm(lambda,xt)
-		gc(gcinfo(verbose = FALSE))
+		rm(lambda,xt,S,nlambda,n,d,k)
+		gc()
 
 	}
 	
@@ -98,7 +105,7 @@ huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, nlambda
 				cor.block = -abs(t(x)%*%x[,ind.group[((i-1)*l+1):(i*l)]])
 				fit$ind.mat[,((i-1)*l+1):(i*l)] = apply(cor.block,2,order)[2:(scr.num+1),]
 				rm(cor.block)
-				gc(gcinfo(verbose = FALSE))
+				gc()
 			}
 		
 		if(r>0){
@@ -112,7 +119,7 @@ huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, nlambda
 	
 	fit$marker = "Successful"
 	
-	gc(gcinfo(verbose = FALSE))
+	gc()
 	class(fit) = "scr"
 	return(fit)
 }

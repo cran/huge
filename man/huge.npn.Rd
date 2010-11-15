@@ -55,6 +55,7 @@ Han Liu, John Lafferty and Larry Wasserman. The Nonparanormal: Semiparametric Es
 }
 
 \examples{
+# generate data
 L = huge.generator(graph = "cluster", g = 5)
 
 # transform the non-Gaussian data using the shrunken ECDF

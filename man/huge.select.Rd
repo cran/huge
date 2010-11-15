@@ -45,13 +45,16 @@ An object with S3 class "select" is returned:
 The optimal graph selected from the solution path
 }
   \item{merge}{
-The merged by estimates from different subsamples. Only applicable when the input \code{criterion = "stars"}.
+The solution path estimated by merging the subsampling paths. Only applicable when the input \code{criterion = "stars"}.
+}
+  \item{variability}{
+The variability scores along the subsampling paths. Only applicable when the input \code{criterion = "stars"}.
 }
   \item{EBIC.scores}{
 Extended BIC scores for regularization parameter selection. Only applicable when \code{criterion = "EBIC"}.
 }
   \item{opt.index}{
-The index of the selected regularization parameter. NOT applicable when the input \code{"c"}
+The index of the selected regularization parameter. NOT applicable when the input \code{criterion = "PIC"}
 }
   \item{opt.lambda}{
 The selected regularization/thresholding parameter.
@@ -82,24 +85,24 @@ Jiahua Chen and Zehua Chen. Extended Bayesian information criterion for model se
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{huge.stars}}, \code{\link{huge}} and \code{\link{huge-package}}.
+\code{\link{huge}} and \code{\link{huge-package}}.
 }
 \examples{
 #generate data
 L = huge.generator(graph="hub")
-#estimate subgraph solution path using The GEL
 out.huge = huge(L)
+out.approx = huge(L, approx = TRUE)
+
 #model selection using PIC
 out.select = huge.select(out.huge)
 summary(out.select)
 plot(out.select)
+
 #model selection using stars
 out.select = huge.select(out.huge, criterion = "stars", stars.rep.num = 5)
 summary(out.select)
 plot(out.select)
 
-#estimate subgraph solution path using GACT
-out.approx = huge(L, approx = TRUE)
 #model selection using stars
 out.select = huge.select(out.approx, stars.rep.num = 10)
 summary(out.select)

@@ -3,8 +3,8 @@
 # huge.plot(): graph visualization                                      #
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Nov 12th, 2010                                                  #
-# Version: 0.8.1                                                         #
+# Date: Nov 21st 2010                                                   #
+# Version: 0.9                                                          #
 #-----------------------------------------------------------------------#
 
 huge.plot = function(G, epsflag = FALSE, graph.name = "default", cur.num = 1, location=NULL){

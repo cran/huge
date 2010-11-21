@@ -5,24 +5,23 @@
 # (2) Graph Approximation via Correlation Thresholding (GACT)           # 
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Nov 12th 2010                                                   #
-# Version: 0.8.1                                                         #
+# Date: Nov 21st 2010                                                   #
+# Version: 0.9                                                          #
 #-----------------------------------------------------------------------#
 
 ##Main function
-huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, nlambda = 30, lambda.min.ratio = 0.1, lambda = NULL, verbose = TRUE){
+huge.scr = function(x, ind.group = NULL, scr.num = NULL, method = "GSS", nlambda = 30, lambda.min.ratio = 0.1, lambda = NULL, verbose = TRUE){
 	
 	gcinfo(FALSE)
 	n = nrow(x)
   	d = ncol(x)
   	fit = list()
   	
-  	if(is.null(ind.group))	ind.group = c(1:d)
-  	k = length(ind.group)
-  	
   	if(d < 3){
 		cat("The fullgraph dimension < 3 and huge.scr() will be teminated....\n")
 		cat("Please refer to Pearson's product-moment correlation....\n")
+		rm(x,nlambda,lambda.min.ratio,n,d)
+		gc()
 		fit$marker = "Terminated"
 		class(fit) = "scr"
 		return(fit)
@@ -32,63 +31,75 @@ huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, nlambda
 		if(scr.num == 1){
 			cat("The neighborhood size < 2 and huge.scr() will be teminated.\n")
 			cat("Please refer to Pearson's product-moment correlation....\n")
+			rm(x,nlambda,lambda.min.ratio,n,d)
+			gc()
 			fit$marker = "Terminated"
 			class(fit) = "scr"
 			return(fit)
 		}
   	
-  	fit$approx = approx
+  	if(is.null(ind.group))	ind.group = c(1:d)
+  	k = length(ind.group)
   	
-  	
-  	if(approx){
-  		
-  		xt = scale(x[,ind.group])
-  		
+  	if(method == "GACT"){
+  		S = abs(cor(x[,ind.group]))
+  		diag(S) = 0
+  		S.rank = order(S,decreasing = TRUE)
   		rm(x)
 		gc()
  		
-		S = abs(t(xt)%*%xt)/(n-1)
- 		diag(S) = 0
- 		
  		if(is.null(lambda)){
  			if(is.null(nlambda)) nlambda = 30
- 			if(is.null(lambda.min.ratio)) lambda.min.ratio = 0.05		  		
-  			lambda.max = max(S) 
-			lambda.min = lambda.min.ratio*lambda.max
-			lambda = 1-exp(seq(log(1-lambda.max),log(1-lambda.min),length = nlambda))
-			rm(lambda.max,lambda.min.ratio,lambda.min)
+ 			density.max = lambda.min.ratio*k*(k-1)/2
+ 			density.min = 1
+ 			density.all = ceiling(seq(density.min,density.max,length = nlambda))*2
+ 			fit$sparsity = density.all/k/(k-1)
+ 			fit$lambda = S[S.rank[density.all]]
+ 			rm(density.max,lambda.min.ratio,density.min,S)
+			gc()
+ 			
+ 					
+ 			fit$path = list()
+			for(i in 1:nlambda){
+				fit$path[[i]] = Matrix(0,k,k)
+				fit$path[[i]][S.rank[1:density.all[i]]] = 1
+				if(verbose){
+   					cat(paste(c("Conducting Graph Approximation via Correlation Thresholding (GACT)....in progress:", floor(100*i/nlambda), "%"), collapse=""), "\r")
+            		flush.console()
+            	}	
+			}
+			rm(density.all,nlambda,S.rank)
+			gc()
+		}
+
+		if(!is.null(lambda)){
+			nlambda = length(lambda)
+			fit$path = list()
+			fit$sparsity = rep(0,nlambda)
+			for(i in 1:nlambda){
+				fit$path[[i]] = Matrix(0,k,k)
+				fit$path[[i]][S > lambda[i]] = 1
+				fit$sparsity[i] = sum(fit$path[[i]])/k/(k-1)
+				if(verbose){
+   					mes <- paste(c("Conducting Graph Approximation via Correlation Thresholding (GACT)....in progress:", floor(100*i/nlambda), "%"), collapse="")
+   					cat(mes, "\r")
+            		flush.console()
+            	}
+			}
+			fit$lambda = lambda
+			rm(S,lambda)
 			gc()
 		}
 		
-		nlambda = length(lambda)
-			
-		fit$path = list()
-		for(i in 1:nlambda)	fit$path[[i]] = Matrix(0,k,k)
-		for(i in 1:nlambda){
-			if(verbose){
-   				mes <- paste(c("Conducting Graph Approximation via Correlation Thresholding (GACT)....in progress:", floor(100*i/nlambda), "%"), collapse="")
-   				cat(mes, "\r")
-            	flush.console()
-            }
-			fit$path[[i]][S > lambda[i]] = 1
-		}
 		if(verbose){
-			mes = "Conducting Graph Approximation via Correlation Thresholding (GACT)....done.             "
-        	cat(mes, "\r")
-        	cat("\n")
+        	cat("Conducting Graph Approximation via Correlation Thresholding (GACT)....done.             \r\n")
         	flush.console()
         }
-		
-		fit$sparsity = rep(0,nlambda)
-		for(i in 1:nlambda) fit$sparsity[i] = sum(fit$path[[i]])/k/(k-1)
-		
-		fit$lambda = lambda
-		rm(lambda,xt,S,nlambda,n,d,k)
+		rm(n,d,k)
 		gc()
-
 	}
 	
-	if(!approx){
+	if(method == "GSS"){
 		if(is.null(scr.num))	scr.num = min(n-1,d-1)
 		if(verbose) cat("Conducting Graph SURE Screening (GSS)....")
 		
@@ -113,13 +124,14 @@ huge.scr = function(x, ind.group = NULL, scr.num = NULL, approx = FALSE, nlambda
 			fit$ind.mat[,(g*l+1):(g*l+r)] = apply(cor.block,2,order)[2:(scr.num+1),]
 			rm(cor.block)
 		}
-		rm(x)
+		rm(x,r,g,l,scr.num,lambda.min.ratio,nlambda)
+		gc()
 		if(verbose) cat("done.\n")
 	}
-	
-	fit$marker = "Successful"
-	
+	fit$method = method
+	rm(method,verbose)
 	gc()
+	fit$marker = "Successful"
 	class(fit) = "scr"
 	return(fit)
 }
@@ -130,8 +142,8 @@ print.scr = function(x, ...){
 		cat("huge.scr() has been terminated\n")
 		return("Please refer to the manual")
 	}
-	if(x$approx) cat("This is a solution path using Graph Approximation via Correlation Thresholding (GACT) and length = ", length(x$path), "\n")
-	if(!x$approx) cat("The dimension of prelected neighborhood after screening = ", nrow(x$ind.mat), "\n")
+	if(x$method == "GACT") cat("This is a solution path using Graph Approximation via Correlation Thresholding (GACT) and length = ", length(x$path), "\n")
+	if(!x$method == "GSS") cat("The dimension of prelected neighborhood after screening = ", nrow(x$ind.mat), "\n")
 	cat("huge.scr() is an internal function, please refer to huge() and huge.select()")
 }
 
@@ -141,8 +153,8 @@ summary.scr = function(object, ...){
 		cat("huge.scr() has been terminated\n")
 		return("Please refer to the manual")
 	}
-	if(object$approx) cat("This is a solution path using Graph Approximation via Correlation Thresholding (GACT) and length = ", length(object$path), "\n")
-	if(!object$approx) cat("The dimension of preselected neighborhood after screening = ", nrow(object$ind.mat), "\n")
+	if(object$method == "GACT") cat("This is a solution path using Graph Approximation via Correlation Thresholding (GACT) and length = ", length(object$path), "\n")
+	if(!object$method == "GSS") cat("The dimension of preselected neighborhood after screening = ", nrow(object$ind.mat), "\n")
 	cat("huge.scr() is an internal function, please refer to huge() and huge.select()")
 }
 
@@ -152,11 +164,11 @@ plot.scr = function(x, ...){
 		cat("huge.scr() has been terminated\n")
 		return("Please refer to the manual")
 	}
-	if(x$approx){
-		par(mfrow = c(1,1))
-		tmp = (x$lambda > 0)
-		plot(x$lambda[tmp], x$sparsity[tmp], log = "x", xlab = "Regularization Parameters", ylab = "Sparsity Level", type = "b",xlim = rev(range(x$lambda)))
+	if(x$method == "GACT"){
+		par(mfrow = c(1,1),pty = "s")
+		plot(x$lambda, x$sparsity, log = "x", xlab = "Regularization Parameter", ylab = "Sparsity Level", type = "b",xlim = rev(range(x$lambda)))
 	}
-	if(!x$approx) cat("No plot information avaiable for the Graph SURE Screening (GSS)","\n")
-	cat("huge.scr() is an internal function. For more information, please refer to huge() and huge.select()")
+	if(!x$method == "GSS"){
+		cat("No plot information avaiable for the Graph SURE Screening (GSS)","\n")
+		cat("huge.scr() is an internal function. For more information, please refer to huge() and huge.select()")	}
 }

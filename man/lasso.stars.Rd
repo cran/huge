@@ -1,16 +1,20 @@
 \name{lasso.stars}
 \alias{lasso.stars}
+
 \title{
-StARS Regularization Parameter Selection for Lasso
+Stability Approach to Regularization Selection for Lasso
 }
+
 \description{
 Implements the Stability Approach to Regularization Selection (StARS) for Lasso
 }
+
 \usage{
 lasso.stars(x, y, rep.num = 20, lambda = NULL, nlambda = 100, 
 lambda.min.ratio = 0.001, stars.thresh = 0.1, sample.ratio = NULL, 
 alpha = 1, verbose = TRUE)
 }
+
 \arguments{
   \item{x}{
 The \code{n} by \code{d} data matrix representing \code{n} observations in \code{d} dimensions
@@ -43,8 +47,9 @@ The tuning parameter for the elastic-net regression. The default value is \code{
 If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.
 }
 }
+
 \details{
-StARS selects the optimal regularization parameter based on the variability of the solution path. It chooses the least sparse graph among all solutions with the same variability. An alternative threshold \code{0.05} is chosen under the assumption that the model is correctly specified. In applications, the model  is usually an approximation of the true model, \code{0.1} is a safer choice.
+StARS selects the optimal regularization parameter based on the variability of the solution path. It chooses the least sparse graph among all solutions with the same variability. An alternative threshold \code{0.05} is chosen under the assumption that the model is correctly specified. In applications, the model  is usually an approximation of the true model, \code{0.1} is a safer choice. The implementation is based on the popular package "glmnet".
 }
 \value{
 An object with S3 class "stars" is returned:
@@ -67,25 +72,26 @@ The optimal regularization parameter.
 The variability along the solution path.
 }
 }
+
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
 Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
 }
+
 \references{
-Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. Technical Report, Carnegie Mellon University, 2010\cr
-Han Liu, Kathryn Roeder and Larry Wasserman. Stability Approach to Regularization Selection (StARS) for High Dimensional Graphical Models. \emph{Advances in Neural Information Processing Systems}, 2010.\cr
-Jerome Friedman, Trevor Hastie and Rob Tibshirani. Regularization Paths for Generalized Linear Models via Coordinate Descent. \emph{Journal of Statistical Software}, Vol.33, No.1, 2008.
+1.Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. Technical Report, Carnegie Mellon University, 2010\cr
+2.Han Liu, Kathryn Roeder and Larry Wasserman. Stability Approach to Regularization Selection (StARS) for High Dimensional Graphical Models. \emph{Advances in Neural Information Processing Systems}, 2010.\cr
+3.Jerome Friedman, Trevor Hastie and Rob Tibshirani. Regularization Paths for Generalized Linear Models via Coordinate Descent. \emph{Journal of Statistical Software}, Vol.33, No.1, 2008.
 }
 
 \note{
 This function can only work under the setting when \code{d>1}
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
 \seealso{
 \code{\link{huge.select}}, \code{\link{glmnet}}, \code{\link{huge}} and \code{\link{huge-package}}
 }
+
 \examples{
 #generate data
 x = matrix(rnorm(50*80),50,80)

@@ -1,15 +1,19 @@
 \name{huge.subgraph}
 \alias{huge.subgraph}
+
 \title{
-Subgraph estimation using Meinshausen & Buhlmann Graph Estimation via Lasso (GEL)
+Subgraph estimation using Meinshausen & Buhlmann Graph Estimation via Lasso
 }
+
 \description{
 Implements Meinshausen & Buhlmann Graph Estimation via Lasso (GEL). It estimates the neighborhood of each variable by fitting a collection of Lasso regression problems.
 }
+
 \usage{
 huge.subgraph(x, ind.group = NULL, ind.mat = NULL, alpha = 1, lambda = NULL, 
 nlambda = 10, lambda.min.ratio = 0.1, sym = "or", verbose = TRUE)
 }
+
 \arguments{
   \item{x}{
 The \code{n} by \code{d} data matrix representing \code{n} observations in \code{d} dimensions
@@ -39,13 +43,15 @@ Symmetrize the output graphs. If \code{sym = "and"}, the edge between node \code
 If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.
 }
 }
+
 \details{
-The GEL simplifies the precision matrix estimation to fitting a collection of Lasso regression problems. Unlike the graphical lasso it does not numerically estimate the precision matrix but ONLY the underlying structure. It is computationally easier and can be more flexible in high-dimensional settings. In some situations such as gene regulatory network analysis, we are ONLY interested in the structure of the graph or a subgraph of the whole graph and the GEL is more scalable than other existing algorithms
+The GEL simplifies the precision matrix estimation to fitting a collection of Lasso regression problems by using each variable as response and the others as predictors. Unlike Graphical Lasso (GLASSO), it cannot numerically estimate the precision matrix but ONLY the underlying structure. It is computationally easier and can be more flexible in high-dimensional settings. In some situations such as gene regulatory network analysis, we are only interested in the structure of the graph or a subgraph of the whole graph and the GEL is more scalable than other existing algorithms. The implementation is based on the well-known highly computationally efficient package "glmnet".
 }
+
 \value{
 An object with S3 class \code{"subgraph"} is returned:
   \item{path}{
-A list of \code{k} by \code{k} adjacency matrices of estimated graphs as the solution path corresponding to \code{lambda}.
+A list of \code{k} by \code{k} adjacency matrices (in sparse matrix representation) of estimated graphs as the solution path corresponding to \code{lambda}.
 }
   \item{lambda}{
 The sequence of regularization parameters used the graph estimation.
@@ -60,21 +66,26 @@ A \code{k} by \code{nlambda} matrix. Each row corresponds to a variable in \code
 The sparsity levels of the solution path.
 }
 }
+
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
 Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
 }
+
 \references{
-Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. \emph{Technical Report}, Carnegie Mellon University, 2010\cr
-Jerome Friedman, Trevor Hastie and Rob Tibshirani. Regularization Paths for Generalized Linear Models via Coordinate Descent. \emph{Journal of Statistical Software}, Vol.33, No.1, 2008. \cr
-Nicaolai Meinshausen and Peter Buhlmann. High-dimensional Graphs and Variable Selection with the Lasso. \emph{The Annals of Statistics},  Vol.34, Page 1436-1462, 2006.
+1. Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. \emph{Technical Report}, Carnegie Mellon University, 2010\cr
+2. Jerome Friedman, Trevor Hastie and Rob Tibshirani. Regularization Paths for Generalized Linear Models via Coordinate Descent. \emph{Journal of Statistical Software}, 2008. \cr
+3. Nicaolai Meinshausen and Peter Buhlmann. High-dimensional Graphs and Variable Selection with the Lasso. \emph{The Annals of Statistics}, 2006.
 }
+
 \note{
 This function can ONLY work under the setting \code{d > 2} and \code{is.matrix(ind.mat) == TRUE}.
 }
+
 \seealso{
 \code{\link{huge}} and \code{\link{huge-package}}
 }
+
 \examples{
 #generate data
 L = huge.generator(graph = "hub")

@@ -1,15 +1,19 @@
 \name{huge.generator}
 \alias{huge.generator}
+
 \title{
 Data generator
 }
+
 \description{
-Implements the data generation from multivariate normal distributions with different graph structures, including \code{"random"}, \code{"hub"}, \code{"cluster"} or \code{"band"}.
+Implements the data generation from multivariate normal distributions with different graph structures, including \code{"random"}, \code{"hub"}, \code{"cluster"} and \code{"band"}.
 }
+
 \usage{
 huge.generator(n = 200, d = 50, graph = "random", v = NULL, u = NULL, 
 g = NULL, prob = NULL, vis = FALSE, verbose = TRUE)
 }
+
 \arguments{
   \item{n}{
 The number of observations (sample size). The default value is \code{200}.
@@ -26,19 +30,20 @@ The off-diagonal elements of the precision matrix, controlling the magnitude of 
   \item{u}{
 A positive number being added to the diagonal elements of the precision matrix, to control the magnitude of partial correlations. The default value is \code{0.1}.
 }
- \item{g}{
+  \item{g}{
 For \code{"cluster"} or \code{"hub"} graph, \code{g} is the number of hubs or clusters in the graph. The default value is about \code{d/20} if \code{d >= 40} and \code{2} if \code{d < 40}. For \code{"band"} graph, \code{g} is the bandwidth and the default value is \code{1}. NOT applicable to \code{"random"} graph.
 }
- \item{prob}{
+  \item{prob}{
 For \code{"random"} graph, it is the probability that a pair of nodes has an edge. The default value is \code{3/d}. For \code{"cluster"} graph, it is the probability that a pair of nodes has an edge in each cluster. The default value is \code{6*g/d} if \code{d/g <= 30} and \code{0.3} if \code{d/g > 30}. NOT applicable to \code{"hub"} or \code{"band"} graphs.
 }
   \item{vis}{
 Visualize the adjacency matrix of the true graph structure, the graph pattern, the covariance matrix and the empirical covariance matrix. The default value is \code{FALSE}
 }
-\item{verbose}{
+  \item{verbose}{
 If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.
 }
 }
+
 \details{
 Given the adjacency matrix \code{theta}, the graph patterns are generated as below:\cr\cr
 (I) \code{"random"}: Each pair of off-diagonal elements are randomly set \code{theta[i,j]=theta[j,i]=1} for \code{i!=j} with probability \code{prob}, and \code{0} other wise. It results in about \code{d*(d-1)*prob/2} edges in the graph.\cr\cr
@@ -47,6 +52,7 @@ Given the adjacency matrix \code{theta}, the graph patterns are generated as bel
 (IV)\code{"band"}: The off-diagonal elements are set to be \code{theta[i,j]=1} if \code{1<=|i-j|<=g} and \code{0} other wise. It results in \code{(2d-1-g)*g/2} edges in the graph.\cr\cr
 The adjacency matrix \code{theta} has all diagonal elements equal to \code{0}. To obtain a positive definite precision matrix, the smallest eigenvalue of \code{theta*v} is computed. Suppose \code{e} be the smallest eigenvalue and we let the precision matrix equals \code{theta*v+(|e|+0.01+t)I}. The covariance matrix is then computed to generate multivariate normal data.
 }
+
 \value{
 An object with S3 class "sim" is returned:
 \item{data}{
@@ -65,13 +71,15 @@ The empirical covariance matrix for the generated data
 The adjacency matrix of true graph structure (in sparse matrix representation) for the generated data
 }
 }
+
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
 Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
 }
+
 \references{
-Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. \emph{Technical Report}, Carnegie Mellon University, 2010\cr
-Jerome Friedman, Trevor Hastie and Rob Tibshirani. Applications of the lasso and grouped lasso to the estimation of sparse graphical models, \emph{Technical Report}, Stanford University, 2010
+1.Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. \emph{Technical Report}, Carnegie Mellon University, 2010\cr
+2.Jerome Friedman, Trevor Hastie and Robert Tibshirani. Applications of the lasso and grouped lasso to the estimation of sparse graphical models, \emph{Technical Report}, Stanford University, 2010
 }
 \seealso{
 \code{\link{huge}} and \code{\link{huge-package}}

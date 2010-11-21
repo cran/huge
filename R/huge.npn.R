@@ -3,8 +3,8 @@
 # huge.npn(): NonparaNormal transofmration                              #
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Nov 12th, 2010                                                  #
-# Version: 0.8.1                                                          #
+# Date: Nov 21st 2010                                                   #
+# Version: 0.9                                                          #
 #-----------------------------------------------------------------------#
 
 ## Main function
@@ -40,7 +40,7 @@ huge.npn = function(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE
     	
     	if(verbose) cat("done.\n")
     	
-    	rm(n,d,tmp,npn.func,npn.thresh,verbose)
+    	rm(x,n,d,tmp,npn.func,npn.thresh,verbose)
    		gc()
 	}
 	

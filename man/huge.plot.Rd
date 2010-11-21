@@ -1,15 +1,19 @@
 \name{huge.plot}
 \alias{huge.plot}
+
 \title{
-Graph visualization function
+Graph visualization
 }
+
 \description{
-A function of "huge" package to automatically organize 2Dl embedding and plot the graph using adjacency matrix.
+Implements the graph visualization using adjacency matrix. It can automatic organize 2D embedding layout.
 }
+
 \usage{
 huge.plot(G, epsflag = FALSE, graph.name = "default", cur.num = 1, 
 location)
 }
+
 \arguments{
   \item{G}{
 The adjaceny matrix corresponding to the graph.
@@ -27,25 +31,24 @@ The number of plots saved as eps files. Only applicale when \code{epsflag = TRUE
 Target directory. The default value is the current working directory.
 }
 }
+
 \details{
-The user can change \code{cur.num} to plot several figures and select the best one.
+The user can change \code{cur.num} to plot several figures and select the best one. The implementation is based on the popular package "igraph".
 }
+
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
 Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
 }
-\references{
-Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. \emph{Technical Report}, Carnegie Mellon University, 2010
-}
-%%\note{
-%%  ~~further notes~~
-%%}
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
+\references{
+1. Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. \emph{Technical Report}, Carnegie Mellon University, 2010
+}
 
 \seealso{
 \code{\link{huge}} and \code{\link{huge-package}}
 }
+
 \examples{
 ## visualize the hub graph
 L = huge.generator(graph = "hub")

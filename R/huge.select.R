@@ -5,8 +5,8 @@
 #                (3)Extended Bayesian Informaition Criterion            #
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Nov 12th, 2010                                                  #
-# Version: 0.8.1                                                          #
+# Date: Nov 21st 2010                                                   #
+# Version: 0.9                                                          #
 #-----------------------------------------------------------------------#
 
 ## Main Function
@@ -20,8 +20,9 @@ huge.select = function(est, criterion = NULL, r.num = 200, EBIC.gamma = 0.5, sta
 		return(est)
 	}
 		
-	if(!est$approx&&is.null(criterion)) criterion = "PIC"
-	if(est$approx&&is.null(criterion)) criterion = "stars"
+	if(est$method == "GEL"&&is.null(criterion)) criterion = "PIC"
+	if(est$method == "GACT"&&is.null(criterion)) criterion = "stars"
+	if(est$method == "GLASSO"&&is.null(criterion)) criterion = "EBIC"
 	
 	n = nrow(est$data)
 	d = ncol(est$data)
@@ -78,7 +79,7 @@ huge.select = function(est, criterion = NULL, r.num = 200, EBIC.gamma = 0.5, sta
 		est$opt.sparsity=sum(est$refit)/k/(k-1)
 	}
 	
-	if(criterion == "EBIC"){
+	if(criterion == "EBIC"&&est$method == "GEL"){
 		scr.num = min(floor(2*n/3),d-1)
 		ind.mat = huge.scr(est$data, ind.group = est$ind.group, scr.num  = scr.num, verbose = FALSE)$ind.mat
 		EBIC.ind = matrix(0,k,nlambda)
@@ -107,7 +108,14 @@ huge.select = function(est, criterion = NULL, r.num = 200, EBIC.gamma = 0.5, sta
   		est$opt.sparsity = est$sparsity[est$opt.index]
 	}
 	
-		
+	if(criterion == "EBIC"&&est$method == "GLASSO"){
+		est$EBIC.score = -2*est$loglik + log(n)*est$df + 2*EBIC.gamma*log(d*(d-1))*est$df
+		est$opt.index = which.min(est$EBIC.score)
+		est$refit = est$path[[est$opt.index]]
+		est$opt.wi = est$wi[[est$opt.index]]
+  		est$opt.lambda = est$lambda[est$opt.index]
+  		est$opt.sparsity = est$sparsity[est$opt.index]
+	}		
 	if(criterion == "stars"){
 		if(is.null(stars.subsample.ratio)){
 			if(est$n>144) stars.subsample.ratio = 10*sqrt(n)/n
@@ -125,14 +133,16 @@ huge.select = function(est, criterion = NULL, r.num = 200, EBIC.gamma = 0.5, sta
 			}
     		ind.sample = sample(c(1:n), floor(n*stars.subsample.ratio), replace=FALSE)
     		
-    		if(!est$approx){
+    		if(est$method == "GEL"){
     			if(is.null(est$ind.mat))
     				tmp = huge.subgraph(est$data[ind.sample,],ind.group = est$ind.group, alpha = est$alpha, lambda = est$lambda, sym = est$sym, verbose = FALSE)$path
     			if(!is.null(est$ind.mat))
     				tmp = huge.subgraph(est$data[ind.sample,],ind.group = est$ind.group, ind.mat = est$ind.mat, alpha = est$alpha, lambda = est$lambda, sym = est$sym, verbose = FALSE)$path
     		}
-       		if(est$approx)
-    			tmp = huge.scr(est$data[ind.sample,],ind.group = est$ind.group,lambda = est$lambda, approx = TRUE,verbose = FALSE)$path
+       		if(est$method == "GACT")
+    			tmp = huge.scr(est$data[ind.sample,],ind.group = est$ind.group,lambda = est$lambda, method = "GACT",verbose = FALSE)$path
+    		if(est$method == "GLASSO")
+    			tmp = huge.glassoM(est$data[ind.sample,],ind.group = est$ind.group, lambda = est$lambda, verbose = FALSE)$path
     			
     		for(i in 1:nlambda)	est$merge[[i]] = est$merge[[i]] + tmp[[i]]
     		rm(ind.sample,tmp)
@@ -170,15 +180,15 @@ print.select = function(x, ...){
 		cat("huge.select() has been terminated\n")
 		return("Please refer to the manual")
 	}
-	if(x$approx) cat("Model: Graph Approximation via Correlation Thresholding(GACT)\n")
-	
-	if(!x$approx){
+	if(x$method == "GACT") cat("Model: Graph Approximation via Correlation Thresholding(GACT)\n")
+	if(x$method == "GLASSO") cat("Model: Graphical Lasso (GLASSO)\n")
+	if(x$method == "GEL"){
 		if(x$alpha <1) cat("Model: Meinshausen & Buhlmann Graph Estimation using Elastic Net --->",x$type,"\n")
 		if(x$alpha ==1) cat("Model: Meinshausen & Buhlmann Graph Estimation using Lasso(GEL) --->",x$type,"\n")
 	}
 	cat("selection criterion:",x$criterion,"\n")
 	if(x$npn) cat("nonparanormal transformed\n")
-	if(!x$approx)
+	if(x$method == "GEL")
 		if(x$scr) cat("graph screened\n")
 	if(!is.null(x$theta)) cat("ground truth theta: included\n")
 	if(is.null(x$theta)) cat("ground truth theta: not included\n")
@@ -192,16 +202,15 @@ summary.select = function(object, ...){
 		cat("huge.select() has been terminated\n")
 		return("Please refer to the manual")
 	}
-	if(object$approx) cat("Model: Graph Approximation via Correlation Thresholding (GACT)\n")
-
-	
-	if(!object$approx){
+	if(object$method == "GACT") cat("Model: Graph Approximation via Correlation Thresholding(GACT)\n")
+	if(object$method == "GLASSO") cat("Model: Graphical Lasso (GLASSO)\n")
+	if(object$method == "GEL"){
 		if(object$alpha <1) cat("Model: Meinshausen & Buhlmann Graph Estimation using Elastic Net --->",object$type,"\n")
 		if(object$alpha ==1) cat("Model: Meinshausen & Buhlmann Graph Estimation using Lasso (GEL) --->",object$type,"\n")
 	}
 	cat("selection criterion:",object$criterion,"\n")
 	if(object$npn) cat("nonparanormal transformed\n")
-	if(!object$approx)
+	if(object$method == "GEL")
 		if(object$scr) cat("graph screened\n")
 	if(!is.null(object$theta)) cat("ground truth theta: included\n")
 	if(is.null(object$theta)) cat("ground truth theta: not included\n")
@@ -215,8 +224,6 @@ plot.select = function(x, ...){
 		cat("huge.select() has been terminated\n")
 		return("Please refer to the manual")
 	}
-	if(sum(x$refit) == 0) cat("The optimal graph is a null graph.")
-	if(sum(x$refit) > 0){
 	par(mfrow=c(1,2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
     
     g = graph.adjacency(as.matrix(x$refit), mode="undirected", diag=FALSE)
@@ -225,5 +232,4 @@ plot.select = function(x, ...){
 	plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA)	  
     plot(x$lambda, x$sparsity, log = "x", xlab = "Regularization Parameter", ylab = "Sparsity Level", type = "l",xlim = rev(range(x$lambda)), main = "Solution path sparsity levels")
     lines(x$opt.lambda,x$opt.sparsity,type = "p")  
-    }
 }

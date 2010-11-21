@@ -7,6 +7,7 @@
 # Verision: 0.8.1                                                        #
 #-----------------------------------------------------------------------#
 lasso.stars = function(x, y, rep.num = 20, lambda = NULL, nlambda = 100, lambda.min.ratio = 0.001, stars.thresh = 0.1, sample.ratio = NULL, alpha = 1, verbose = TRUE){
+	
 	gcinfo(FALSE)
 	est = list()
 	if(!is.matrix(x)){

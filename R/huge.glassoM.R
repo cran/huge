@@ -3,8 +3,8 @@
 # glassoM(): A sligthly modifeid Graphical Lasso (GLASSO)              #
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Nov 21st 2010                                                   #
-# Version: 0.9                                                          #
+# Date: Feb 12th 2011                                                   #
+# Version: 0.9.1                                                          #
 #-----------------------------------------------------------------------#
 
 ## Main function
@@ -53,7 +53,7 @@ huge.glassoM = function(x, ind.group = NULL, lambda.min.ratio = 0.1, nlambda = 1
 	diag(out.glasso$wi) = 0
 	fit$path = list()	
 	fit$path[[1]] = Matrix(abs(sign(out.glasso$wi[ind.group,ind.group])), sparse = TRUE)
-	fit$loglik[1] = out.glasso$loglik - sum(abs(fit$wi[[1]]))
+	fit$loglik[1] = out.glasso$loglik + lambda[1]*sum(abs(fit$wi[[1]]))
 	fit$df[1] = sum(abs(sign(out.glasso$wi)))/2
 	fit$sparsity[1] = 2*fit$df[[1]]/k/(k-1)
 	rm(out.glasso)
@@ -69,7 +69,7 @@ huge.glassoM = function(x, ind.group = NULL, lambda.min.ratio = 0.1, nlambda = 1
 			fit$wi[[i]] = Matrix(out.glasso$wi,sparse = TRUE)
 			diag(out.glasso$wi) = 0
 			fit$path[[i]] = Matrix(abs(sign(out.glasso$wi[ind.group,ind.group])), sparse = TRUE)
-			fit$loglik[i] = out.glasso$loglik - sum(abs(fit$wi[[i]]))
+			fit$loglik[i] = out.glasso$loglik + lambda[i]* sum(abs(fit$wi[[i]]))
 			fit$df[i] = sum(abs(sign(out.glasso$wi)))/2
 			fit$sparsity[i] = sum(fit$path[[i]])/k/(k-1)
 			rm(out.glasso)

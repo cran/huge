@@ -3,8 +3,8 @@
 # huge.subgraph(): M&B Graph Estimation via Lasso (GEL)                 #
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Nov 21st 2010                                                   #
-# Version: 0.9                                                          #
+# Date: Feb 12th 2011                                                   #
+# Version: 0.9.1                                                        #
 #-----------------------------------------------------------------------#
 
 ## Main function
@@ -68,7 +68,7 @@ huge.subgraph = function(x, ind.group = NULL, ind.mat = NULL, alpha = 1, lambda 
    				if(alpha < 1)	cat(paste(c("Conducting Meinshausen & Buhlmann Graph Estimation via Elastic Net....in progress:", floor(100*i/k), "%"), collapse=""), "\r")
             	flush.console()
             }
-   			out.glm = glmnet(x[,-ind.group[i]], x[,ind.group[i]], lambda = lambda, alpha = alpha, thresh = 1e-03, standardize = FALSE)
+   			out.glm = glmnet(x[,-ind.group[i]], x[,ind.group[i]], lambda = lambda, alpha = alpha, thresh = 1e-03, standardize = FALSE, type.gaussian = "naive")
       		fit$rss[i,] = out.glm$nulldev*(1-out.glm$dev)
       		fit$df[i,] = out.glm$df
       		for(j in 1:nlambda){
@@ -88,7 +88,7 @@ huge.subgraph = function(x, ind.group = NULL, ind.mat = NULL, alpha = 1, lambda 
    				if(alpha < 1)	cat(paste(c("Conducting Meinshausen & Buhlmann Graph Estimation via Elastic Net....in progress:", floor(100*i/k), "%"), collapse=""), "\r")
             	flush.console()
             }
-      		out.glm = glmnet(x[,ind.mat[,i]], x[,ind.group[i]], lambda = lambda, alpha = alpha, thresh = 1e-03, standardize = FALSE)
+      		out.glm = glmnet(x[,ind.mat[,i]], x[,ind.group[i]], lambda = lambda, alpha = alpha, thresh = 1e-03, standardize = FALSE, type.gaussian = "naive")
       		fit$rss[i,] = out.glm$nulldev*(1-out.glm$dev)
       		fit$df[i,] = out.glm$df
       		for(j in 1:nlambda){

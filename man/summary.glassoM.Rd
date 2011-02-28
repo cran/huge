@@ -4,7 +4,7 @@
 Summary function for S3 class "glassoM"
 }
 \description{
-Summary information about the model usage and the solution path length
+Summary information about the model usage and the graph path length
 }
 \usage{
 \method{summary}{glassoM}(object, ...)

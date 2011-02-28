@@ -4,7 +4,7 @@
 Plot function for S3 class "glassoM"
 }
 \description{
-Plot sparsity level information for the solution path.
+Plot sparsity level information for the graph path.
 }
 \usage{
 \method{plot}{glassoM}(x, ...)

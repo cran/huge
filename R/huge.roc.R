@@ -1,17 +1,17 @@
 #-----------------------------------------------------------------------#
 # Package: High-dimensional Undirected Graph Estimation (HUGE)          #
 # huge(): Draw ROC Curve for a solution path                            #
+#         Must have a ground truth                                      #
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Nov 21st 2010                                                   #
-# Version: 0.9                                                          #
+# Date: Feb 28th 2010                                                   #
+# Version: 1.0                                                          #
 #-----------------------------------------------------------------------#
 
-huge.roc = function(est, theta, ind.group, verbose = TRUE){
+huge.roc = function(est, theta, verbose = TRUE){
 	gcinfo(verbose = FALSE)
 	if(class(est) == "huge"){
 		G = est$path
-		ind.group = est$ind.group
 		if(is.null(est$theta)) cat("Error, true graph is not included!\n")
 		theta = est$theta
 	}
@@ -21,31 +21,21 @@ huge.roc = function(est, theta, ind.group, verbose = TRUE){
 	
 	ROC = list()
 	
-	if(missing(ind.group)) ind.group = c(1:ncol(theta))
-	k = length(ind.group)
-	
-	sub.theta = as.matrix(theta[ind.group,ind.group])
-	rm(theta)
-   	gc()	
-	
-	sub.G = list()
-	for(i in 1:length(G)) sub.G[[i]] = G[[i]][ind.group,ind.group]
-	rm(G,ind.group)
-   	gc()
-	
-	pos.total = sum(sub.theta!=0)
-	neg.total = k*(k-1) - pos.total
+	theta = as.matrix(theta)
+	d = ncol(theta)
+	pos.total = sum(theta!=0)
+	neg.total = d*(d-1) - pos.total
 	
 	if(verbose) cat("Computing F1 scores, false positive rates and true positive rates....")
-	ROC$tp = rep(0,length(sub.G))
-   	ROC$fp = rep(0,length(sub.G))
-   	ROC$F1 = rep(0,length(sub.G))
-   	for (r in 1:length(sub.G)){
-   		tmp = as.matrix(sub.G[[r]]) 
-   		tp.all = (sub.theta!=0)*(tmp!=0)
+	ROC$tp = rep(0,length(G))
+   	ROC$fp = rep(0,length(G))
+   	ROC$F1 = rep(0,length(G))
+   	for (r in 1:length(G)){
+   		tmp = as.matrix(G[[r]]) 
+   		tp.all = (theta!=0)*(tmp!=0)
    		diag(tp.all) = 0
 		ROC$tp[r] <- sum(tp.all!=0)/pos.total
-		fp.all = (sub.theta==0)*(tmp!=0)
+		fp.all = (theta==0)*(tmp!=0)
 		diag(fp.all) = 0
 		ROC$fp[r] <- sum(fp.all!=0)/neg.total
 		
@@ -57,7 +47,7 @@ huge.roc = function(est, theta, ind.group, verbose = TRUE){
 	}
 	if(verbose) cat("done.\n")
 		
-	rm(precision,recall,tp.all,fp.all,sub.G,sub.theta,fn)
+	rm(precision,recall,tp.all,fp.all,G,theta,fn)
    	gc()	
 		
 	ord.fp = order(ROC$fp)

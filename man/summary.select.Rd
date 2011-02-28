@@ -4,7 +4,7 @@
 Summary function for S3 class "select"
 }
 \description{
-Summary the information about the model usage, subgraph dimension, fullgraph dimension, model selection criterion, sparsity level of the optimal graph
+Summary the information about the model usage, graph dimension, model selection criterion, sparsity level of the optimal graph
 }
 \usage{
 \method{summary}{select}(object, ...)

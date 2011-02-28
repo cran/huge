@@ -4,7 +4,7 @@
 Plot function for S3 class "huge"
 }
 \description{
-Plot sparsity level information and 3 typical sparse graphs from the solution path
+Plot sparsity level information and 3 typical sparse graphs from the graph path
 }
 \usage{
 \method{plot}{huge}(x, align = FALSE, ...)

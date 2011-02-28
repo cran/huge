@@ -2,26 +2,23 @@
 \alias{huge.roc}
 
 \title{
-Draw ROC Curve for a solution path
+Draw ROC Curve for a graph path
 }
 
 \description{
-Draws ROC curve for a solution path according to the true graph structure
+Draws ROC curve for a graph path according to the true graph structure
 }
 
 \usage{
-huge.roc(est, theta, ind.group, verbose = TRUE)
+huge.roc(est, theta, verbose = TRUE)
 }
 
 \arguments{
   \item{est}{
-There are two choices for the input est: (1) A solution path. (2)An object with S3 class "huge" containing \code{est$path} as a solution path, \code{est$theta} as the true graph structure and \code{est$ind.group} containing indices from a subset of all variables.
+There are two choices for the input est: (1) A graph path. (2)An object with S3 class "huge" containing \code{est$path} as a graph path and \code{est$theta} as the true graph structure.
 }
   \item{theta}{
-The true graph structure. ONLY applicable when the input \code{est} is a solution path.
-}
-  \item{ind.group}{
-A \code{k} dimensional vector containing \code{k} indices from a subset of all variables. ONLY applicable when estimating a subgraph of the whole graph and the input \code{est} is a solution path. The default value is \code{c(1:d)}.
+The true graph structure. ONLY applicable when the input \code{est} is a graph path.
 }
   \item{verbose}{
 If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.
@@ -39,13 +36,13 @@ For a lasso regression,  the number of nonzero coefficients is at most \code{n-1
 \value{
 An object with S3 class "roc" is returned:
  \item{F1}{
-The F1 scores along the solution path.
+The F1 scores along the graph path.
 }
   \item{tp}{
-The true positive rates along the solution path
+The true positive rates along the graph path
 }
   \item{fp}{
-The false positive rates along the solution paths
+The false positive rates along the graph paths
 }
   \item{AUC}{
 Area under the ROC curve
@@ -68,8 +65,7 @@ Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
 \examples{
 #generate data
 L = huge.generator(d = 200, graph = "cluster", prob = 0.3)
-ind.group = c(1:40)
-out1 = huge(L, ind.group = ind.group)
+out1 = huge(L)
 
 #draw ROC curve
 Z1 = huge.roc(out1)

@@ -1,17 +1,17 @@
-\name{plot.subgraph}
-\alias{plot.subgraph}
+\name{plot.MBGEL}
+\alias{plot.MBGEL}
 \title{
-Plot function for S3 class "subgraph"
+Plot function for S3 class "MBGEL"
 }
 \description{
-Plot sparsity level information for the solution path.
+Plot sparsity level information for the graph path.
 }
 \usage{
-\method{plot}{subgraph}(x, ...)
+\method{plot}{MBGEL}(x, ...)
 }
 \arguments{
   \item{x}{
-An object with S3 class \code{"subgraph"} 
+An object with S3 class \code{"MBGEL"} 
 }
   \item{\dots}{
 System reserved (No specific usage)
@@ -22,5 +22,5 @@ Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
 Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
 }
 \seealso{
-\code{\link{huge.subgraph}} and \code{\link{huge}}
+\code{\link{huge.MBGEL}} and \code{\link{huge}}
 }

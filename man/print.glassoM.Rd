@@ -4,7 +4,7 @@
 Print function for S3 class "glassoM"
 }
 \description{
-Print information about the model usage and the solution path length
+Print information about the model usage and the graph path length
 }
 \usage{
 \method{print}{glassoM}(x, ...)

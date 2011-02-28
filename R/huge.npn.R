@@ -1,72 +1,69 @@
 #-----------------------------------------------------------------------#
 # Package: High-dimensional Undirected Graph Estimation (HUGE)          #
-# huge.npn(): NonparaNormal transofmration                              #
+# huge.NPN(): NonparaNormal transofmration                              #
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Nov 21st 2010                                                   #
-# Version: 0.9                                                          #
+# Date: Feb 28th 2011                                                   #
+# Version: 1.0                                                          #
 #-----------------------------------------------------------------------#
 
 ## Main function
-huge.npn = function(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE){
+huge.NPN = function(x, NPN.func = "shrinkage", NPN.thresh = NULL, verbose = TRUE){
 	gcinfo(FALSE)
 	n = nrow(x)
   	d = ncol(x)
   	xt = list()
-  	xt$npn.func = npn.func
+  	xt$NPN.func = NPN.func
   	xt$ntdata = x
   	
   	# Shrinkaage transformation
-	if(npn.func == "shrinkage"){
+	if(NPN.func == "shrinkage"){
 		if(verbose) cat("Conducting NonparaNormal (NPN) transformation via shrunkun ECDF....")
-		for (i in 1:d) x[,i] = qnorm(rank(x[,i])/(n + 1))
+		
+		x = qnorm(apply(x,2,rank)/(n+1))
 		xt$data = x/sd(x[,1])
+		
 		if(verbose) cat("done.\n")
-		rm(n, d, verbose)
+		rm(x,n,d,verbose)
    		gc()	
 	}
 	
 	# Truncation transformation
-	if(npn.func == "truncation"){
+	if(NPN.func == "truncation"){
 		if(verbose) cat("Conducting NonparaNormal (NPN) transformation via truncated ECDF....")
-		if(is.null(npn.thresh)) npn.thresh = 1/(4*(n^0.25)*sqrt(pi*log(n)))
-		for (i in 1:d) {
-    		tmp = rank(x[,i])/n
-    		tmp = pmax(tmp, npn.thresh)
-    		tmp = pmin(tmp, 1-npn.thresh)
-       		x[,i] = qnorm(tmp)
-    	}
+		if(is.null(NPN.thresh)) NPN.thresh = 1/(4*(n^0.25)*sqrt(pi*log(n)))
+		
+		x = qnorm(pmin(pmax(apply(x,2,rank)/n, NPN.thresh), 1-NPN.thresh))
     	xt$data = x/sd(x[,1])
     	
     	if(verbose) cat("done.\n")
-    	
-    	rm(x,n,d,tmp,npn.func,npn.thresh,verbose)
+    	rm(x,n,d,NPN.thresh,verbose)
    		gc()
 	}
 	
-	# Output class "npn"
-	class(xt) = "npn"
+	# Output class "NPN"
+	class(xt) = "NPN"
 	return(xt)
 }
 
-## Default print function for class "npn" 
-print.npn = function(x, ...){
-	cat("Gaussianized data by huge.npn()\n")
+## Default print function for class "NPN" 
+print.NPN = function(x, ...){
+	cat("Gaussianized data by huge.NPN()\n")
 	cat("Sample size: n =", nrow(x$data), "\n")
 	cat("Dimension: d =", ncol(x$data), "\n")
-	cat("NonparanNormal transformation type:", x$npn.func,"\n")
+	cat("NonparanNormal transformation type:", x$NPN.func,"\n")
 }
 
-## Default summary function for class "npn"
-summary.npn = function(object, ...){
-	cat("Gaussianized data by huge.npn()\n")
+## Default summary function for class "NPN"
+summary.NPN = function(object, ...){
+	cat("Gaussianized data by huge.NPN()\n")
 	cat("Sample size: n =", nrow(object$data), "\n")
 	cat("Dimension: d =", ncol(object$data), "\n")
-	cat("NonparaNormal transformation type:", object$npn.func,"\n")
+	cat("NonparaNormal transformation type:", object$NPN.func,"\n")
 }
 
-## Default plot function for class "npn"
-plot.npn = function(x, ...){
+## Default plot function for class "NPN"
+plot.NPN = function(x, ...){
 	par = par(mfrow = c(2,1), pty = "s", omi=c(0.5,0.5,0.5,0.5), mai = c(0.5,0.5,0.5,0.5))
 	image(cor(x$ntdata), col = gray.colors(256), main = "Original Empirical Covariance Matrix")
 	image(cor(x$data), col = gray.colors(256), main = "Transfored Empirical Covariance Matrix")

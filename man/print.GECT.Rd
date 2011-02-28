@@ -1,17 +1,17 @@
-\name{print.subgraph}
-\alias{print.subgraph}
+\name{print.GECT}
+\alias{print.GECT}
 \title{
-Print function for S3 class "subgraph"
+Print function for S3 class "GECT"
 }
 \description{
-Print information about the model usage and the solution path length
+Print the information about the graph path information and length for GECT
 }
 \usage{
-\method{print}{subgraph}(x, ...)
+\method{print}{GECT}(x, ...)
 }
 \arguments{
   \item{x}{
-An object with S3 class \code{"subgraph"}
+An object with S3 class \code{"GECT"}
 }
   \item{\dots}{
 System reserved (No specific usage)
@@ -22,5 +22,5 @@ Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
 Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
 }
 \seealso{
-\code{\link{huge.subgraph}} and \code{\link{huge}}
+\code{\link{huge.GECT}} and \code{\link{huge}}
 }

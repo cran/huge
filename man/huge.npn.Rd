@@ -1,5 +1,5 @@
-\name{huge.npn}
-\alias{huge.npn}
+\name{huge.NPN}
+\alias{huge.NPN}
 
 \title{
 NonparaNormal(NPN) transformation
@@ -10,18 +10,18 @@ Implements the NonparaNormal transformation (Gausianization) to help relax the a
 }
 
 \usage{
-huge.npn(x, npn.func = "shrinkage", npn.thresh, verbose = TRUE)
+huge.NPN(x, NPN.func = "shrinkage", NPN.thresh, verbose = TRUE)
 }
 
 \arguments{
   \item{x}{
 The \code{n} by \code{d} data matrix representing \code{n} observations in \code{d} dimensions
 }
-  \item{npn.func}{
-The transformation function used in the NPN transformation. If \code{npn.func = "truncation"}, the truncated ECDF is applied. If \code{npn.func = "shrinkage"}, the shrunken ECDF is applied. The default is \code{"shrinkage"}.
+  \item{NPN.func}{
+The transformation function used in the NPN transformation. If \code{NPN.func = "truncation"}, the truncated ECDF is applied. If \code{NPN.func = "shrinkage"}, the shrunken ECDF is applied. The default is \code{"shrinkage"}.
 }
-  \item{npn.thresh}{
-The truncation threshold used in NPN transformation, ONLY applicable when \code{npn.func = "truncation"}. The default value is \code{1/(4*(n^0.25)*} \code{sqrt(pi*log(n)))}.
+  \item{NPN.thresh}{
+The truncation threshold used in NPN transformation, ONLY applicable when \code{NPN.func = "truncation"}. The default value is \code{1/(4*(n^0.25)*} \code{sqrt(pi*log(n)))}.
 }
   \item{verbose}{
 If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.
@@ -33,14 +33,14 @@ The NPN is a very helpful tool to relax the normality assumption. It assumes the
 }
 
 \value{
-An object with S3 class "npn" is returned:
+An object with S3 class "NPN" is returned:
   \item{data}{
 The \code{n} by \code{d} data matrix representing \code{n} observations in \code{d} transformed dimensions
 }
   \item{ntdata}{
 The original data matrix before the NPN transformation
 }
-  \item{npn.func}{
+  \item{NPN.func}{
 The transformation function used in the NPN transformation
 }
 }
@@ -64,11 +64,11 @@ Maintainer: Tuo Zhao<tourzhao@andrew.cmu.edu>;Han Liu<hanliu@cs.jhu.edu>
 L = huge.generator(graph = "cluster", g = 5)
 
 # transform the non-Gaussian data using the shrunken ECDF
-Q = huge.npn(L$data^5)
+Q = huge.NPN(L$data^5)
 summary(Q)
 plot(Q)
 
 # transform the non-Gaussian data using the truncated ECDF
-Q = huge.npn(5^(L$data), npn.func = "truncation")
+Q = huge.NPN(5^(L$data), NPN.func = "truncation")
 plot(Q)
 }

@@ -4,7 +4,7 @@
 Print function for S3 class "select"
 }
 \description{
-Print the information about the model usage, subgraph dimension, fullgraph dimension, model selection criterion, sparsity level of the optimal graph
+Print the information about the model usage, graph dimension, model selection criterion, sparsity level of the optimal graph
 }
 \usage{
 \method{print}{select}(x, ...)

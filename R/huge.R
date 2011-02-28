@@ -1,86 +1,77 @@
 #-----------------------------------------------------------------------#
 # Package: High-dimensional Undirected Graph Estimation (HUGE)          #
-# huge(): Onestep estimation for high-dimensional undirected graph      #
+# huge(): High-dimensional Undirected Graph Estimation via              #
+#		  (1) Lasso 	   		                                        #
+#		  (2) Correlation Thresholding                                  #
+#		  (3) Graphical Lasso            	                            #
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Nov 21st 2010                                                   #
-# Version: 0.9                                                          #
+# Date: Feb 28th 2011                                                   #
+# Version: 1.0                                                          #
 #-----------------------------------------------------------------------#
 
 ## Main function
-huge = function(L, ind.group = NULL, lambda = NULL, nlambda = NULL, lambda.min.ratio = 0.1, alpha = 1, sym = "or", npn = TRUE, npn.func = "shrinkage", npn.thresh = NULL, method = "GEL", scr = TRUE, scr.num = NULL, verbose = TRUE){	
+huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, NPN = TRUE, NPN.func = "shrinkage", NPN.thresh = NULL, method = "MBGEL", scr = NULL, scr.num = NULL, sym = "or", verbose = TRUE)
+{	
 	gcinfo(FALSE)
 	est = list()
 	est$method = method
 	
-	if(is.list(L)){
+	if(is.list(L))
+	{
 		n = nrow(L$data)
 		d = ncol(L$data)
-		if(d < 3){
-			cat("The fullgraph dimension < 3 and huge() will be teminated....\n")
-			cat("Please refer to Pearson's product-moment correlation....\n")
-			rm(L,alpha,sym,npn.func,method,scr,verbose)
-			gc()
-			est$marker = "Terminated"
-			class(est) = "huge"
-			return(est)
-		}
-		if(!is.null(scr.num))
-			if(scr.num == 1){
-				cat("The neighborhood size < 2 and huge() will be teminated.\n")
-				cat("Please refer to Pearson's product-moment correlation....\n")
-				rm(L,alpha,sym,npn.func,method,scr,verbose)
-				gc()
-				est$marker = "Terminated"
-				class(est) = "huge"
-				return(est)
-		}
 		est$data = L$data
 		if(!is.null(L$theta))	est$theta = L$theta
 	}
 	
-	if(!is.list(L)){
+	if(!is.list(L))
+	{
 		n = nrow(L)
 		d = ncol(L)
-		if(d < 3){
-			cat("The fullgraph dimension < 3 and huge() will be teminated....\n")
-			cat("Please refer to Pearson's product-moment correlation....\n")
-			rm(L,alpha,sym,npn.func,method,scr,verbose)
-			gc()
-			est$marker = "Terminated"
-			class(est) = "huge"
-			return(est)
-		}
-		if(!is.null(scr.num))
-			if(scr.num == 1){
-				cat("The neighborhood size < 2 and huge() will be teminated.\n")
-				cat("Please refer to Pearson's product-moment correlation....\n")
-				est$marker = "Terminated"
-				rm(L,alpha,sym,npn.func,method,scr,verbose)
-				gc()
-				class(est) = "huge"
-				return(est)
-		}
 		est$data = L
 	}
 	rm(L)
-	gc()	
-	
-	if(is.null(ind.group))	ind.group = c(1:d)
-	k = length(ind.group)	
+	gc()		
 	
 	# Nonparanormal transformation
-	if(npn){
-		est$data = huge.npn(est$data,npn.func = npn.func, npn.thresh = npn.thresh, verbose = verbose)$data
-		rm(npn.thresh,npn.func)
+	if(NPN)
+	{
+		est$data = huge.NPN(est$data,NPN.func = NPN.func, NPN.thresh = NPN.thresh, verbose = verbose)$data
+		rm(NPN.thresh,NPN.func)
+		gc()
+	}
+	est$NPN = NPN
+	
+	if(method == "GECT")
+	{
+		fit = huge.GECT(est$data, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, verbose = verbose)
+		est$path = fit$path
+		est$lambda = fit$lambda
+		est$sparsity = fit$sparsity
+		rm(fit)
 		gc()
 	}
 	
-	if(method == "GLASSO"){
-		if(is.null(lambda)){
-			if(is.null(nlambda)) nlambda = 10
-		}
-		fit = huge.glassoM(est$data, ind.group = ind.group, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, verbose = verbose)
+	if(method == "MBGEL")
+	{	
+		fit = huge.MBGEL(est$data, lambda = lambda, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, scr = scr, scr.num = scr.num, sym = sym, verbose = verbose)
+		est$path = fit$path
+		est$lambda = fit$lambda
+		est$sparsity = fit$sparsity
+		est$rss = fit$rss
+		est$df = fit$df
+		est$idx_mat = fit$idx_mat
+		est$sym = sym
+		est$scr = fit$scr
+		rm(fit,sym)
+		gc()
+	}
+	
+	
+	if(method == "GLASSO")
+	{
+		fit = huge.glassoM(est$data, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, verbose = verbose)
 		est$path = fit$path
 		est$lambda = fit$lambda
 		est$wi = fit$wi
@@ -91,136 +82,58 @@ huge = function(L, ind.group = NULL, lambda = NULL, nlambda = NULL, lambda.min.r
 		gc()
 	}			
 			
-	if(method == "GACT"){
-		if(is.null(lambda)){
-			if(is.null(nlambda)) nlambda = 30
-		}
-		fit = huge.scr(est$data, ind.group = ind.group, method = method, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, verbose = verbose)
-		est$path = fit$path
-		est$lambda = fit$lambda
-		est$sparsity = fit$sparsity
-		rm(fit)
-		gc()
-	}
-	
-	if(method == "GEL"){		
-		if(!scr){
-			ind.mat = NULL
-			est$scr = FALSE
-		}
-		if(scr){
-			if(is.null(scr.num)&&(n >= d)){
-				ind.mat = NULL
-				est$scr = FALSE
-			}
-			
-			if(is.null(scr.num)&&(n < d)){
-				scr.num = n-1
-				est$scr = FALSE
-			}
-			
-			if(!is.null(scr.num)){
-				if(scr.num >= (d-1)){
-					if(verbose) cat("The specified scr.num >= (d-1) and Graph SURE Screening will be skipped.\n")
-					ind.mat = NULL
-					est$scr = FALSE
-				}
-				if(scr.num < (d-1)){
-					ind.mat = huge.scr(est$data, ind.group = ind.group, scr.num = scr.num, verbose = verbose)$ind.mat
-					est$scr = TRUE
-				}
-			}
-		}
-		if(is.null(lambda)){
-			if(is.null(nlambda)) nlambda = 10
-		}
-		fit = huge.subgraph(est$data, ind.group = ind.group, ind.mat = ind.mat, alpha = alpha, lambda = lambda, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, sym = sym, verbose = verbose)
-		est$path = fit$path
-		est$lambda = fit$lambda
-		est$sparsity = fit$sparsity
-		est$rss = fit$rss
-		est$df = fit$df
-		rm(fit)
-		gc()
-		
-		est$ind.mat = ind.mat
-		est$alpha = alpha
-		est$sym = sym
-		rm(ind.mat,alpha,sym,method)
-		gc()
-	}
-	est$ind.group = ind.group
-	if(k<d) est$type = "Subgraph solution path"
-	if(k==d) est$type = "Fullgraph solution path"
-	est$npn = npn
-	
-	rm(ind.group,n,k,d,npn,scr,lambda,lambda.min.ratio,nlambda,verbose)
-	gc()	
-	
-	est$marker = "Successful"
+	rm(n,d,NPN,scr,lambda,lambda.min.ratio,nlambda,verbose)
+	gc()
 	
 	class(est) = "huge"
 	return(est)
 }
 
-print.huge = function(x, ...){
+print.huge = function(x, ...)
+{	
+	if(x$method == "GECT")
+		cat("Model: Graph Approximation via Correlation Thresholding (GECT)\n")
+	if(x$method == "GLASSO")
+		cat("Model: Graphical Lasso (GLASSO)\n")
+	if(x$method == "MBGEL")
+		cat("Model: Meinshausen & Buhlmann Graph Estimation via Lasso (MBGEL)\n")
 	
-	if(x$marker == "Terminated"){
-		cat("huge() has been terminated\n")
-		return("Please refer to the manual")
-	}
+	if(x$NPN) cat("Nonparanormal (NPN) transformation: on\n")
 	
-	if(x$method == "GACT") cat("Model: Graph Approximation via Correlation Thresholding (GACT) --->",x$type,"\n")
-	if(x$method == "GLASSO") cat("Model: Graphical Lasso (GLASSO) --->",x$type,"\n")
-	if(x$method == "GEL"){
-		if(x$alpha <1) cat("Model: Meinshausen &Buhlmann Graph Estimation via Elastic Net --->",x$type,"\n")
-		if(x$alpha ==1) cat("Model: Meinshausen &Buhlmann Graph Estimation via Lasso (GEL) --->",x$type,"\n")
-	}
-	
-	if(x$npn) cat("Nonparanormal (NPN) transformation: on\n")
-	
-	if((x$method == "GEL")&&x$scr) cat("Graph SURE Screening (GSS): on\n")
+	if((x$method == "MBGEL")&&(x$scr)) cat("Graph SURE Screening (GSS): on\n")
 
 	if(is.null(x$theta)) cat("True graph: not included\n")
 	if(!is.null(x$theta)) cat("True graph: included\n")
 	
 	cat("Path length:",length(x$lambda),"\n")
-	cat("Subgraph dimension:",length(x$ind.group),"\n")
-	cat("Fullgraph dimension:",ncol(x$data),"\n")
+	cat("Graph Dimension:",ncol(x$data),"\n")
 	cat("Sparsity level:",min(x$sparsity),"----->",max(x$sparsity),"\n")
 }
 
-summary.huge = function(object, ...){
+summary.huge = function(object, ...)
+{	
+	if(object$method == "GECT")
+		cat("Model: Graph Estimation via Correlation Thresholding (GECT)\n")
+	if(object$method == "GLASSO")
+		cat("Model: Graphical Lasso (GLASSO)\n")
+	if(object$method == "MBGEL")
+		cat("Model: Meinshausen & Buhlmann Graph Estimation via Lasso (MBGEL)\n")
 	
-	if(object$marker == "Terminated"){
-		cat("huge() has been terminated\n")
-		return("Please refer to the manual")
-	}
-	if(object$method == "GACT") cat("Model: Graph Approximation via Correlation Thresholding (GACT) --->",object$type,"\n")
-	if(object$method == "GLASSO") cat("Model: Graphical Lasso (GLASSO) --->",object$type,"\n")
-	if(object$method == "GEL"){
-		if(object$alpha <1) cat("Model: Meinshausen &Buhlmann Graph Estimation via Elastic Net --->",object$type,"\n")
-		if(object$alpha ==1) cat("Model: Meinshausen &Buhlmann Graph Estimation via Lasso (GEL)--->",object$type,"\n")
-	}
+	if(object$NPN) cat("Nonparanormal (NPN) transformation: on\n")
 	
-	if(object$npn) cat("Nonparanormal (NPN) transformation: on\n")
-	if((object$method == "GEL")&&object$scr) cat("Graph SURE Screening (GSS): on\n")
+	if((object$method == "MBGEL")&&object$scr) cat("Graph SURE Screening (GSS): on\n")
 
 	if(is.null(object$theta)) cat("True graph: not included\n")
 	if(!is.null(object$theta)) cat("True graph: included\n")
 	
 	cat("Path length:",length(object$lambda),"\n")
-	cat("Subgraph dimension:",length(object$ind.group),"\n")
-	cat("Fullgraph dimension:",ncol(object$data),"\n")
+	cat("Graph Dimension:",ncol(object$data),"\n")
 	cat("Sparsity level:",min(object$sparsity),"----->",max(object$sparsity),"\n")
+
 }
 
 plot.huge = function(x, align = FALSE, ...){
 	gcinfo(FALSE)
-	if(x$marker == "Terminated"){
-		cat("huge() has been terminated\n")
-		return("Please refer to the manual")
-	}
 	
 	if(length(x$lambda) == 1)	par(mfrow = c(1, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
 	if(length(x$lambda) == 2)	par(mfrow = c(1, 3), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
@@ -263,7 +176,7 @@ plot.huge = function(x, align = FALSE, ...){
 		layout.grid = layout.fruchterman.reingold(graph.adjacency(as.matrix(x$path[[z.final[length(z.final)]]]), mode="undirected", diag=FALSE))
 		for(i in z.final){
 			g = graph.adjacency(as.matrix(x$path[[i]]), mode="undirected", diag=FALSE)
-			plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[i],3)),sep = ""))
+			plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=3, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[i],3)),sep = ""))
 			rm(g)
 			gc()
 		}
@@ -273,7 +186,7 @@ plot.huge = function(x, align = FALSE, ...){
 		for(i in z.final){
 			g = graph.adjacency(as.matrix(x$path[[i]]), mode="undirected", diag=FALSE)
 			layout.grid = layout.fruchterman.reingold(g)
-			plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[i],3)),sep = ""))
+			plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=3, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[i],3)),sep = ""))
 			rm(g,layout.grid)
 			gc()
 		}

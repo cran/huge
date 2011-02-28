@@ -1,16 +1,16 @@
-\name{print.npn}
-\alias{print.npn}
+\name{print.NPN}
+\alias{print.NPN}
 \title{
-Print function for S3 class "npn"
+Print function for S3 class "NPN"
 }
 \description{
 Print the information about the transformation function}
 \usage{
-\method{print}{npn}(x, ...)
+\method{print}{NPN}(x, ...)
 }
 \arguments{
   \item{x}{
-An object with S3 class \code{"npn"}
+An object with S3 class \code{"NPN"}
 }
   \item{\dots}{
 System reserved (No specific usage)
@@ -21,5 +21,5 @@ Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
 Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
 }
 \seealso{
-\code{\link{huge.npn}} and \code{\link{huge}}
+\code{\link{huge.NPN}} and \code{\link{huge}}
 }

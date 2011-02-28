@@ -4,7 +4,7 @@
 Print function for S3 class "huge"
 }
 \description{
-Print the information about the model usage, the solution path length, subgraph dimension, fullgraph dimension, sparsity level
+Print the information about the model usage, the graph path length, graph dimension, sparsity level
 }
 \usage{
 \method{print}{huge}(x, ...)

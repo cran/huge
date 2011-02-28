@@ -3,8 +3,8 @@
 # huge.generator(): Data generator                                      #
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Nov 21st 2010                                                   #
-# Version: 0.9                                                          #
+# Date: Feb 27the 2011                                                  #
+# Version: 1.0								                            #
 #-----------------------------------------------------------------------#
 
 ## Main function
@@ -91,13 +91,12 @@ huge.generator = function(n = 200, d = 50, graph = "random", v = NULL, u = NULL,
 	omega = theta*v
 	
 	# make omega positive definite and standardized
-	diag(omega) = abs(min(eigen(omega)$values)) + 0.01 + u
+	diag(omega) = abs(min(eigen(omega)$values)) + 0.1 + u
 	sigma = cov2cor(solve(omega))
 	omega = solve(sigma)
 	
 	# generate multivariate normal data
 	x = mvrnorm(n,rep(0,d),sigma)
-	#x = scale(x)
 	sigmahat = cor(x)
 	
 	# graph and covariance visulization
@@ -109,7 +108,7 @@ huge.generator = function(n = 200, d = 50, graph = "random", v = NULL, u = NULL,
 		g = graph.adjacency(theta, mode="undirected", diag=FALSE)
 		layout.grid = layout.fruchterman.reingold(g)
 
-		fullfig[3] = plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA,main = "Graph Pattern")
+		fullfig[3] = plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=3, vertex.label=NA,main = "Graph Pattern")
 
 		fullfig[4] = image(sigmahat, col = gray.colors(256), main = "Empirical Matrix")
 		rm(fullfig,g,layout.grid)
@@ -149,7 +148,7 @@ plot.sim = function(x, ...){
 	g = graph.adjacency(x$theta, mode="undirected", diag=FALSE)
 	layout.grid = layout.fruchterman.reingold(g)
 	
-	plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=5, vertex.label=NA,main = "Graph Pattern")
+	plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=3, vertex.label=NA,main = "Graph Pattern")
 	rm(g, layout.grid)
 	gc()
 	image(x$sigmahat, col = gray.colors(256), main = "Empirical Covariance Matrix")

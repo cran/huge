@@ -47,6 +47,12 @@ An object with S3 class "select" is returned:
   \item{refit}{
 The optimal graph selected from the graph path
 }
+  \item{opt.wi}{
+The optimal precision matrix from the path only applicable when \code{method = "GLASSO"}
+}
+  \item{opt.w}{
+The optimal covariance matrix from the path only applicable when \code{method = "GLASSO"} and \code{est$w} is avaiable.
+}
   \item{merge}{
 The graph path estimated by merging the subsampling paths. Only applicable when the input \code{criterion = "stars"}.
 }

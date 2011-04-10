@@ -5,8 +5,8 @@
 #                (3)Extended Bayesian Informaition Criterion            #
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Feb 28th 2011                                                   #
-# Version: 1.0                                                          #
+# Date: Apr 10th 2011                                                   #
+# Version: 1.0.1                                                          #
 #-----------------------------------------------------------------------#
 
 ## Main Function
@@ -52,7 +52,20 @@ huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0
 		if(est$method == "MBGEL")
 			est$refit = huge.MBGEL(est$data, lambda = est$opt.lambda, sym = est$sym, idx.mat = est$idx.mat, verbose = FALSE)$path[[1]]
 		if(est$method == "GLASSO")
-			est$refit = huge.glassoM(est$data, lambda = est$opt.lambda, verbose = FALSE)$path[[1]]
+		{
+			if(!is.null(est$w))
+			{
+				tmp = huge.glassoM(est$data, lambda = est$opt.lambda, cov.glasso = TRUE, verbose = FALSE)
+				est$opt.w = tmp$w[[1]]
+			}
+			if(is.null(est$w))
+				tmp = huge.glassoM(est$data, lambda = est$opt.lambda, verbose = FALSE)
+			
+			est$refit = tmp$path[[1]]
+			est$opt.wi = tmp$wi[[1]]
+			rm(tmp)
+			gc()
+		}
 		if(est$method == "GECT")
 			est$refit = huge.GECT(est$data, lambda = est$opt.lambda, verbose = FALSE)$path[[1]]
 		
@@ -70,8 +83,10 @@ huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0
 		est$opt.index = which.min(est$EBIC.score)
 		est$refit = est$path[[est$opt.index]]
 		est$opt.wi = est$wi[[est$opt.index]]
-  		est$opt.lambda = est$lambda[est$opt.index]
-  		est$opt.sparsity = est$sparsity[est$opt.index]
+		if(!is.null(est$w))
+			est$opt.w = est$w[[est$opt.index]]
+  	est$opt.lambda = est$lambda[est$opt.index]
+  	est$opt.sparsity = est$sparsity[est$opt.index]
 	}		
 	
 	if(criterion == "stars"){
@@ -108,12 +123,12 @@ huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0
 		
 		if(verbose){
 			mes = "Conducting Subsampling....done.                 "
-        	cat(mes, "\r")
-        	cat("\n")
-        	flush.console()
-        }
+      cat(mes, "\r")
+      cat("\n")
+      flush.console()
+    }
         
-        est$variability = rep(0,nlambda)
+    est$variability = rep(0,nlambda)
 		for(i in 1:nlambda)
 		{
 			est$merge[[i]] = est$merge[[i]]/stars.rep.num
@@ -123,7 +138,13 @@ huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0
    		est$refit = est$path[[est$opt.index]]
   		est$opt.lambda = est$lambda[est$opt.index]
   		est$opt.sparsity = est$sparsity[est$opt.index]
-	}
+  		if(est$method == "GLASSO")
+  		{
+  			est$opt.wi = est$wi[[est$opt.index]]
+			  if(!is.null(est$w))
+				  est$opt.w = est$w[[est$opt.index]]
+  		}
+	  }
     est$criterion = criterion
   	class(est) = "select"
     return(est)  	

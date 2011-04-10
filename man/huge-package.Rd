@@ -11,8 +11,8 @@ A package for high-dimensional undirected graph estimation
 \tabular{ll}{
 Package: \tab huge\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
-Date: \tab 2011-02-28\cr
+Version: \tab 1.0.1\cr
+Date: \tab 2011-04-10\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }

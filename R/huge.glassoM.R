@@ -3,12 +3,12 @@
 # glassoM(): A Graphical Lasso (GLASSO) using Sparse Matrices           #
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Feb 28th 2011                                                   #
-# Version: 1.0                                                          #
+# Date: Apr 10th 2011                                                   #
+# Version: 1.0.1                                                        #
 #-----------------------------------------------------------------------#
 
 ## Main function
-huge.glassoM = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NULL,  verbose = TRUE){
+huge.glassoM = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NULL, cov.glasso = FALSE, verbose = TRUE){
 	
 	gcinfo(FALSE)
 	n = nrow(x)
@@ -44,9 +44,16 @@ huge.glassoM = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NUL
 	out.glasso = glasso(S, lambda[nlambda])
 	fit$wi = list()
 	fit$wi[[nlambda]] = Matrix(out.glasso$wi,sparse = TRUE)
+	if(cov.glasso)
+	{
+		fit$w = list()
+		fit$w[[nlambda]] = Matrix(out.glasso$w,sparse = TRUE)
+	}
+	
 	tmp.w = out.glasso$w
+		
 	diag(out.glasso$wi) = 0
-	fit$path = list()	
+	fit$path = list()
 	fit$path[[nlambda]] = Matrix(abs(sign(out.glasso$wi)), sparse = TRUE)
 	fit$loglik[nlambda] = out.glasso$loglik + lambda[nlambda]*sum(abs(fit$wi[[nlambda]]))
 	fit$df[nlambda] = sum(fit$path[[nlambda]])/2
@@ -62,6 +69,8 @@ huge.glassoM = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NUL
 			out.glasso = glasso(S,rho = fit$lambda[i], w.init = tmp.w, wi.init = as.matrix(fit$wi[[i+1]]))
 			tmp.w = out.glasso$w
 			fit$wi[[i]] = Matrix(out.glasso$wi,sparse = TRUE)
+			if(cov.glasso)
+				fit$w[[i]] = Matrix(out.glasso$w,sparse = TRUE)
 			diag(out.glasso$wi) = 0
 			fit$path[[i]] = Matrix(abs(sign(out.glasso$wi)), sparse = TRUE)
 			fit$loglik[i] = out.glasso$loglik + lambda[i]* sum(abs(fit$wi[[i]]))

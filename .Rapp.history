@@ -1,0 +1,400 @@
+G = rnorm(100)
+G
+G = matrix(rnorm(100),d,d)
+G = matrix(rnorm(100),10,10)
+G = G + t(G)
+G
+G = abs(G)
+G
+G = G*(G>1)
+G
+huge.plot(G)
+library(huge)
+huge.plot(G)
+huge.plot(G)/2*max(G)
+huge.plot(G)/2*max(G)
+#-----------------------------------------------------------------------##
+# Package: High-dimensional Undirected Graph Estimation (HUGE)          ##
+# huge.plot(): graph visualization                                      ##
+# Authors: Tuo Zhao and Han Liu                                         ##
+# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                ##
+# Date: Apr 10th 2011                                                   ##
+# Version: 1.0.1                                                        ##
+#-----------------------------------------------------------------------##
+#
+huge.plot = function(G, epsflag = FALSE, graph.name = "default", cur.num = 1, location=NULL){#
+	gcinfo(FALSE)#
+	if(missing(location))	location = getwd()#
+	setwd(location)#
+	g = graph.adjacency(as.matrix(G!=0), mode="undirected", diag=FALSE)#
+	layout.grid = layout.fruchterman.reingold(g)#
+	#
+   	if(epsflag == TRUE)	postscript(paste(paste(graph.name, cur.num, sep=""), "eps", sep="."), width = 8.0, height = 8.0)             #
+	par(mfrow = c(1,1))#
+	plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=2, vertex.label=NA)#
+	rm(g,location)	#
+   	gc()#
+   	if(epsflag == TRUE) dev.off()#
+}
+huge.plot(G)/2*max(G)
+max(G)
+2*max(G)
+#-----------------------------------------------------------------------##
+# Package: High-dimensional Undirected Graph Estimation (HUGE)          ##
+# huge.plot(): graph visualization                                      ##
+# Authors: Tuo Zhao and Han Liu                                         ##
+# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                ##
+# Date: Apr 10th 2011                                                   ##
+# Version: 1.0.1                                                        ##
+#-----------------------------------------------------------------------##
+#
+huge.plot = function(G, epsflag = FALSE, graph.name = "default", cur.num = 1, location=NULL){#
+	gcinfo(FALSE)#
+	if(missing(location))	location = getwd()#
+	setwd(location)#
+	g = graph.adjacency(as.matrix(G), mode="undirected", diag=FALSE)#
+	layout.grid = layout.fruchterman.reingold(g)#
+	#
+   	if(epsflag == TRUE)	postscript(paste(paste(graph.name, cur.num, sep=""), "eps", sep="."), width = 8.0, height = 8.0)             #
+	par(mfrow = c(1,1))#
+	plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=2, vertex.label=NA)#
+	rm(g,location)	#
+   	gc()#
+   	if(epsflag == TRUE) dev.off()#
+}
+huge.plot(G)/2*max(G)
+huge.plot(G/2*max(G))
+huge.MBGEL
+?huge
+#graph path estimation using the GLASSO#
+out3 = huge(L, method = "GLASSO")#
+summary(out3)#
+plot(out3)
+L = huge.generator(n = 200, d = 80, graph = "hub")
+#graph path estimation using the GLASSO#
+out3 = huge(L, method = "GLASSO")#
+summary(out3)#
+plot(out3)
+out3
+names(out3)
+#graph path estimation using the GLASSO#
+out3 = huge(L, method = "GLASSO",covariance = TRUE)#
+summary(out3)#
+plot(out3)
+names()out3
+names(out3)
+#-----------------------------------------------------------------------##
+# Package: High-dimensional Undirected Graph Estimation (HUGE)          ##
+# huge(): High-dimensional Undirected Graph Estimation via              ##
+#		  (1) Lasso 	   		                                        ##
+#		  (2) Correlation Thresholding                                  ##
+#		  (3) Graphical Lasso            	                            ##
+# Authors: Tuo Zhao and Han Liu                                         ##
+# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                ##
+# Date: Feb 28th 2011                                                   ##
+# Version: 1.0                                                          ##
+#-----------------------------------------------------------------------##
+#
+## Main function#
+huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, NPN = FALSE, NPN.func = "shrinkage", NPN.thresh = NULL, method = "MBGEL", scr = NULL, scr.num = NULL, cov.glasso = FALSE, sym = "or", verbose = TRUE)#
+{	#
+	gcinfo(FALSE)#
+	est = list()#
+	est$method = method#
+	#
+	if(is.list(L))#
+	{#
+		n = nrow(L$data)#
+		d = ncol(L$data)#
+		est$data = L$data#
+		if(!is.null(L$theta))	est$theta = L$theta#
+	}#
+	#
+	if(!is.list(L))#
+	{#
+		n = nrow(L)#
+		d = ncol(L)#
+		est$data = L#
+	}#
+	rm(L)#
+	gc()		#
+	#
+	# Nonparanormal transformation#
+	if(NPN)#
+	{#
+		est$data = huge.NPN(est$data,NPN.func = NPN.func, NPN.thresh = NPN.thresh, verbose = verbose)$data#
+		rm(NPN.thresh,NPN.func)#
+		gc()#
+	}#
+	est$NPN = NPN#
+	#
+	if(method == "GECT")#
+	{#
+		fit = huge.GECT(est$data, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, verbose = verbose)#
+		est$path = fit$path#
+		est$lambda = fit$lambda#
+		est$sparsity = fit$sparsity#
+		rm(fit)#
+		gc()#
+	}#
+	#
+	if(method == "MBGEL")#
+	{	#
+		fit = huge.MBGEL(est$data, lambda = lambda, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, scr = scr, scr.num = scr.num, sym = sym, verbose = verbose)#
+		est$path = fit$path#
+		est$lambda = fit$lambda#
+		est$sparsity = fit$sparsity#
+		est$rss = fit$rss#
+		est$df = fit$df#
+		est$idx_mat = fit$idx_mat#
+		est$sym = sym#
+		est$scr = fit$scr#
+		rm(fit,sym)#
+		gc()#
+	}#
+	#
+	#
+	if(method == "GLASSO")#
+	{#
+		fit = huge.glassoM(est$data, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, cov.glasso = cov.glasso, verbose = verbose)#
+		est$path = fit$path#
+		est$lambda = fit$lambda#
+		est$wi = fit$wi#
+		est$df = fit$df#
+		est$sparsity = fit$sparsity#
+		est$loglik = fit$loglik#
+		rm(fit)#
+		gc()#
+	}			#
+			#
+	rm(n,d,NPN,scr,lambda,lambda.min.ratio,nlambda,verbose)#
+	gc()#
+	#
+	class(est) = "huge"#
+	return(est)#
+}#
+#
+print.huge = function(x, ...)#
+{	#
+	if(x$method == "GECT")#
+		cat("Model: Graph Approximation via Correlation Thresholding (GECT)\n")#
+	if(x$method == "GLASSO")#
+		cat("Model: Graphical Lasso (GLASSO)\n")#
+	if(x$method == "MBGEL")#
+		cat("Model: Meinshausen & Buhlmann Graph Estimation via Lasso (MBGEL)\n")#
+	#
+	if(x$NPN) cat("Nonparanormal (NPN) transformation: on\n")#
+	#
+	if((x$method == "MBGEL")&&(x$scr)) cat("Graph SURE Screening (GSS): on\n")#
+#
+	if(is.null(x$theta)) cat("True graph: not included\n")#
+	if(!is.null(x$theta)) cat("True graph: included\n")#
+	#
+	cat("Path length:",length(x$lambda),"\n")#
+	cat("Graph Dimension:",ncol(x$data),"\n")#
+	cat("Sparsity level:",min(x$sparsity),"----->",max(x$sparsity),"\n")#
+}#
+#
+summary.huge = function(object, ...)#
+{	#
+	if(object$method == "GECT")#
+		cat("Model: Graph Estimation via Correlation Thresholding (GECT)\n")#
+	if(object$method == "GLASSO")#
+		cat("Model: Graphical Lasso (GLASSO)\n")#
+	if(object$method == "MBGEL")#
+		cat("Model: Meinshausen & Buhlmann Graph Estimation via Lasso (MBGEL)\n")#
+	#
+	if(object$NPN) cat("Nonparanormal (NPN) transformation: on\n")#
+	#
+	if((object$method == "MBGEL")&&object$scr) cat("Graph SURE Screening (GSS): on\n")#
+#
+	if(is.null(object$theta)) cat("True graph: not included\n")#
+	if(!is.null(object$theta)) cat("True graph: included\n")#
+	#
+	cat("Path length:",length(object$lambda),"\n")#
+	cat("Graph Dimension:",ncol(object$data),"\n")#
+	cat("Sparsity level:",min(object$sparsity),"----->",max(object$sparsity),"\n")#
+#
+}#
+#
+plot.huge = function(x, align = FALSE, ...){#
+	gcinfo(FALSE)#
+	#
+	if(length(x$lambda) == 1)	par(mfrow = c(1, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))#
+	if(length(x$lambda) == 2)	par(mfrow = c(1, 3), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))#
+	if(length(x$lambda) >= 3)	par(mfrow = c(2, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))#
+	#
+	if(length(x$lambda) <= 3)	z.final = 1:length(x$lambda)#
+	#
+	if(length(x$lambda) >=4){#
+		z.max = max(x$sparsity)#
+		z.min = min(x$sparsity)#
+		z = z.max - z.min#
+		z.unique = unique(c(which(x$sparsity>=(z.min + 0.03*z))[1],which(x$sparsity>=(z.min + 0.07*z))[1],which(x$sparsity>=(z.min + 0.15*z))[1]))#
+#
+		#
+		if(length(z.unique) == 1){#
+			if(z.unique<(length(x$lambda)-1))	z.final = c(z.unique,z.unique+1,z.unique+2)#
+			if(z.unique==(length(x$lambda)-1)) z.final = c(z.unique-1,z.unique,z.unique+1)#
+			if(z.unique==length(x$lambda)) 	z.final = c(z.unique-2,z.unique-1,z.unique)#
+		}#
+		#
+		if(length(z.unique) == 2){#
+			if(diff(z.unique)==1){#
+				if(z.unique[2]<length(x$lambda)) z.final = c(z.unique,z.unique[2]+1) #
+				if(z.unique[2]==length(x$lambda)) z.final = c(z.unique[1]-1,z.unique)#
+			}#
+			if(diff(z.unique)>1) z.final = c(z.unique[1],z.unique[1]+1,z.unique[2])#
+		}#
+		#
+		if(length(z.unique) == 3) z.final = z.unique#
+		#
+		rm(z.max,z.min,z,z.unique)#
+		gc()#
+		#
+	}#
+	plot(x$lambda, x$sparsity, log = "x", xlab = "Regularization Parameter", ylab = "Sparsity Level", type = "l",xlim = rev(range(x$lambda)), main = "Sparsity vs. Regularization")#
+	#
+	lines(x$lambda[z.final],x$sparsity[z.final],type = "p")#
+	#
+	if(align){#
+		layout.grid = layout.fruchterman.reingold(graph.adjacency(as.matrix(x$path[[z.final[length(z.final)]]]), mode="undirected", diag=FALSE))#
+		for(i in z.final){#
+			g = graph.adjacency(as.matrix(x$path[[i]]), mode="undirected", diag=FALSE)#
+			plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=3, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[i],3)),sep = ""))#
+			rm(g)#
+			gc()#
+		}#
+	rm(layout.grid)#
+	}#
+	if(!align){#
+		for(i in z.final){#
+			g = graph.adjacency(as.matrix(x$path[[i]]), mode="undirected", diag=FALSE)#
+			layout.grid = layout.fruchterman.reingold(g)#
+			plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=3, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[i],3)),sep = ""))#
+			rm(g,layout.grid)#
+			gc()#
+		}#
+	}#
+	if(align) cat("Three plotted graphs are aligned according to the third graph\n")#
+}
+#graph path estimation using the GLASSO#
+out3 = huge(L, method = "GLASSO",cov.glasso = TRUE)#
+summary(out3)#
+plot(out3)
+names(out3)
+#-----------------------------------------------------------------------##
+# Package: High-dimensional Undirected Graph Estimation (HUGE)          ##
+# glassoM(): A Graphical Lasso (GLASSO) using Sparse Matrices           ##
+# Authors: Tuo Zhao and Han Liu                                         ##
+# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                ##
+# Date: Apr 10th 2011                                                   ##
+# Version: 1.0.1                                                        ##
+#-----------------------------------------------------------------------##
+#
+## Main function#
+huge.glassoM = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NULL, cov.glasso = FALSE, verbose = TRUE){#
+	#
+	gcinfo(FALSE)#
+	n = nrow(x)#
+	d = ncol(x)#
+	fit = list()#
+	#
+	S = t(x)%*%x/n;#
+	rm(x)#
+	gc()#
+	#
+	if(!is.null(lambda)) nlambda = length(lambda)#
+	if(is.null(lambda))#
+	{#
+		if(is.null(nlambda))#
+			nlambda = 10#
+		if(is.null(lambda.min.ratio))#
+			lambda.min.ratio = 0.1#
+		lambda.max = max(max(S-diag(d)),-min(S-diag(d)))#
+		lambda.min = lambda.min.ratio*lambda.max#
+		lambda = exp(seq(log(lambda.max), log(lambda.min), length = nlambda))#
+	}#
+	#
+	fit$lambda = lambda#
+	fit$loglik = rep(0,nlambda)#
+	fit$sparsity = rep(0,nlambda)#
+	fit$df = rep(0,nlambda)#
+	if(verbose)#
+	{#
+		cat(paste(c("Conducting Graphical Lasso (GLASSO)....in progress:", floor(100*1/nlambda), "%"), collapse=""), "\r")#
+		flush.console()#
+	}#
+	#
+	out.glasso = glasso(S, lambda[nlambda])#
+	fit$wi = list()#
+	fit$wi[[nlambda]] = Matrix(out.glasso$wi,sparse = TRUE)#
+	if(cov.glasso)#
+	{#
+		fit$w = list()#
+		fit$w[[nlambda]] = Matrix(out.glasso$w,sparse = TRUE)#
+	}#
+	#
+	tmp.w = out.glasso$w#
+		#
+	diag(out.glasso$wi) = 0#
+	fit$path = list()#
+	fit$path[[nlambda]] = Matrix(abs(sign(out.glasso$wi)), sparse = TRUE)#
+	fit$loglik[nlambda] = out.glasso$loglik + lambda[nlambda]*sum(abs(fit$wi[[nlambda]]))#
+	fit$df[nlambda] = sum(fit$path[[nlambda]])/2#
+	fit$sparsity[nlambda] = 2*fit$df[[nlambda]]/d/(d-1)#
+	rm(out.glasso)#
+	gc()#
+	if(nlambda>1)#
+		for(i in (nlambda-1):1){#
+			if(verbose){#
+				cat(paste(c("Conducting Graphical Lasso (GLASSO)....in progress:", floor(100*(((nlambda-i)/nlambda)^2)), "%"), collapse=""), "\r")#
+				flush.console()#
+			}#
+			out.glasso = glasso(S,rho = fit$lambda[i], w.init = tmp.w, wi.init = as.matrix(fit$wi[[i+1]]))#
+			tmp.w = out.glasso$w#
+			fit$wi[[i]] = Matrix(out.glasso$wi,sparse = TRUE)#
+			if(cov.glasso)#
+				fit$w[[i]] = Matrix(out.glasso$w,sparse = TRUE)#
+			diag(out.glasso$wi) = 0#
+			fit$path[[i]] = Matrix(abs(sign(out.glasso$wi)), sparse = TRUE)#
+			fit$loglik[i] = out.glasso$loglik + lambda[i]* sum(abs(fit$wi[[i]]))#
+			fit$df[i] = sum(abs(sign(out.glasso$wi)))/2#
+			fit$sparsity[i] = sum(fit$path[[i]])/d/(d-1)#
+			rm(out.glasso)#
+			gc()#
+		}#
+	rm(S,tmp.w)#
+	gc()#
+	if(verbose){#
+   		cat("Conducting Graphical Lasso (GLASSO)....done.              \r")#
+   		cat("\n")#
+        flush.console()#
+    }#
+    class(fit) = "glassoM"#
+    return(fit)#
+}#
+#
+# Default printing function#
+print.glassoM = function(x, ...){#
+	cat("This is a solution path using Graphical Lasso (GLASSO) and length = ", length(x$path), "\n")#
+	cat("huge.glassoM() is an internal function. For more information, please refer to huge() and huge.select().\n")#
+}#
+	#
+# Defaulty summary function	#
+summary.glassoM = function(object, ...){#
+	cat("This is a solution path using Graphical Lasso (GLASSO) and length = ", length(object$path), "\n")#
+	cat("huge.glassoM() is an internal function. For more information, please refer to huge() and huge.select().\n")#
+}#
+#
+# Default plot function#
+plot.glassoM = function(x, ...){#
+	par(mfrow = c(1,1))#
+	plot(x$lambda, x$sparsity, log = "x", xlab = "Regularization Parameter", ylab = "Sparsity Level", type = "b",xlim = rev(range(x$lambda)))#
+	cat("huge.glassoM() is an internal function. For more information, please refer to huge() and huge.select().\n")#
+}
+#graph path estimation using the GLASSO#
+out3 = huge(L, method = "GLASSO",cov.glasso = TRUE)#
+summary(out3)#
+plot(out3)
+names(out3)

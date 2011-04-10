@@ -10,7 +10,7 @@ Estimates a graph path of sparse precision matrices using a sequence of regulari
 }
 
 \usage{
-huge.glassoM(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NULL, verbose = TRUE)
+huge.glassoM(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NULL, cov.glasso = FALSE, verbose = TRUE)
 }
 
 \arguments{
@@ -24,6 +24,9 @@ The number of regularization paramters. The default value is \code{10}.
 }
   \item{lambda.min.ratio}{
 The smallest value for \code{lambda}, as a fraction of the uppperbound (\code{MAX}) of the regularization/thresholding parameter which makes all estimates equal to \code{0}. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda} starting from \code{MAX} to \code{lambda.min.ratio*MAX} in log scale. The default value is \code{0.1}.
+}
+  \item{cov.glasso}{
+If \code{cov.glasso = TRUE}, the outpu will inlcude a path of estimated covariance matrices. Since the estimated covariance matrices are generally not sparse, please use it with care, or it may take much memory under high-dimensional setting. The default value is \code{FALSE}.
 }
   \item{verbose}{
 If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.
@@ -41,6 +44,9 @@ A list of \code{k} by \code{k} adjacency matrices of estimated graphs (in sparse
 }
   \item{wi}{
 A list of \code{d} by \code{d} estimated precision matrices (in sparse matrix representation) as an alternative graph path (numerical path) corresponding to \code{lambda}.
+}
+  \item{w}{
+A list of \code{d} by \code{d} estimated covariance matrices corresponding to \code{lambda}. ONLY applicable when \code{cov.glasso = TRUE}
 }
   \item{lambda}{
 The sequence of regularization parameters used in the GLASSO.

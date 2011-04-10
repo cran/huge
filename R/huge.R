@@ -11,7 +11,7 @@
 #-----------------------------------------------------------------------#
 
 ## Main function
-huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, NPN = TRUE, NPN.func = "shrinkage", NPN.thresh = NULL, method = "MBGEL", scr = NULL, scr.num = NULL, sym = "or", verbose = TRUE)
+huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, NPN = FALSE, NPN.func = "shrinkage", NPN.thresh = NULL, method = "MBGEL", scr = NULL, scr.num = NULL, cov.glasso = FALSE, sym = "or", verbose = TRUE)
 {	
 	gcinfo(FALSE)
 	est = list()
@@ -71,13 +71,15 @@ huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, NPN =
 	
 	if(method == "GLASSO")
 	{
-		fit = huge.glassoM(est$data, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, verbose = verbose)
+		fit = huge.glassoM(est$data, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, cov.glasso = cov.glasso, verbose = verbose)
 		est$path = fit$path
 		est$lambda = fit$lambda
 		est$wi = fit$wi
 		est$df = fit$df
 		est$sparsity = fit$sparsity
 		est$loglik = fit$loglik
+		if(cov.glasso)
+			est$w = fit$w
 		rm(fit)
 		gc()
 	}			

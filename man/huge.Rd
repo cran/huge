@@ -10,8 +10,8 @@ The main function for high-dimensional undirected graph estimation. It allows th
 }
 
 \usage{
-huge(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, NPN = TRUE, NPN.func = "shrinkage", NPN.thresh = NULL, method = "MBGEL", 
-scr = NULL, scr.num = NULL, sym = "or", verbose = TRUE)
+huge(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, NPN = FALSE, NPN.func = "shrinkage", NPN.thresh = NULL, method = "MBGEL", 
+scr = NULL, scr.num = NULL, cov.glasso = FALSE, sym = "or", verbose = TRUE)
 }
 
 \arguments{
@@ -27,11 +27,8 @@ The number of regularization/thresholding paramters. The default value is \code{
   \item{lambda.min.ratio}{
 If \code{method = "MBGEL"} or \code{method = "GLASSO"}, it is the smallest value for \code{lambda}, as a fraction of the uppperbound (\code{MAX}) of the regularization/thresholding parameter which makes all estimates equal to \code{0}. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda} starting from \code{MAX} to \code{lambda.min.ratio*MAX} in log scale. If \code{method = "GECT"}, it is the largest sparsity level for estimated graphs. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda}, which makes the sparsity level of the graph path increases from \code{0} to \code{lambda.min.ratio} evenly.The default value is \code{0.1} when \code{method = "MBGEL"} or \code{method = "GLASSO"}, and 0.05 \code{method = "GECT"}.
 }
-  \item{sym}{
-Symmetrize the output graphs. If \code{sym = "and"}, the edge between node \code{i} and node \code{j} is selected ONLY when both node \code{i} and node \code{j} are selected as neighbors for each other. If \code{sym = "or"}, the edge is selected when either node \code{i} or node \code{j} is selected as the neighbor for each other. The default value is \code{"or"}. ONLY applicable when \code{method = "MBGEL"}.
-}
   \item{NPN}{
-If \code{NPN = TRUE}, the nonparanormal transformation is applied to the input data \code{L} or \code{L$data}. The default value is \code{TRUE}.
+If \code{NPN = TRUE}, the nonparanormal transformation is applied to the input data \code{L} or \code{L$data}. The default value is \code{FALSE}.
 }
   \item{NPN.func}{
 The transformation function used in the NonparaNormal(NPN) transformation. If \code{NPN.func = "truncation"}, the truncated ECDF is applied. If \code{NPN.func = "shrinkage"}, the shrunken ECDF is applied. The default value is \code{"shrinkage"}. ONLY applicable when \code{NPN = TRUE}.
@@ -47,6 +44,12 @@ If \code{scr = TRUE}, the Graph Sure Screening(GSS) is applied to preselect the 
 }
   \item{scr.num}{
 The neighborhood size after the GSS (the number of remaining neighbors per node). ONLY applicable when \code{scr = TRUE}. The default value is \code{n-1}. An alternative value is \code{n/log(n)}. ONLY applicable when \code{scr = TRUE} and \code{method = "MBGEL"}.
+}
+  \item{cov.glasso}{
+If \code{cov.glasso = TRUE}, the outpu will inlcude a path of estimated covariance matrices. ONLY applicable when \code{method = "GLASSO"}. Since the estimated covariance matrices are generally not sparse, please use it with care, or it may take much memory under high-dimensional setting. The default value is \code{FALSE}.
+}
+  \item{sym}{
+Symmetrize the output graphs. If \code{sym = "and"}, the edge between node \code{i} and node \code{j} is selected ONLY when both node \code{i} and node \code{j} are selected as neighbors for each other. If \code{sym = "or"}, the edge is selected when either node \code{i} or node \code{j} is selected as the neighbor for each other. The default value is \code{"or"}. ONLY applicable when \code{method = "MBGEL"}.
 }
   \item{verbose}{
 If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.
@@ -86,6 +89,9 @@ The sparsity levels of the graph path.
 }
   \item{wi}{
 A list of \code{d} by \code{d} precision matrices as an alternative graph path (numerical path) corresponding to \code{lambda}. ONLY applicable when {method = "GLASSO"}
+}
+  \item{w}{
+A list of \code{d} by \code{d} estimated covariance matrices corresponding to \code{lambda}. ONLY applicable when \code{cov.glasso = TRUE} and {method = "GLASSO"}
 }
   \item{method}{
 The method used in the graph estimation stage.

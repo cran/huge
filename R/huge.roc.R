@@ -3,7 +3,7 @@
 # huge(): Draw ROC Curve for a solution path                            #
 #         Must have a ground truth                                      #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
+# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
 # Date: Feb 28th 2010                                                   #
 # Version: 1.0                                                          #
 #-----------------------------------------------------------------------#
@@ -69,13 +69,6 @@ print.roc = function(x, ...){
 	cat("False Positive Rate: from",min(x$fp),"to",max(x$fp),"\n")
 	cat("Area under Curve:",x$AUC,"\n")
 	cat("Maximum F1 Score:",max(x$F1),"\n")
-}
-
-summary.roc = function(object, ...){
-	cat("True Postive Rate: from",min(object$tp),"to",max(object$tp),"\n")
-	cat("False Positive Rate: from",min(object$fp),"to",max(object$fp),"\n")
-	cat("Area under Curve:",object$AUC,"\n")
-	cat("Maximum F1 Score:",max(object$F1),"\n")
 }
 
 plot.roc = function(x, ...){	

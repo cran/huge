@@ -6,45 +6,32 @@ export(huge,
 	huge.generator,
 	huge.NPN,
 	huge.plot,
-	lasso.stars,
 
 	huge.MBGEL, huge.glassoM, huge.GECT,
 
-	print.huge,plot.huge,summary.huge,
-	print.sim,plot.sim,summary.sim,
-	print.GECT,plot.GECT,summary.GECT,
-	print.glassoM,plot.glassoM,summary.glassoM,
-	print.roc,plot.roc,summary.roc,
-	print.select,plot.select,summary.select,
-	print.stars,plot.stars,summary.stars,
-	print.NPN,plot.NPN,summary.NPN,
-	print.MBGEL,plot.MBGEL,summary.MBGEL
+	print.huge,plot.huge,
+	print.sim,plot.sim,
+	print.GECT,plot.GECT,
+	print.glassoM,plot.glassoM,
+	print.roc,plot.roc,
+	print.select,plot.select,
+	print.NPN,plot.NPN,
+	print.MBGEL,plot.MBGEL
 )
 
 S3method("print","huge")
 S3method("plot","huge")
-S3method("summary","huge")
 S3method("print","sim")
 S3method("plot","sim")
-S3method("summary","sim")
 S3method("print","GECT")
 S3method("plot","GECT")
-S3method("summary","GECT")
 S3method("print","glassoM")
 S3method("plot","glassoM")
-S3method("summary","glassoM")
 S3method("print","roc")
 S3method("plot","roc")
-S3method("summary","roc")
 S3method("print","select")
 S3method("plot","select")
-S3method("summary","select")
-S3method("print","stars")
-S3method("plot","stars")
-S3method("summary","stars")
 S3method("print","MBGEL")
 S3method("plot","MBGEL")
-S3method("summary","MBGEL")
 S3method("print","NPN")
 S3method("plot","NPN")
-S3method("summary","NPN")

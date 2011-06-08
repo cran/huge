@@ -4,16 +4,19 @@
 #                (2)Stability Approach to Regularization Selection      #
 #                (3)Extended Bayesian Informaition Criterion            #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
+# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
 # Date: Apr 10th 2011                                                   #
-# Version: 1.0.1                                                          #
+# Version: 1.0.1                                                        #
 #-----------------------------------------------------------------------#
 
 ## Main Function
 huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0.1, stars.subsample.ratio = NULL, stars.rep.num = 20, verbose = TRUE){
 
 	gcinfo(FALSE)
-		
+	
+	if(est$cov.input) cat("Model Selection is not available when using the covariance matrix as input.")
+	if(!est$cov.input)
+	{		
 	if(est$method == "MBGEL"&&is.null(criterion))
 		criterion = "RIC"
 	if(est$method == "GECT"&&is.null(criterion))
@@ -55,7 +58,7 @@ huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0
 		{
 			if(!is.null(est$w))
 			{
-				tmp = huge.glassoM(est$data, lambda = est$opt.lambda, cov.glasso = TRUE, verbose = FALSE)
+				tmp = huge.glassoM(est$data, lambda = est$opt.lambda, cov.output = TRUE, verbose = FALSE)
 				est$opt.w = tmp$w[[1]]
 			}
 			if(is.null(est$w))
@@ -147,7 +150,8 @@ huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0
 	  }
     est$criterion = criterion
   	class(est) = "select"
-    return(est)  	
+    return(est)
+    }  	
 }
 
 #-----------------------------------------------------------------------#
@@ -164,8 +168,6 @@ print.select = function(x, ...)
 		cat("Model: Meinshausen & Buhlmann Graph Estimation via Lasso(MBGEL)\n")
 
 	cat("selection criterion:",x$criterion,"\n")
-	if(x$NPN)
-		cat("NonParaNormal transformed\n")
 	if((x$method == "MBGEL")&&x$scr)
 		cat("Graph SURE Screening (GSS): on\n")
 	if(!is.null(x$theta))
@@ -174,27 +176,6 @@ print.select = function(x, ...)
 		cat("True graph: not included\n")
 	cat("Graph Dimension:",ncol(x$data),"\n")
 	cat("sparsity level", x$opt.sparsity,"\n")
-}
-
-summary.select = function(object, ...){
-	if(object$method == "GECT")
-		cat("Model: Graph Estimation via Correlation Thresholding(GECT)\n")
-	if(object$method == "GLASSO")
-		cat("Model: Graphical Lasso (GLASSO)\n")
-	if(object$method == "MBGEL")
-		cat("Model: Meinshausen & Buhlmann Graph Estimation via Lasso(MBGEL)\n")
-
-	cat("selection criterion:",object$criterion,"\n")
-	if(object$NPN)
-		cat("NonParaNormal transformed\n")
-	if((object$method == "MBGEL")&&object$scr)
-		cat("Graph SURE Screening (GSS): on\n")
-	if(!is.null(object$theta))
-		cat("True graph: included\n")
-	if(is.null(object$theta))
-		cat("True graph: not included\n")
-	cat("Graph Dimension:",ncol(object$data),"\n")
-	cat("sparsity level", object$opt.sparsity,"\n")
 }
 
 plot.select = function(x, ...){

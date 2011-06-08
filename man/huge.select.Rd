@@ -19,19 +19,19 @@ stars.subsample.ratio = NULL, stars.rep.num = 20, verbose = TRUE)
 An object with S3 class \code{"huge"}
 }
   \item{criterion}{
-Model selection criterion. \code{"RIC"} and \code{"stars"} are available for all 3 graph estimation methods. \code{EBIC} is only applicable for the Graphical Lasso. The default value is \code{"RIC"}.
+Model selection criterion. \code{"RIC"} and \code{"stars"} are available for all 3 graph estimation methods. \code{EBIC} is only applicable for GLASSO. The default value is \code{"RIC"}.
 }
   \item{EBIC.gamma}{
-The tuning parameter for the EBIC. The default value is 0.5. Only applicable when \code{est$method = "GLASSO"} and \code{criterion = "EBIC"}.
+The tuning parameter for EBIC. The default value is 0.5. Only applicable when \code{est$method = "GLASSO"} and \code{criterion = "EBIC"}.
 }
   \item{stars.thresh}{
-The variability threshold in the StARS. The default value is \code{0.1}. An alternative value is \code{0.05}. Only applicable when \code{criterion = "stars"}.
+The variability threshold in StARS. The default value is \code{0.1}. An alternative value is \code{0.05}. Only applicable when \code{criterion = "stars"}.
 }
   \item{stars.subsample.ratio}{
 The subsampling ratio. The default value is \code{10*sqrt(n)/n} when \code{n>144} and \code{0.8} when \code{n<=144}, where \code{n} is the sample size. Only applicable when \code{criterion = "stars"}.
 }
   \item{stars.rep.num}{
-The number of subsampling for the StARS. The default value is \code{20}.Only applicable when \code{criterion = "stars"}
+The number of subsampling for StARS. The default value is \code{20}. Only applicable when \code{criterion = "stars"}
 }
   \item{verbose}{
 If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.
@@ -39,7 +39,7 @@ If \code{verbose = FALSE}, tracing information printing is disabled. The default
 }
 
 \details{
-The StARS is a natural way to select optimal regularization parameter for all three estimation methods. It selects the optimal graph by variability of subsamplings and tends to overselect edges in Gaussian graphical models. Besides selecting the regularization parameters, the StARS can also provide an additional estimated graph by merging the corresponding subsampled graphs using the frequency counts. The subsampling procedure in StARS may NOT be very efficient, we also proved the recent developed highly efficient RIC approach. Instead of tuning over a grid by cross-validation or subsampling, we directly estimate the optimal regularization paramter based on random Rotations. However, the RIC usually has very good empirical performances but suffers from underselections sometimes. Therefore, we suggest if user are sensitive of false negative rates, they should either consider increasing \code{r.num} or applying the StARS to model selection. The extended BIC is another competive approach, but the \code{EBIC.gamma} can only be tuned by experience. 
+Stability Approach to Reulgarization Selection is a natural way to select optimal regularization parameter for all three estimation methods. It selects the optimal graph by variability of subsamplings and tends to overselect edges in Gaussian graphical models. Besides selecting the regularization parameters, StARS can also provide an additional estimated graph by merging the corresponding subsampled graphs using the frequency counts. The subsampling procedure in StARS may NOT be very efficient, we also proved the recent developed highly efficient, Rotation Information Criterion approach. Instead of tuning over a grid by cross-validation or subsampling, we directly estimate the optimal regularization paramter based on random Rotations. However, RIC usually has very good empirical performances but suffers from underselections sometimes. Therefore, we suggest if user are sensitive of false negative rates, they should either consider increasing \code{r.num} or applying the StARS to model selection. Extended Bayesian Information Criterion (EBIC) is another competive approach, but the \code{EBIC.gamma} can only be tuned by experience. 
 }
 
 \value{
@@ -76,9 +76,13 @@ and anything else inluded in the input \code{est}
 
 }
 
+\note{
+The model selection is not available when the data input is the sample covaraince matrix.
+}
+
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
-Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
+Maintainers: Tuo Zhao<tourzhao@gmail.com>; Han Liu <hanliu@cs.jhu.edu>
 }
 
 \references{
@@ -100,16 +104,13 @@ out.GLASSO = huge(L, method = "GLASSO")
 
 #model selection using RIC
 out.select = huge.select(out.MBGEL)
-summary(out.select)
 plot(out.select)
 
 #model selection using stars
 out.select = huge.select(out.GECT, criterion = "stars", stars.thresh = 0.05)
-summary(out.select)
 plot(out.select)
 
 #model selection using EBIC
 out.select = huge.select(out.GLASSO,criterion = "EBIC")
-summary(out.select)
 plot(out.select)
 }

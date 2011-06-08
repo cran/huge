@@ -1,13 +1,12 @@
 Package: huge
 Type: Package
 Title: High-dimensional Undirected Graph Estimation
-Version: 1.0.1
-Date: 2011-04-10
+Version: 1.0.2
+Date: 2011-06-08
 Author: Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, Larry
         Wasserman
-Maintainer: Tuo Zhao <tourzhao@andrew.cmu.edu>, Han Liu
-        <hanliu@cs.jhu.edu>
-Depends: glmnet, glasso, igraph, MASS, Matrix, lattice,
+Maintainer: Tuo Zhao <tourzhao@gmail.edu>, Han Liu <hanliu@cs.jhu.edu>
+Depends: Matrix, lattice, glasso, igraph, MASS
 Description: The package "huge" provides a general framework for
         high-dimensional undirected graph estimation. It integrates
         data preprocessing (Gaussianization), neighborhood screening,
@@ -20,17 +19,17 @@ Description: The package "huge" provides a general framework for
         the Graph SURE Screening (GSS) subroutine which preselects the
         graph neighborhood of each variable. In the case d >> n, the
         computation is memory optimized and is targeted on larger-scale
-        problems (d>6000). We also provide two alternative approaches
-        for the graph estimation stage:(1) Graph Estimation via
-        Correlation Thresholding (GECT) which is highly efficient and
-        (2) A slightly modified Graphical Lasso (GLASSO) procedure in
-        which the memory usage is optimized using sparse matrix output.
-        Three regularization/thresholding parameter selection methods
-        are included in this package: (1) StARS: Stability Approach for
+        problems. We also provide two alternative approaches for the
+        graph estimation stage:(1) Graph Estimation via Correlation
+        Thresholding (GECT) which is highly efficient and (2) A
+        slightly modified Graphical Lasso (GLASSO) procedure in which
+        the memory usage is optimized using sparse matrix output. Three
+        regularization/thresholding parameter selection methods are
+        included in this package: (1) StARS: Stability Approach for
         Regularization Selection (2) RIC: Rotation Information
         Criterion (3) Extended Bayesian Information Criterion (EBIC
         only for GLASSO).
 License: GPL-2
 Repository: CRAN
-Date/Publication: 2011-04-11 06:35:59
-Packaged: 2011-04-10 21:10:05 UTC; tourzhao
+Date/Publication: 2011-06-15 18:02:17
+Packaged: 2011-06-10 03:24:50 UTC; tourzhao

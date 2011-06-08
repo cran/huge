@@ -3,20 +3,32 @@
 # huge.MBGEL(): Meinshausen & Buhlmann Graph                            #
 #				Estimation via Lasso (MBGEL)                            #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Feb 28th 2011                                                   #
-# Version: 1.0	                                                        #
+# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
+# Date: Jun 8th 2011                                                    #
+# Version: 1.0.2                                                        #
 #-----------------------------------------------------------------------#
 
 ## Main function
 huge.MBGEL = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, scr = NULL, scr.num = NULL, idx.mat = NULL, sym = "or", verbose = TRUE)
 {
 	gcinfo(FALSE)
-	n = nrow(x)
-	d = ncol(x)
+	n = nrow(x);
+	d = ncol(x);
 	fit = list()
-	x = scale(x)
-	S = t(x)%*%x/n
+	fit$cov.input = isSymmetric(x);
+	if(fit$cov.input)
+	{
+		if(verbose) cat("The input is identified as the covriance matrix.\n")
+		S = cov2cor(x);
+	}
+	if(!fit$cov.input)
+	{
+		x = scale(x)
+		S = t(x)%*%x/n
+	}
+	
+	rm(x)
+	gc()
 	
 	if(is.null(idx.mat))
 	{
@@ -33,7 +45,7 @@ huge.MBGEL = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL,
 					scr.num = n-1
 				if(n>=d)
 				{
-					if(verbose) cat("Graph SURE Screening (GSS) is skipped under the setting n>=d.\n")
+					if(verbose) cat("Graph SURE Screening (GSS) is skipped without specifying scr.num.\n")
 					scr = FALSE
 				}	
 			}
@@ -122,7 +134,6 @@ huge.MBGEL = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL,
 		fit$beta[[i]] = G[((i-1)*d+1):(i*d),]
 		fit$path[[i]] = abs(fit$beta[[i]])
 		fit$df[,i] = apply(sign(fit$path[[i]]),2,sum)
-		fit$rss[,i] = apply((x%*%fit$beta[[i]]-x)^2,2,sum)
 		
 		if(sym == "or")
 			fit$path[[i]] = sign(fit$path[[i]] + t(fit$path[[i]]))
@@ -152,12 +163,6 @@ print.MBGEL = function(x, ...){
 	cat("huge.MBGEL() is an internal function. For more information, please refer to huge() and huge.select().\n")
 }
 	
-# Defaulty summary function	
-summary.MBGEL = function(object, ...){
-	cat("This is a solution path using Meinshausen & Buhlman Graph Estimation via Lasso (MBGEL) and length = ", length(object$path), "\n")
-	cat("huge.MBGEL() is an internal function. For more information, please refer to huge() and huge.select().\n")
-}
-
 # Default plot function
 plot.MBGEL = function(x, ...){
 	par(mfrow = c(1,1))

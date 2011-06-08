@@ -2,20 +2,29 @@
 # Package: High-dimensional Undirected Graph Estimation (HUGE)          #
 # glassoM(): A Graphical Lasso (GLASSO) using Sparse Matrices           #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Apr 10th 2011                                                   #
-# Version: 1.0.1                                                        #
+# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
+# Date: Jun 8th 2011                                                    #
+# Version: 1.0.2                                                        #
 #-----------------------------------------------------------------------#
 
 ## Main function
-huge.glassoM = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NULL, cov.glasso = FALSE, verbose = TRUE){
+huge.glassoM = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NULL, cov.output = FALSE, verbose = TRUE){
 	
 	gcinfo(FALSE)
 	n = nrow(x)
 	d = ncol(x)
 	fit = list()
-	
-	S = t(x)%*%x/n;
+	fit$cov.input = isSymmetric(x)
+	if(fit$cov.input)
+	{
+		if(verbose) cat("The input is identified as the covriance matrix.\n")
+		S = x
+	}
+	if(!fit$cov.input)
+	{
+		x = scale(x)
+		S = t(x)%*%x/n
+	}
 	rm(x)
 	gc()
 	
@@ -44,7 +53,7 @@ huge.glassoM = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NUL
 	out.glasso = glasso(S, lambda[nlambda])
 	fit$wi = list()
 	fit$wi[[nlambda]] = Matrix(out.glasso$wi,sparse = TRUE)
-	if(cov.glasso)
+	if(cov.output)
 	{
 		fit$w = list()
 		fit$w[[nlambda]] = Matrix(out.glasso$w,sparse = TRUE)
@@ -69,7 +78,7 @@ huge.glassoM = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NUL
 			out.glasso = glasso(S,rho = fit$lambda[i], w.init = tmp.w, wi.init = as.matrix(fit$wi[[i+1]]))
 			tmp.w = out.glasso$w
 			fit$wi[[i]] = Matrix(out.glasso$wi,sparse = TRUE)
-			if(cov.glasso)
+			if(cov.output)
 				fit$w[[i]] = Matrix(out.glasso$w,sparse = TRUE)
 			diag(out.glasso$wi) = 0
 			fit$path[[i]] = Matrix(abs(sign(out.glasso$wi)), sparse = TRUE)
@@ -93,12 +102,6 @@ huge.glassoM = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NUL
 # Default printing function
 print.glassoM = function(x, ...){
 	cat("This is a solution path using Graphical Lasso (GLASSO) and length = ", length(x$path), "\n")
-	cat("huge.glassoM() is an internal function. For more information, please refer to huge() and huge.select().\n")
-}
-	
-# Defaulty summary function	
-summary.glassoM = function(object, ...){
-	cat("This is a solution path using Graphical Lasso (GLASSO) and length = ", length(object$path), "\n")
 	cat("huge.glassoM() is an internal function. For more information, please refer to huge() and huge.select().\n")
 }
 

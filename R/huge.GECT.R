@@ -1,22 +1,26 @@
 #-----------------------------------------------------------------------#
 # Package: High-dimensional Undirected Graph Estimation (HUGE)          #
-# huge.GECT():                                                           #                           
+# huge.GECT():                                                          #                           
 # Graph Estimation via Correlation Thresholding (GECT)                  # 
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Feb 28th 2010                                                   #
-# Version: 1.0                                                          #
+# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
+# Date: Jun 8th 2011                                                    #
+# Version: 1.0.2                                                        #
 #-----------------------------------------------------------------------#
 
 ##Main function
 huge.GECT = function(x, nlambda = NULL, lambda.min.ratio = NULL, lambda = NULL, verbose = TRUE)
 {	
 	gcinfo(FALSE)
-	n = nrow(x)
   	d = ncol(x)
   	fit = list()
-  	
-  	S = abs(cor(x))
+  	fit$cov.input = isSymmetric(x)
+  	if(!fit$cov.input)	S = abs(cor(x))
+  	if(fit$cov.input)
+  	{
+  		if(verbose) cat("The input is identified as the covriance matrix.\n")
+  		S = abs(x);
+  	}
   	diag(S) = 0
   	S.rank = order(S,decreasing = TRUE)
   	rm(x)
@@ -79,7 +83,6 @@ huge.GECT = function(x, nlambda = NULL, lambda.min.ratio = NULL, lambda = NULL, 
         cat("Conducting Graph Estimation via Correlation Thresholding (GECT)....done.             \r\n")
         flush.console()
     }
-	rm(n,d,verbose)
 	gc()
 	class(fit) = "GECT"
 	return(fit)
@@ -89,13 +92,6 @@ huge.GECT = function(x, nlambda = NULL, lambda.min.ratio = NULL, lambda = NULL, 
 print.GECT = function(x, ...)
 {
 	cat("This is a solution path using Graph Estimation via Correlation Thresholding (GECT) and length = ", length(x$path), "\n")
-	cat("huge.GECT() is an internal function, please refer to huge() and huge.select()")
-}
-
-# Default summary function
-summary.GECT = function(object, ...)
-{
-	cat("This is a solution path using Graph Estimation via Correlation Thresholding (GECT) and length = ", length(object$path), "\n")
 	cat("huge.GECT() is an internal function, please refer to huge() and huge.select()")
 }
 

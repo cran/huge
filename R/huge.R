@@ -5,13 +5,13 @@
 #		  (2) Correlation Thresholding                                  #
 #		  (3) Graphical Lasso            	                            #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
-# Date: Feb 28th 2011                                                   #
-# Version: 1.0                                                          #
+# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
+# Date: Jun 8th 2011                                                    #
+# Version: 1.0.2                                                        #
 #-----------------------------------------------------------------------#
 
 ## Main function
-huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, NPN = FALSE, NPN.func = "shrinkage", NPN.thresh = NULL, method = "MBGEL", scr = NULL, scr.num = NULL, cov.glasso = FALSE, sym = "or", verbose = TRUE)
+huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, method = "MBGEL", scr = NULL, scr.num = NULL, cov.output = FALSE, sym = "or", verbose = TRUE)
 {	
 	gcinfo(FALSE)
 	est = list()
@@ -19,36 +19,23 @@ huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, NPN =
 	
 	if(is.list(L))
 	{
-		n = nrow(L$data)
-		d = ncol(L$data)
 		est$data = L$data
 		if(!is.null(L$theta))	est$theta = L$theta
 	}
 	
-	if(!is.list(L))
-	{
-		n = nrow(L)
-		d = ncol(L)
-		est$data = L
-	}
+	if(!is.list(L)) est$data = L
+	
 	rm(L)
 	gc()		
 	
-	# Nonparanormal transformation
-	if(NPN)
-	{
-		est$data = huge.NPN(est$data,NPN.func = NPN.func, NPN.thresh = NPN.thresh, verbose = verbose)$data
-		rm(NPN.thresh,NPN.func)
-		gc()
-	}
-	est$NPN = NPN
-	
+		
 	if(method == "GECT")
 	{
 		fit = huge.GECT(est$data, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, verbose = verbose)
 		est$path = fit$path
 		est$lambda = fit$lambda
 		est$sparsity = fit$sparsity
+		est$cov.input = fit$cov.input
 		rm(fit)
 		gc()
 	}
@@ -59,11 +46,11 @@ huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, NPN =
 		est$path = fit$path
 		est$lambda = fit$lambda
 		est$sparsity = fit$sparsity
-		est$rss = fit$rss
 		est$df = fit$df
 		est$idx_mat = fit$idx_mat
 		est$sym = sym
 		est$scr = fit$scr
+		est$cov.input = fit$cov.input
 		rm(fit,sym)
 		gc()
 	}
@@ -71,22 +58,23 @@ huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, NPN =
 	
 	if(method == "GLASSO")
 	{
-		fit = huge.glassoM(est$data, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, cov.glasso = cov.glasso, verbose = verbose)
+		fit = huge.glassoM(est$data, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, cov.output = cov.output, verbose = verbose)
 		est$path = fit$path
 		est$lambda = fit$lambda
 		est$wi = fit$wi
 		est$df = fit$df
 		est$sparsity = fit$sparsity
 		est$loglik = fit$loglik
-		if(cov.glasso)
+		if(cov.output)
 			est$w = fit$w
+		est$cov.input = fit$cov.input	
+		
 		rm(fit)
 		gc()
 	}			
 			
-	rm(n,d,NPN,scr,lambda,lambda.min.ratio,nlambda,verbose)
+	rm(scr,lambda,lambda.min.ratio,nlambda,cov.output,verbose)
 	gc()
-	
 	class(est) = "huge"
 	return(est)
 }
@@ -100,38 +88,16 @@ print.huge = function(x, ...)
 	if(x$method == "MBGEL")
 		cat("Model: Meinshausen & Buhlmann Graph Estimation via Lasso (MBGEL)\n")
 	
-	if(x$NPN) cat("Nonparanormal (NPN) transformation: on\n")
-	
 	if((x$method == "MBGEL")&&(x$scr)) cat("Graph SURE Screening (GSS): on\n")
 
+	if(x$cov.input) cat("Input: The Covariance Matrix\n")
+	if(x$cov.input) cat("Input: The Data Matrix\n")
 	if(is.null(x$theta)) cat("True graph: not included\n")
 	if(!is.null(x$theta)) cat("True graph: included\n")
 	
 	cat("Path length:",length(x$lambda),"\n")
 	cat("Graph Dimension:",ncol(x$data),"\n")
 	cat("Sparsity level:",min(x$sparsity),"----->",max(x$sparsity),"\n")
-}
-
-summary.huge = function(object, ...)
-{	
-	if(object$method == "GECT")
-		cat("Model: Graph Estimation via Correlation Thresholding (GECT)\n")
-	if(object$method == "GLASSO")
-		cat("Model: Graphical Lasso (GLASSO)\n")
-	if(object$method == "MBGEL")
-		cat("Model: Meinshausen & Buhlmann Graph Estimation via Lasso (MBGEL)\n")
-	
-	if(object$NPN) cat("Nonparanormal (NPN) transformation: on\n")
-	
-	if((object$method == "MBGEL")&&object$scr) cat("Graph SURE Screening (GSS): on\n")
-
-	if(is.null(object$theta)) cat("True graph: not included\n")
-	if(!is.null(object$theta)) cat("True graph: included\n")
-	
-	cat("Path length:",length(object$lambda),"\n")
-	cat("Graph Dimension:",ncol(object$data),"\n")
-	cat("Sparsity level:",min(object$sparsity),"----->",max(object$sparsity),"\n")
-
 }
 
 plot.huge = function(x, align = FALSE, ...){

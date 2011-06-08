@@ -2,7 +2,7 @@
 # Package: High-dimensional Undirected Graph Estimation (HUGE)          #
 # huge.NPN(): NonparaNormal transofmration                              #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@andrew.cmu.edu>; <hanliu@cs.jhu.edu>                #
+# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
 # Date: Feb 28th 2011                                                   #
 # Version: 1.0                                                          #
 #-----------------------------------------------------------------------#
@@ -52,14 +52,6 @@ print.NPN = function(x, ...){
 	cat("Sample size: n =", nrow(x$data), "\n")
 	cat("Dimension: d =", ncol(x$data), "\n")
 	cat("NonparanNormal transformation type:", x$NPN.func,"\n")
-}
-
-## Default summary function for class "NPN"
-summary.NPN = function(object, ...){
-	cat("Gaussianized data by huge.NPN()\n")
-	cat("Sample size: n =", nrow(object$data), "\n")
-	cat("Dimension: d =", ncol(object$data), "\n")
-	cat("NonparaNormal transformation type:", object$NPN.func,"\n")
 }
 
 ## Default plot function for class "NPN"

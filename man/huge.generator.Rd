@@ -74,7 +74,7 @@ The adjacency matrix of true graph structure (in sparse matrix representation) f
 
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
-Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
+Maintainers: Tuo Zhao<tourzhao@gmail.com>; Han Liu <hanliu@cs.jhu.edu>
 }
 
 \references{
@@ -87,7 +87,6 @@ Maintainers: Tuo Zhao<tourzhao@andrew.cmu.edu>; Han Liu <hanliu@cs.jhu.edu>
 \examples{
 ## band graph with bandwidth 3
 L = huge.generator(graph = "band", g = 3)
-summary(L)
 plot(L)
 
 ## random sparse graph

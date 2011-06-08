@@ -47,7 +47,7 @@ The transformation function used in the NPN transformation
 
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty and Larry Wasserman \cr
-Maintainer: Tuo Zhao<tourzhao@andrew.cmu.edu>;Han Liu<hanliu@cs.jhu.edu>
+Maintainer: Tuo Zhao<tourzhao@gmail.com>;Han Liu<hanliu@cs.jhu.edu>
 }
 
 \references{
@@ -65,7 +65,6 @@ L = huge.generator(graph = "cluster", g = 5)
 
 # transform the non-Gaussian data using the shrunken ECDF
 Q = huge.NPN(L$data^5)
-summary(Q)
 plot(Q)
 
 # transform the non-Gaussian data using the truncated ECDF

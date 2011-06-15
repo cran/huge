@@ -1,8 +1,8 @@
 Package: huge
 Type: Package
 Title: High-dimensional Undirected Graph Estimation
-Version: 1.0.2
-Date: 2011-06-08
+Version: 1.0.3
+Date: 2011-06-15
 Author: Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, Larry
         Wasserman
 Maintainer: Tuo Zhao <tourzhao@gmail.edu>, Han Liu <hanliu@cs.jhu.edu>
@@ -31,5 +31,5 @@ Description: The package "huge" provides a general framework for
         only for GLASSO).
 License: GPL-2
 Repository: CRAN
-Date/Publication: 2011-06-15 18:02:17
-Packaged: 2011-06-10 03:24:50 UTC; tourzhao
+Date/Publication: 2011-06-17 06:45:05
+Packaged: 2011-06-16 15:49:31 UTC; tourzhao

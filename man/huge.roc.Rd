@@ -10,15 +10,15 @@ Draws ROC curve for a graph path according to the true graph structure
 }
 
 \usage{
-huge.roc(est, theta, verbose = TRUE)
+huge.roc(path, theta, verbose = TRUE)
 }
 
 \arguments{
-  \item{est}{
-There are two choices for the input est: (1) A graph path. (2)An object with S3 class "huge" containing \code{est$path} as a graph path and \code{est$theta} as the true graph structure.
+  \item{path}{
+A graph path.
 }
   \item{theta}{
-The true graph structure. ONLY applicable when the input \code{est} is a graph path.
+The true graph structure.
 }
   \item{verbose}{
 If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.
@@ -65,10 +65,10 @@ Maintainers: Tuo Zhao<tourzhao@gmail.com>; Han Liu <hanliu@cs.jhu.edu>
 \examples{
 #generate data
 L = huge.generator(d = 200, graph = "cluster", prob = 0.3)
-out1 = huge(L)
+out1 = huge(L$data)
 
 #draw ROC curve
-Z1 = huge.roc(out1)
+Z1 = huge.roc(out1$path,L$theta)
 
 #Maximum F1 score
 max(Z1$F1)

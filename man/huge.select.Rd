@@ -19,10 +19,10 @@ stars.subsample.ratio = NULL, stars.rep.num = 20, verbose = TRUE)
 An object with S3 class \code{"huge"}
 }
   \item{criterion}{
-Model selection criterion. \code{"RIC"} and \code{"stars"} are available for all 3 graph estimation methods. \code{EBIC} is only applicable for GLASSO. The default value is \code{"RIC"}.
+Model selection criterion. \code{"ric"} and \code{"stars"} are available for all 3 graph estimation methods. \code{EBIC} is only applicable for GLASSO. The default value is \code{"ric"}.
 }
   \item{EBIC.gamma}{
-The tuning parameter for EBIC. The default value is 0.5. Only applicable when \code{est$method = "GLASSO"} and \code{criterion = "EBIC"}.
+The tuning parameter for EBIC. The default value is 0.5. Only applicable when \code{est$method = "glasso"} and \code{criterion = "ebic"}.
 }
   \item{stars.thresh}{
 The variability threshold in StARS. The default value is \code{0.1}. An alternative value is \code{0.05}. Only applicable when \code{criterion = "stars"}.
@@ -48,10 +48,10 @@ An object with S3 class "select" is returned:
 The optimal graph selected from the graph path
 }
   \item{opt.wi}{
-The optimal precision matrix from the path only applicable when \code{method = "GLASSO"}
+The optimal precision matrix from the path only applicable when \code{method = "glasso"}
 }
   \item{opt.w}{
-The optimal covariance matrix from the path only applicable when \code{method = "GLASSO"} and \code{est$w} is avaiable.
+The optimal covariance matrix from the path only applicable when \code{method = "glasso"} and \code{est$w} is avaiable.
 }
   \item{merge}{
 The graph path estimated by merging the subsampling paths. Only applicable when the input \code{criterion = "stars"}.
@@ -60,10 +60,10 @@ The graph path estimated by merging the subsampling paths. Only applicable when 
 The variability along the subsampling paths. Only applicable when the input \code{criterion = "stars"}.
 }
   \item{EBIC.scores}{
-Extended BIC scores for regularization parameter selection. Only applicable when \code{criterion = "EBIC"}.
+Extended BIC scores for regularization parameter selection. Only applicable when \code{criterion = "ebic"}.
 }
   \item{opt.index}{
-The index of the selected regularization parameter. NOT applicable when the input \code{criterion = "RIC"}
+The index of the selected regularization parameter. NOT applicable when the input \code{criterion = "ric"}
 }
   \item{opt.lambda}{
 The selected regularization/thresholding parameter.
@@ -77,7 +77,7 @@ and anything else inluded in the input \code{est}
 }
 
 \note{
-The model selection is not available when the data input is the sample covaraince matrix.
+The model selection is NOT available when the data input is the sample covaraince matrix.
 }
 
 \author{
@@ -98,19 +98,19 @@ Jiahua Chen and Zehua Chen. Extended Bayesian information criterion for model se
 \examples{
 #generate data
 L = huge.generator(d = 200, graph="hub")
-out.MBGEL = huge(L)
-out.GECT = huge(L, method = "GECT")
-out.GLASSO = huge(L, method = "GLASSO")
+out.mbgel = huge(L$data)
+out.gect = huge(L$data, method = "gect")
+out.glasso = huge(L$data, method = "glasso")
 
 #model selection using RIC
-out.select = huge.select(out.MBGEL)
+out.select = huge.select(out.mbgel)
 plot(out.select)
 
 #model selection using stars
-out.select = huge.select(out.GECT, criterion = "stars", stars.thresh = 0.05)
+out.select = huge.select(out.gect, criterion = "stars", stars.thresh = 0.05)
 plot(out.select)
 
 #model selection using EBIC
-out.select = huge.select(out.GLASSO,criterion = "EBIC")
+out.select = huge.select(out.glasso,criterion = "ebic")
 plot(out.select)
 }

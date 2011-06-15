@@ -11,17 +11,17 @@ A package for high-dimensional undirected graph estimation
 \tabular{ll}{
 Package: \tab huge\cr
 Type: \tab Package\cr
-Version: \tab 1.0.2\cr
-Date: \tab 2011-06-08\cr
+Version: \tab 1.0.3\cr
+Date: \tab 2011-06-15\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }
 The package "huge" provides 8 main functions:\cr
 (1) the data generator creates random samples from multivariate normal distributions with different graph structures. Please refer to \code{\link{huge.generator}}.\cr
-(2) the NonparaNormal (NPN) transformation helps relax the normality assumption. Please refer to \code{\link{huge.NPN}}.\cr
-(3) The Graph Estimation via Correlation Thresholding (GECT).Please refer to \code{\link{huge.GECT}} and \code{\link{huge}}.\cr 
-(4) The Meinshausen & Buhlmann Graph Estimation via Lasso(MBGEL). It can be furether accelerated by the Graph SURE Screening (GSS) preselecting the neighborhood of each node via thresholding sample correlation. Please refer to \code{\link{huge.MBGEL}} and \code{\link{huge}}.\cr
-(5) The slightly modified Graphical Lasso (GLASSO) using sparse matrix representation. Please refer to \code{\link{huge.glassoM}} and \code{\link{huge}}.\cr
+(2) the NonparaNormal (NPN) transformation helps relax the normality assumption. Please refer to \code{\link{huge.npn}}.\cr
+(3) The Graph Estimation via Correlation Thresholding (GECT).Please refer to \code{\link{huge}}.\cr 
+(4) The Meinshausen & Buhlmann Graph Estimation via Lasso(MBGEL). It can be furether accelerated by the Graph SURE Screening (GSS) preselecting the neighborhood of each node via thresholding sample correlation. Please refer to \code{\link{huge}}.\cr
+(5) The slightly modified Graphical Lasso (GLASSO) using sparse matrix representation. Please refer and \code{\link{huge}}.\cr
 (6) The model selection using the Stability Approach to Regularization Selection(StARS). Please refer to \code{\link{huge.select}}.\cr
 (7) The model selection using the Rotation Information Criterion (RIC). Please refer to \code{\link{huge.select}}.\cr
 (8) The model selection using the Extended Bayesian Information Criterion(EBIC). Please refer to \code{\link{huge.select}}.\cr
@@ -37,11 +37,11 @@ Maintainers: Tuo Zhao<tourzhao@gmail.com>; Han Liu <hanliu@cs.jhu.edu>
 4.Han Liu, John Lafferty and Larry Wasserman. The Nonparanormal: Semiparametric Estimation of High Dimensional Undirected Graphs. \emph{Journal of Machine Learning Research} (JMLR), 2009 \cr
 5.Jianqing Fan and Jinchi Lv. Sure independence screening for ultra-high dimensional feature space (with discussion). \emph{Journal of Royal Statistical Society B}, 2008.\cr
 6.Onureena Banerjee, Laurent El Ghaoui, Alexandre d'Aspremont: Model Selection Through Sparse Maximum Likelihood Estimation for Multivariate Gaussian or Binary Data. \emph{Journal of Machine Learning Research} (JMLR), 2008.\cr
-7.Jiahua Chen and Zehua Chen. Extended Bayesian information criterion for model selection with large model space. \emph{Biometrika}, 2008.\cr
+7.Jiahua Chen and Zehua Chen. Extended Bayesian information criterion for Gaussian graphical models. \emph{Advances in Neural Information Processing Systems}(NIPS), 2010.\cr
 8.Jerome Friedman, Trevor Hastie and Robert Tibshirani. Regularization Paths for Generalized Linear Models via Coordinate Descent. \emph{Journal of Statistical Software}, 2008. \cr
 9.Jerome Friedman, Trevor Hastie and Robert Tibshirani. Sparse inverse covariance estimation with the lasso, \emph{Biostatistics}, 2007.\cr
 10.Nicolai Meinshausen and Peter Buhlmann. High-dimensional Graphs and Variable Selection with the Lasso. \emph{The Annals of Statistics}, 2006.
 }
 \seealso{
-\code{\link{huge.generator}}, \code{\link{huge.NPN}}, \code{\link{huge.GECT}}, \code{\link{huge.MBGEL}}, \code{\link{huge.glassoM}}, \code{\link{huge}}, \code{\link{huge.plot}} and \code{\link{huge.roc}}
+\code{\link{huge.generator}}, \code{\link{huge.npn}}, \code{\link{huge}}, \code{\link{huge.plot}} and \code{\link{huge.roc}}
 }

@@ -6,41 +6,41 @@ High-dimensional undirected graph estimation
 }
 
 \description{
-The main function for high-dimensional undirected graph estimation. It provides a general interface to load \code{huge.GECT(), huge.MBGEL()} and \code{huge.glassoM()} for data analysis.
+The main function for high-dimensional undirected graph estimation. Three graph estimation methods, including Meinshausen & Buhlmann Graph Estimation via Lasso (MBGEL), Graphical Lasso (GLASSO) and Graph Estimation via Correlation Thresholding (GECT), are available for data analysis.
 }
 
 \usage{
-huge(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, method = "MBGEL", scr = NULL, scr.num = NULL, cov.output = FALSE, sym = "or", verbose = TRUE)
+huge(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, method = "mbgel", scr = NULL, scr.num = NULL, cov.output = FALSE, sym = "or", verbose = TRUE)
 }
 
 \arguments{
-  \item{L}{
-There are 2 options: (1) \code{L} is an \code{n} by \code{d} data matrix or a \code{d} by \code{d} sample covariance matrix. (2) \code{L} is a list containing \code{L$data} as an \code{n} by \code{d} data matrix or a \code{d} by \code{d} sample covariance matrix. \code{L} can also contain \code{L$theta} as the true graph adjacency matrix, please refer to the returned values for more details. The program automatically identifies the input matrix by checking the symmetry. (\code{n} is the sample size and \code{d} is the dimension).
+  \item{x}{
+There are 2 options: (1) \code{x} is an \code{n} by \code{d} data matrix (2) a \code{d} by \code{d} sample covariance matrix. The program automatically identifies the input matrix by checking the symmetry. (\code{n} is the sample size and \code{d} is the dimension).
 
 }
   \item{lambda}{
-A sequence of decresing positive numbers to control the regularization in Meinshausen & Buhlmann Graph Estimation via Lasso (MBGEL) and Graphical Lasso (GLASSO), or the thresholding in Graph Estimation via Correlation Thresholding (GECT). Typical usage is to leave the input \code{lambda = NULL} and have the program compute its own \code{lambda} sequence based on \code{nlambda} and \code{lambda.min.ratio}. Users can also specify a sequence to override this. When \code{method = "MBGEL"} use with care - it is better to supply a decreasing sequence values than a single (small) value.
+A sequence of decresing positive numbers to control the regularization in MBGEL and GLASSO, or the thresholding in GECT. Typical usage is to leave the input \code{lambda = NULL} and have the program compute its own \code{lambda} sequence based on \code{nlambda} and \code{lambda.min.ratio}. Users can also specify a sequence to override this. When \code{method = "mbgel"} use with care - it is better to supply a decreasing sequence values than a single (small) value.
 }
   \item{nlambda}{
-The number of regularization/thresholding paramters. The default value is \code{30} if \code{method = "GECT"} and \code{10} if \code{method = "MBGEL"} or \code{method = "GLASSO"}.
+The number of regularization/thresholding paramters. The default value is \code{30} if \code{method = "gect"} and \code{10} if \code{method = "mbgel"} or \code{method = "glasso"}.
 }
   \item{lambda.min.ratio}{
-If \code{method = "MBGEL"} or \code{method = "GLASSO"}, it is the smallest value for \code{lambda}, as a fraction of the uppperbound (\code{MAX}) of the regularization/thresholding parameter which makes all estimates equal to \code{0}. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda} starting from \code{MAX} to \code{lambda.min.ratio*MAX} in log scale. If \code{method = "GECT"}, it is the largest sparsity level for estimated graphs. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda}, which makes the sparsity level of the graph path increases from \code{0} to \code{lambda.min.ratio} evenly.The default value is \code{0.1} when \code{method = "MBGEL"} or \code{method = "GLASSO"}, and 0.05 \code{method = "GECT"}.
+If \code{method = "mbgel"} or \code{method = "glasso"}, it is the smallest value for \code{lambda}, as a fraction of the uppperbound (\code{MAX}) of the regularization/thresholding parameter which makes all estimates equal to \code{0}. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda} starting from \code{MAX} to \code{lambda.min.ratio*MAX} in log scale. If \code{method = "gect"}, it is the largest sparsity level for estimated graphs. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda}, which makes the sparsity level of the graph path increases from \code{0} to \code{lambda.min.ratio} evenly.The default value is \code{0.1} when \code{method = "mbgel"} or \code{method = "glasso"}, and 0.05 \code{method = "gect"}.
 }
   \item{method}{
-Graph estimation methods with 3 options: \code{"MBGEL"}, \code{"GECT"} and \code{"GLASSO"}. The defaulty value is \code{"MBGEL"}. 
+Graph estimation methods with 3 options: \code{"mbgel"}, \code{"gect"} and \code{"glasso"}. The defaulty value is \code{"mbgel"}. 
 }
   \item{scr}{
-If \code{scr = TRUE}, Graph Sure Screening (GSS) is applied to preselect the neighborhood before MBGEL. The default value is \code{TRUE} for \code{n<d} and \code{FALSE} for \code{n>=d}. ONLY applicable when \code{method = "MBGEL"}.
+If \code{scr = TRUE}, Graph Sure Screening (GSS) is applied to preselect the neighborhood before MBGEL. The default value is \code{TRUE} for \code{n<d} and \code{FALSE} for \code{n>=d}. ONLY applicable when \code{method = "mbgel"}.
 }
   \item{scr.num}{
-The neighborhood size after the GSS (the number of remaining neighbors per node). ONLY applicable when \code{scr = TRUE}. The default value is \code{n-1}. An alternative value is \code{n/log(n)}. ONLY applicable when \code{scr = TRUE} and \code{method = "MBGEL"}.
+The neighborhood size after the GSS (the number of remaining neighbors per node). ONLY applicable when \code{scr = TRUE}. The default value is \code{n-1}. An alternative value is \code{n/log(n)}. ONLY applicable when \code{scr = TRUE} and \code{method = "mbgel"}.
 }
   \item{cov.output}{
-If \code{cov.output = TRUE}, the outpu will inlcude a path of estimated covariance matrices. ONLY applicable when \code{method = "GLASSO"}. Since the estimated covariance matrices are generally not sparse, please use it with care, or it may take much memory under high-dimensional setting. The default value is \code{FALSE}.
+If \code{cov.output = TRUE}, the outpu will inlcude a path of estimated covariance matrices. ONLY applicable when \code{method = "glasso"}. Since the estimated covariance matrices are generally not sparse, please use it with care, or it may take much memory under high-dimensional setting. The default value is \code{FALSE}.
 }
   \item{sym}{
-Symmetrize the output graphs. If \code{sym = "and"}, the edge between node \code{i} and node \code{j} is selected ONLY when both node \code{i} and node \code{j} are selected as neighbors for each other. If \code{sym = "or"}, the edge is selected when either node \code{i} or node \code{j} is selected as the neighbor for each other. The default value is \code{"or"}. ONLY applicable when \code{method = "MBGEL"}.
+Symmetrize the output graphs. If \code{sym = "and"}, the edge between node \code{i} and node \code{j} is selected ONLY when both node \code{i} and node \code{j} are selected as neighbors for each other. If \code{sym = "or"}, the edge is selected when either node \code{i} or node \code{j} is selected as the neighbor for each other. The default value is \code{"or"}. ONLY applicable when \code{method = "mbgel"}.
 }
   \item{verbose}{
 If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.
@@ -57,9 +57,6 @@ The \code{n} by \code{d} data matrix or \code{d} by \code{d} sample covariance m
   \item{cov.input}{
 An indicator of the sample covariance. 
 }
-  \item{theta}{
-The true graph structure from the input. ONLY applicable when the input list L contains L$theta as the true graph structure.
-}
   \item{ind.mat}{
 The \code{scr.num} by \code{k} matrix with each column correspondsing to a variable in \code{ind.group} and contains the indices of the remaining neighbors after the GSS. ONLY applicable when \code{scr = TRUE} and \code{approx = FALSE}
 }
@@ -67,10 +64,10 @@ The \code{scr.num} by \code{k} matrix with each column correspondsing to a varia
 The sequence of regularization parameters used in MBGEL or thresholding parameters in GECT.
 }
   \item{sym}{
-The \code{sym} from the input. ONLY applicable when \code{method = "MBGEL"}.
+The \code{sym} from the input. ONLY applicable when \code{method = "mbgel"}.
 }
   \item{scr}{
-The \code{scr} from the input. ONLY applicable when \code{method = "MBGEL"}.
+The \code{scr} from the input. ONLY applicable when \code{method = "mbgel"}.
 }
   \item{path}{
 A list of \code{k} by \code{k} adjacency matrices of estimated graphs as a graph path corresponding to \code{lambda}.
@@ -79,20 +76,19 @@ A list of \code{k} by \code{k} adjacency matrices of estimated graphs as a graph
 The sparsity levels of the graph path.
 }
   \item{wi}{
-A list of \code{d} by \code{d} precision matrices as an alternative graph path (numerical path) corresponding to \code{lambda}. ONLY applicable when {method = "GLASSO"}
+A list of \code{d} by \code{d} precision matrices as an alternative graph path (numerical path) corresponding to \code{lambda}. ONLY applicable when {method = "glasso"}
 }
   \item{w}{
-A list of \code{d} by \code{d} estimated covariance matrices corresponding to \code{lambda}. ONLY applicable when \code{cov.output = TRUE} and {method = "GLASSO"}
+A list of \code{d} by \code{d} estimated covariance matrices corresponding to \code{lambda}. ONLY applicable when \code{cov.output = TRUE} and {method = "glasso"}
 }
   \item{method}{
 The method used in the graph estimation stage.
 }
   \item{df}{
-If \code{method = "MBGEL"}, it is a \code{k} by \code{nlambda} matrix. Each row corresponds to a variable in \code{ind.group} and contains the number of nonzero coefficients along the lasso solution path. If \code{method = "GLASSO"}, it is a \code{nlambda} dimensional vector containing the number of nonzero coefficients along the graph path \code{wi}.
+If \code{method = "mbgel"}, it is a \code{k} by \code{nlambda} matrix. Each row contains the number of nonzero coefficients along the lasso solution path. If \code{method = "glasso"}, it is a \code{nlambda} dimensional vector containing the number of nonzero coefficients along the graph path \code{wi}.
 }
   \item{loglik}{
-A \code{nlambda} dimensional vector containing the likelihood scores along the graph path (\code{wi}). ONLY applicable when
-\code{method = "GLASSO"} 
+A \code{nlambda} dimensional vector containing the likelihood scores along the graph path (\code{wi}). ONLY applicable when \code{method = "glasso"} 
 }
 }
 \author{
@@ -115,25 +111,34 @@ This function ONLY estimates the graph path. For more information about the opti
 }
 
 \seealso{
-\code{\link{huge.generator}}, \code{\link{huge.NPN}}, \code{\link{huge.GECT}}, \code{\link{huge.MBGEL}}, \code{\link{huge.glassoM}}, \code{\link{huge.select}}, \code{\link{huge.plot}}, \code{\link{huge.roc}}, and \code{\link{huge-package}}.
+\code{\link{huge.generator}}, \code{\link{huge.select}}, \code{\link{huge.plot}}, \code{\link{huge.roc}}, and \code{\link{huge-package}}.
 }
 
 \examples{
 #generate data
 L = huge.generator(n = 200, d = 80, graph = "hub")
 
-#graph path estimation with input as a list
-out1 = huge(L)
-plot(out1)
-plot(out1, align = TRUE)
+#graph path estimation using MBGEL
+out1 = huge(L$data)
+out1
+plot(out1)				 #Not aligned	
+plot(out1, align = TRUE) #Aligned
 huge.plot(out1$path[[3]])
-plot(out1$lambda,out1$sparsity)
+
+#graph path estimation using the sample covariance matrix as the input.
+out1 = huge(cor(L$data))
+out1
+plot(out1)				 #Not aligned	
+plot(out1, align = TRUE) #Aligned
+huge.plot(out1$path[[3]])
 
 #graph path estimation using GECT
-out2 = huge(L$data,method = "GECT")
+out2 = huge(L$data,method = "gect")
+out2
 plot(out2)
 
 #graph path estimation using GLASSO
-out3 = huge(L, method = "GLASSO")
+out3 = huge(L$data, method = "glasso")
+out3
 plot(out3)
 }

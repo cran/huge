@@ -1,27 +1,27 @@
-\name{huge.NPN}
-\alias{huge.NPN}
+\name{huge.npn}
+\alias{huge.npn}
 
 \title{
 NonparaNormal(NPN) transformation
 }
 
 \description{
-Implements the NonparaNormal transformation (Gausianization) to help relax the assumption of normality.
+Implements the Gausianization to help relax the assumption of normality.
 }
 
 \usage{
-huge.NPN(x, NPN.func = "shrinkage", NPN.thresh, verbose = TRUE)
+huge.npn(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE)
 }
 
 \arguments{
   \item{x}{
 The \code{n} by \code{d} data matrix representing \code{n} observations in \code{d} dimensions
 }
-  \item{NPN.func}{
-The transformation function used in the NPN transformation. If \code{NPN.func = "truncation"}, the truncated ECDF is applied. If \code{NPN.func = "shrinkage"}, the shrunken ECDF is applied. The default is \code{"shrinkage"}.
+  \item{npn.func}{
+The transformation function used in the npn transformation. If \code{npn.func = "truncation"}, the truncated ECDF is applied. If \code{npn.func = "shrinkage"}, the shrunken ECDF is applied. The default is \code{"shrinkage"}.
 }
-  \item{NPN.thresh}{
-The truncation threshold used in NPN transformation, ONLY applicable when \code{NPN.func = "truncation"}. The default value is \code{1/(4*(n^0.25)*} \code{sqrt(pi*log(n)))}.
+  \item{npn.thresh}{
+The truncation threshold used in Nonparanormal transformation, ONLY applicable when \code{npn.func = "truncation"}. The default value is \code{1/(4*(n^0.25)*} \code{sqrt(pi*log(n)))}.
 }
   \item{verbose}{
 If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.
@@ -29,19 +29,12 @@ If \code{verbose = FALSE}, tracing information printing is disabled. The default
 }
 
 \details{
-The NPN is a very helpful tool to relax the normality assumption. It assumes the data come from a Gaussian cornopula and computationally, fitting a high dimensional NPN is no more difficult than estimating a multivariate Gaussian and one can also apply to other existing estimation algorithms. The output data are already standardized as sample mean zero and unit variance.
+The NPN is a very helpful tool to relax the normality assumption. It assumes the data come from a Gaussian cornopula and computationally, fitting a high dimensional npn is no more difficult than estimating a multivariate Gaussian and one can also apply to other existing estimation algorithms. The output data are already standardized as sample mean zero and unit variance.
 }
 
 \value{
-An object with S3 class "NPN" is returned:
-  \item{data}{
+\item{data}{
 The \code{n} by \code{d} data matrix representing \code{n} observations in \code{d} transformed dimensions
-}
-  \item{ntdata}{
-The original data matrix before the NPN transformation
-}
-  \item{NPN.func}{
-The transformation function used in the NPN transformation
 }
 }
 
@@ -64,10 +57,8 @@ Maintainer: Tuo Zhao<tourzhao@gmail.com>;Han Liu<hanliu@cs.jhu.edu>
 L = huge.generator(graph = "cluster", g = 5)
 
 # transform the non-Gaussian data using the shrunken ECDF
-Q = huge.NPN(L$data^5)
-plot(Q)
+Q = huge.npn(L$data^5)
 
 # transform the non-Gaussian data using the truncated ECDF
-Q = huge.NPN(5^(L$data), NPN.func = "truncation")
-plot(Q)
+Q = huge.npn(5^(L$data), npn.func = "truncation")
 }

@@ -1,6 +1,6 @@
 #-----------------------------------------------------------------------#
 # Package: High-dimensional Undirected Graph Estimation (HUGE)          #
-# huge.GECT():                                                          #                           
+# huge.gect():                                                          #                           
 # Graph Estimation via Correlation Thresholding (GECT)                  # 
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
@@ -9,21 +9,28 @@
 #-----------------------------------------------------------------------#
 
 ##Main function
-huge.GECT = function(x, nlambda = NULL, lambda.min.ratio = NULL, lambda = NULL, verbose = TRUE)
+huge.gect = function(x, nlambda = NULL, lambda.min.ratio = NULL, lambda = NULL, verbose = TRUE)
 {	
 	gcinfo(FALSE)
-  	d = ncol(x)
-  	fit = list()
-  	fit$cov.input = isSymmetric(x)
-  	if(!fit$cov.input)	S = abs(cor(x))
-  	if(fit$cov.input)
-  	{
-  		if(verbose) cat("The input is identified as the covriance matrix.\n")
-  		S = abs(x);
-  	}
-  	diag(S) = 0
+	n = nrow(x);
+	d = ncol(x);
+	fit = list()
+	fit$cov.input = isSymmetric(x);
+	if(fit$cov.input)
+	{
+		if(verbose) cat("The input is identified as the covriance matrix.\n")
+		S = cov2cor(x);
+	}
+	if(!fit$cov.input)
+	{
+		x = scale(x)
+		S = t(x)%*%x/n
+	}
+	
+	rm(x)
+	gc()
+	diag(S) = 0
   	S.rank = order(S,decreasing = TRUE)
-  	rm(x)
 	gc()
  		
 	if(is.null(lambda))
@@ -84,20 +91,5 @@ huge.GECT = function(x, nlambda = NULL, lambda.min.ratio = NULL, lambda = NULL, 
         flush.console()
     }
 	gc()
-	class(fit) = "GECT"
 	return(fit)
-}
-
-# Default printing function
-print.GECT = function(x, ...)
-{
-	cat("This is a solution path using Graph Estimation via Correlation Thresholding (GECT) and length = ", length(x$path), "\n")
-	cat("huge.GECT() is an internal function, please refer to huge() and huge.select()")
-}
-
-# Default plot function
-plot.GECT = function(x, ...)
-{
-	par(mfrow = c(1,1),pty = "s")
-	plot(x$lambda, x$sparsity, log = "x", xlab = "Regularization Parameter", ylab = "Sparsity Level", type = "b",xlim = rev(range(x$lambda)))
 }

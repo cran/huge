@@ -134,7 +134,7 @@ print.sim = function(x, ...){
 
 plot.sim = function(x, ...){
 	gcinfo(FALSE)	
-   	par = par(mfrow = c(2, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
+   	par = par(mfrow = c(1, 4), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
    	image(as.matrix(x$theta), col = gray.colors(256),  main = "Adjacency Matrix")
 	image(x$sigma, col = gray.colors(256), main = "Covariance Matrix")
 	g = graph.adjacency(x$theta, mode="undirected", diag=FALSE)

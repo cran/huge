@@ -6,32 +6,20 @@
 #		  (3) Graphical Lasso            	                            #
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
-# Date: Jun 8th 2011                                                    #
-# Version: 1.0.2                                                        #
+# Date: Jun 12th 2011                                                   #
+# Version: 1.0.3                                                        #
 #-----------------------------------------------------------------------#
 
 ## Main function
-huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, method = "MBGEL", scr = NULL, scr.num = NULL, cov.output = FALSE, sym = "or", verbose = TRUE)
+huge = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, method = "mbgel", scr = NULL, scr.num = NULL, cov.output = FALSE, sym = "or", verbose = TRUE)
 {	
 	gcinfo(FALSE)
 	est = list()
-	est$method = method
-	
-	if(is.list(L))
-	{
-		est$data = L$data
-		if(!is.null(L$theta))	est$theta = L$theta
-	}
-	
-	if(!is.list(L)) est$data = L
-	
-	rm(L)
-	gc()		
-	
+	est$method = method	
 		
-	if(method == "GECT")
+	if(method == "gect")
 	{
-		fit = huge.GECT(est$data, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, verbose = verbose)
+		fit = huge.gect(x, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, verbose = verbose)
 		est$path = fit$path
 		est$lambda = fit$lambda
 		est$sparsity = fit$sparsity
@@ -40,9 +28,9 @@ huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, metho
 		gc()
 	}
 	
-	if(method == "MBGEL")
+	if(method == "mbgel")
 	{	
-		fit = huge.MBGEL(est$data, lambda = lambda, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, scr = scr, scr.num = scr.num, sym = sym, verbose = verbose)
+		fit = huge.mbgel(x, lambda = lambda, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, scr = scr, scr.num = scr.num, sym = sym, verbose = verbose)
 		est$path = fit$path
 		est$lambda = fit$lambda
 		est$sparsity = fit$sparsity
@@ -56,9 +44,9 @@ huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, metho
 	}
 	
 	
-	if(method == "GLASSO")
+	if(method == "glasso")
 	{
-		fit = huge.glassoM(est$data, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, cov.output = cov.output, verbose = verbose)
+		fit = huge.glasso(x, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, cov.output = cov.output, verbose = verbose)
 		est$path = fit$path
 		est$lambda = fit$lambda
 		est$wi = fit$wi
@@ -73,7 +61,9 @@ huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, metho
 		gc()
 	}			
 			
-	rm(scr,lambda,lambda.min.ratio,nlambda,cov.output,verbose)
+	est$data = x
+	
+	rm(x,scr,lambda,lambda.min.ratio,nlambda,cov.output,verbose)
 	gc()
 	class(est) = "huge"
 	return(est)
@@ -81,19 +71,17 @@ huge = function(L, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, metho
 
 print.huge = function(x, ...)
 {	
-	if(x$method == "GECT")
+	if(x$method == "gect")
 		cat("Model: Graph Approximation via Correlation Thresholding (GECT)\n")
-	if(x$method == "GLASSO")
+	if(x$method == "glasso")
 		cat("Model: Graphical Lasso (GLASSO)\n")
-	if(x$method == "MBGEL")
+	if(x$method == "mbgel")
 		cat("Model: Meinshausen & Buhlmann Graph Estimation via Lasso (MBGEL)\n")
 	
-	if((x$method == "MBGEL")&&(x$scr)) cat("Graph SURE Screening (GSS): on\n")
+	if((x$method == "mbgel")&&(x$scr)) cat("Graph SURE Screening (GSS): on\n")
 
 	if(x$cov.input) cat("Input: The Covariance Matrix\n")
 	if(x$cov.input) cat("Input: The Data Matrix\n")
-	if(is.null(x$theta)) cat("True graph: not included\n")
-	if(!is.null(x$theta)) cat("True graph: included\n")
 	
 	cat("Path length:",length(x$lambda),"\n")
 	cat("Graph Dimension:",ncol(x$data),"\n")
@@ -105,7 +93,7 @@ plot.huge = function(x, align = FALSE, ...){
 	
 	if(length(x$lambda) == 1)	par(mfrow = c(1, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
 	if(length(x$lambda) == 2)	par(mfrow = c(1, 3), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
-	if(length(x$lambda) >= 3)	par(mfrow = c(2, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
+	if(length(x$lambda) >= 3)	par(mfrow = c(1, 4), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
 	
 	if(length(x$lambda) <= 3)	z.final = 1:length(x$lambda)
 	

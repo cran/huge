@@ -1,6 +1,6 @@
 #-----------------------------------------------------------------------#
 # Package: High-dimensional Undirected Graph Estimation (HUGE)          #
-# huge.MBGEL(): Meinshausen & Buhlmann Graph                            #
+# huge.mbgel(): Meinshausen & Buhlmann Graph                            #
 #				Estimation via Lasso (MBGEL)                            #
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
@@ -9,7 +9,7 @@
 #-----------------------------------------------------------------------#
 
 ## Main function
-huge.MBGEL = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, scr = NULL, scr.num = NULL, idx.mat = NULL, sym = "or", verbose = TRUE)
+huge.mbgel = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, scr = NULL, scr.num = NULL, idx.mat = NULL, sym = "or", verbose = TRUE)
 {
 	gcinfo(FALSE)
 	n = nrow(x);
@@ -153,19 +153,5 @@ huge.MBGEL = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL,
    		
    	rm(verbose,nlambda)
    	gc()
-   	class(fit) = "MBGEL"
    	return(fit)
-}
-
-# Default printing function
-print.MBGEL = function(x, ...){
-	cat("This is a solution path using Meinshausen & Buhlman Graph Estimation via Lasso (MBGEL) and length = ", length(x$path), "\n")
-	cat("huge.MBGEL() is an internal function. For more information, please refer to huge() and huge.select().\n")
-}
-	
-# Default plot function
-plot.MBGEL = function(x, ...){
-	par(mfrow = c(1,1))
-	plot(x$lambda, x$sparsity, log = "x", xlab = "Regularization Parameter", ylab = "Sparsity Level", type = "b",xlim = rev(range(x$lambda)))
-	cat("huge.MBGEL() is an internal function. For more information, please refer to huge() and huge.select().\n")
 }

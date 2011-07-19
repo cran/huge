@@ -7,7 +7,7 @@ export(huge,
 	huge.npn,
 	huge.plot,
 
-	huge.mbgel, huge.glasso, huge.gect,
+	huge.mb, huge.glasso, huge.ct,
 
 	print.huge,plot.huge,
 	print.sim,plot.sim,

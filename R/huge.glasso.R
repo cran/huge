@@ -1,14 +1,14 @@
 #-----------------------------------------------------------------------#
-# Package: High-dimensional Undirected Graph Estimation (HUGE)          #
-# glasso(): A Graphical Lasso (GLASSO) using Sparse Matrices           #
+# Package: High-dimensional Undirected Graph Estimation                 #
+# glasso(): The graphical lasso (glasso) using sparse matrix output     #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
-# Date: Jun 15th 2011                                                    #
-# Version: 1.0.3                                                        #
+# Emails: <tzhao5@jhu.edu> and <hanliu@cs.jhu.edu>                      #
+# Date: July 15th 2011                                                  #
+# Version: 1.1.0                                                        #
 #-----------------------------------------------------------------------#
 
 ## Main function
-huge.glasso = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NULL, cov.output = FALSE, verbose = TRUE){
+huge.glasso = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NULL, scr = NULL, cov.output = FALSE, verbose = TRUE){
 	
 	gcinfo(FALSE)
 	n = nrow(x)
@@ -23,11 +23,12 @@ huge.glasso = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NULL
 	if(!fit$cov.input)
 	{
 		x = scale(x)
-		S = t(x)%*%x/n
+		S = cor(x)
 	}
 	rm(x)
 	gc()
-	
+	if(is.null(scr)) scr = FALSE
+	fit$scr = scr
 	if(!is.null(lambda)) nlambda = length(lambda)
 	if(is.null(lambda))
 	{
@@ -41,60 +42,73 @@ huge.glasso = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NULL
 	}
 	
 	fit$lambda = lambda
-	fit$loglik = rep(0,nlambda)
+	fit$loglik = rep(-d,nlambda)
 	fit$sparsity = rep(0,nlambda)
 	fit$df = rep(0,nlambda)
-	if(verbose)
-	{
-		cat(paste(c("Conducting Graphical Lasso (GLASSO)....in progress:", floor(100*((1/nlambda)^2)), "%"), collapse=""), "\r")
-		flush.console()
-	}
-	
-	out.glasso = glasso(S, lambda[nlambda])
-	tmp.w = out.glasso$w
-	tmp.wi = out.glasso$wi
-	fit$loglik[nlambda] = out.glasso$loglik + lambda[nlambda]*sum(abs(tmp.wi[[nlambda]]))
-	rm(out.glasso)
-	gc()
-	fit$wi = list()
-	fit$wi[[nlambda]] = Matrix(tmp.wi,sparse = TRUE)
-	if(cov.output)
-	{
-		fit$w = list()
-		fit$w[[nlambda]] = Matrix(tmp.w,sparse = TRUE)
-	}
-	
 	fit$path = list()
-	fit$path[[nlambda]] = Matrix(abs(sign(tmp.wi)), sparse = TRUE)
-	diag(fit$path[[nlambda]]) = 0
-	
-	fit$df[nlambda] = sum(fit$path[[nlambda]])/2
-	fit$sparsity[nlambda] = 2*fit$df[[nlambda]]/d/(d-1)
-	if(nlambda>1)
-		for(i in (nlambda-1):1){
+	fit$icov = list()
+	fit$cov.output = cov.output	
+	if(cov.output) fit$cov = list()
+	out.glasso=NULL
+	for(i in 1:nlambda)
+	{	
+		z = which(rowSums(abs(S)>lambda[i])>1)
+		q = length(z)
+
+		if(q>0)
+		{
 			if(verbose){
-				cat(paste(c("Conducting Graphical Lasso (GLASSO)....in progress:", floor(100*(((nlambda-i)/nlambda)^2)), "%"), collapse=""), "\r")
+				if(scr){
+					cat(paste(c("Conducting the graphical lasso (glasso) wtih lossy screening....in progress:", floor(100*(i/nlambda)), "%"), collapse=""), "\r")
+				}
+				if(!scr){
+					cat(paste(c("Conducting the graphical lasso (glasso) with lossless screening....in progress:", floor(100*(i/nlambda)), "%"), collapse=""), "\r")
+				}		
 				flush.console()
 			}
-			out.glasso = glasso(S,rho = fit$lambda[i], w.init = tmp.w, wi.init = tmp.wi, start = "warm")
-			tmp.w = out.glasso$w
-			tmp.wi = out.glasso$wi
-			fit$loglik[i] = out.glasso$loglik + lambda[i]*sum(abs(tmp.wi))
-			rm(out.glasso)
-			gc()
-			fit$wi[[i]] = Matrix(tmp.wi,sparse = TRUE)
-			if(cov.output)
-				fit$w[[i]] = Matrix(tmp.w,sparse = TRUE)
-			fit$path[[i]] = Matrix(abs(sign(tmp.wi)), sparse = TRUE)
-			diag(fit$path[[i]]) = 0
-			fit$df[i] = sum(fit$path[[i]])/2
-			fit$sparsity[i] = 2*fit$df[[i]]/d/(d-1)
-			gc()
+			
+			if(scr){
+				if(!is.null(out.glasso))
+					out.glasso = .C("hugeglassoscr", S = as.double(S[z,z]), W = as.double(tmp.cov[z,z]), T = as.double(tmp.icov[z,z]), dd = as.integer(q),lambda = as.double(lambda[i]), df = as.integer(0), PACKAGE="huge")
+				if(is.null(out.glasso))
+					out.glasso = .C("hugeglassoscr", S = as.double(S[z,z]), W = as.double(diag(q)), T = as.double(diag(q)), dd = as.integer(q),lambda = as.double(lambda[i]), df = as.integer(0), PACKAGE="huge")
+			}	
+			
+			else {
+				if(!is.null(out.glasso))
+					out.glasso = .C("hugeglasso", S = as.double(S[z,z]), W = as.double(tmp.cov[z,z]), T = as.double(tmp.icov[z,z]), dd = as.integer(q),lambda = as.double(lambda[i]), df = as.integer(0), PACKAGE="huge")
+				if(is.null(out.glasso))
+					out.glasso = .C("hugeglasso", S = as.double(S[z,z]), W = as.double(diag(q)), T = as.double(diag(q)), dd = as.integer(q),lambda = as.double(lambda[i]), df = as.integer(0), PACKAGE="huge")
+			}
+			
+			out.glasso$T = matrix(out.glasso$T,ncol=q)
+			out.glasso$W = matrix(out.glasso$W,ncol=q)
 		}
-	rm(S,tmp.w,tmp.wi)
+		if(q == 0) out.glasso = NULL
+
+		tmp.icov = matrix(0,d,d);
+		diag(tmp.icov) = 1/(diag(S)+lambda[i])
+		tmp.cov = matrix(0,d,d);
+		diag(tmp.cov) = diag(S)+lambda[i] 
+		fit$path[[i]] = Matrix(0,d,d)
+		if(!is.null(out.glasso))
+		{
+			tmp.icov[z,z] = out.glasso$T
+			tmp.cov[z,z] = out.glasso$W
+			fit$path[[i]][z,z] = abs(sign(out.glasso$T));
+			diag(fit$path[[i]]) = 0;
+			fit$sparsity[i] = as.double(out.glasso$df)/d/(d-1)
+      fit$df[i] = out.glasso$df/2
+			fit$loglik[i] = (log(det(out.glasso$T)) - sum(diag(out.glasso$T%*%S[z,z])) - (d-q))
+		}
+		fit$icov[[i]] = Matrix(tmp.icov)
+		if(cov.output)
+			fit$cov[[i]] = Matrix(tmp.cov)		
+	}
+	rm(S,out.glasso,tmp.cov,tmp.icov)
 	gc()
 	if(verbose){
-   		cat("Conducting Graphical Lasso (GLASSO)....done.              \r")
+   		cat("Conducting the graphical lasso (glasso)....done.                                          \r")
    		cat("\n")
         flush.console()
     }

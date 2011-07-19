@@ -1,25 +1,22 @@
 #-----------------------------------------------------------------------#
-# Package: High-dimensional Undirected Graph Estimation (HUGE)          #
-# huge(): High-dimensional Undirected Graph Estimation via              #
-#		  (1) Lasso 	   		                                        #
-#		  (2) Correlation Thresholding                                  #
-#		  (3) Graphical Lasso            	                            #
+# Package: High-dimensional Undirecte d Graph Estimation                #
+# huge(): The user interface for huge.mb(), huge.glasso() and huge.ct() #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
-# Date: Jun 12th 2011                                                   #
-# Version: 1.0.3                                                        #
+# Emails: <tzhao5@jhu.edu> and <hanliu@cs.jhu.edu>                      #
+# Date: Jul 15th 2011                                                   #
+# Version: 1.1.0                                                        #
 #-----------------------------------------------------------------------#
 
 ## Main function
-huge = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, method = "mbgel", scr = NULL, scr.num = NULL, cov.output = FALSE, sym = "or", verbose = TRUE)
+huge = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, method = "mb", scr = NULL, scr.num = NULL, cov.output = FALSE, sym = "or", verbose = TRUE)
 {	
 	gcinfo(FALSE)
 	est = list()
 	est$method = method	
 		
-	if(method == "gect")
+	if(method == "ct")
 	{
-		fit = huge.gect(x, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, verbose = verbose)
+		fit = huge.ct(x, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, verbose = verbose)
 		est$path = fit$path
 		est$lambda = fit$lambda
 		est$sparsity = fit$sparsity
@@ -28,9 +25,9 @@ huge = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, metho
 		gc()
 	}
 	
-	if(method == "mbgel")
+	if(method == "mb")
 	{	
-		fit = huge.mbgel(x, lambda = lambda, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, scr = scr, scr.num = scr.num, sym = sym, verbose = verbose)
+		fit = huge.mb(x, lambda = lambda, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, scr = scr, scr.num = scr.num, sym = sym, verbose = verbose)
 		est$path = fit$path
 		est$lambda = fit$lambda
 		est$sparsity = fit$sparsity
@@ -46,17 +43,18 @@ huge = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, metho
 	
 	if(method == "glasso")
 	{
-		fit = huge.glasso(x, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, cov.output = cov.output, verbose = verbose)
+		fit = huge.glasso(x, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, scr = scr, cov.output = cov.output, verbose = verbose)
 		est$path = fit$path
 		est$lambda = fit$lambda
-		est$wi = fit$wi
+		est$icov = fit$icov
 		est$df = fit$df
 		est$sparsity = fit$sparsity
 		est$loglik = fit$loglik
 		if(cov.output)
-			est$w = fit$w
-		est$cov.input = fit$cov.input	
-		
+			est$cov = fit$cov
+		est$cov.input = fit$cov.input
+		est$cov.output = fit$cov.output	
+		est$scr = fit$scr
 		rm(fit)
 		gc()
 	}			
@@ -71,25 +69,25 @@ huge = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, metho
 
 print.huge = function(x, ...)
 {	
-	if(x$method == "gect")
-		cat("Model: Graph Approximation via Correlation Thresholding (GECT)\n")
+	if(x$method == "ct")
+		cat("Model: graph estimation via correlation thresholding (ct)\n")
 	if(x$method == "glasso")
-		cat("Model: Graphical Lasso (GLASSO)\n")
-	if(x$method == "mbgel")
-		cat("Model: Meinshausen & Buhlmann Graph Estimation via Lasso (MBGEL)\n")
+		cat("Model: graphical lasso (glasso)\n")
+	if(x$method == "mb")
+		cat("Model: Meinshausen & Buhlmann graph estimation (mb)\n")
 	
-	if((x$method == "mbgel")&&(x$scr)) cat("Graph SURE Screening (GSS): on\n")
+	if((x$method != "ct")&&(x$scr)) cat("lossy screening: on\n")
 
 	if(x$cov.input) cat("Input: The Covariance Matrix\n")
-	if(x$cov.input) cat("Input: The Data Matrix\n")
+	if(!x$cov.input) cat("Input: The Data Matrix\n")
 	
 	cat("Path length:",length(x$lambda),"\n")
-	cat("Graph Dimension:",ncol(x$data),"\n")
+	cat("Graph dimension:",ncol(x$data),"\n")
 	cat("Sparsity level:",min(x$sparsity),"----->",max(x$sparsity),"\n")
 }
 
 plot.huge = function(x, align = FALSE, ...){
-	gcinfo(FALSE)
+  gcinfo(FALSE)
 	
 	if(length(x$lambda) == 1)	par(mfrow = c(1, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
 	if(length(x$lambda) == 2)	par(mfrow = c(1, 3), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))

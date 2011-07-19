@@ -14,7 +14,7 @@ Plot sparsity level information and 3 typical sparse graphs from the graph path
 An object with S3 class \code{"huge"} 
 }
   \item{align}{
-If \code{align = TRUE}, 3 plotted graphs are aligned according to the last graph
+If \code{align = FALSE}, 3 plotted graphs are aligned
 }
   \item{\dots}{
 System reserved (No specific usage)
@@ -22,7 +22,7 @@ System reserved (No specific usage)
 }
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
-Maintainers: Tuo Zhao<tourzhao@gmail.com>; Han Liu <hanliu@cs.jhu.edu>
+Maintainers: Tuo Zhao<Tuo Zhao<tzhao5@jhu.edu>>; Han Liu <hanliu@cs.jhu.edu>
 }
 \seealso{
 \code{\link{huge}}

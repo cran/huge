@@ -1,35 +1,33 @@
 Package: huge
 Type: Package
 Title: High-dimensional Undirected Graph Estimation
-Version: 1.0.3
-Date: 2011-06-15
+Version: 1.1.0
+Date: 2011-07-19
 Author: Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, Larry
         Wasserman
-Maintainer: Tuo Zhao <tourzhao@gmail.edu>, Han Liu <hanliu@cs.jhu.edu>
-Depends: Matrix, lattice, glasso, igraph, MASS
+Maintainer: Tuo Zhao <tzhao5@jhu.edu>, Han Liu <hanliu@cs.jhu.edu>
+Depends: Matrix, lattice, igraph, MASS
 Description: The package "huge" provides a general framework for
         high-dimensional undirected graph estimation. It integrates
-        data preprocessing (Gaussianization), neighborhood screening,
-        graph estimation, and model selection techniques into a
-        pipeline. In preprocessing stage, the NonparaNormal(NPN)
-        transformation is applied to help relax the normality
-        assumption. In the graph estimation stage, the graph structure
-        is estimated by the Meinshausen & Buhlmann Graph Estimation via
-        Lasso (MBGEL) by default and it can be further accelerated by
-        the Graph SURE Screening (GSS) subroutine which preselects the
-        graph neighborhood of each variable. In the case d >> n, the
-        computation is memory optimized and is targeted on larger-scale
-        problems. We also provide two alternative approaches for the
-        graph estimation stage:(1) Graph Estimation via Correlation
-        Thresholding (GECT) which is highly efficient and (2) A
-        slightly modified Graphical Lasso (GLASSO) procedure in which
-        the memory usage is optimized using sparse matrix output. Three
+        data preprocessing, neighborhood screening, graph estimation,
+        and model selection techniques into a pipeline. In
+        preprocessing stage, the nonparanormal(npn) transformation is
+        applied to help relax the normality assumption. In the graph
+        estimation stage, the graph structure is estimated by
+        Meinshausen-Buhlmann graph estimation or the graphical lasso,
+        and both methods can be further accelerated by the lossy
+        screening rule preselecting the neighborhood of each variable
+        by correlation thresholding. We target on high-dimensional data
+        analysis usually d >> n, and the computation is
+        memory-optimized using the sparse matrix output. We also
+        provide a computationally efficient approach, correlation
+        thresholding graph estimation. Three
         regularization/thresholding parameter selection methods are
-        included in this package: (1) StARS: Stability Approach for
-        Regularization Selection (2) RIC: Rotation Information
-        Criterion (3) Extended Bayesian Information Criterion (EBIC
-        only for GLASSO).
+        included in this package: (1)stability approach for
+        regularization selection (2) rotation information criterion (3)
+        extended Bayesian information criterion which is only available
+        for the graphical lasso.
 License: GPL-2
 Repository: CRAN
-Date/Publication: 2011-06-17 06:45:05
-Packaged: 2011-06-16 15:49:31 UTC; tourzhao
+Date/Publication: 2011-07-23 13:55:10
+Packaged: 2011-07-20 03:50:41 UTC; tourzhao

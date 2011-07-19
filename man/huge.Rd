@@ -6,11 +6,11 @@ High-dimensional undirected graph estimation
 }
 
 \description{
-The main function for high-dimensional undirected graph estimation. Three graph estimation methods, including Meinshausen & Buhlmann Graph Estimation via Lasso (MBGEL), Graphical Lasso (GLASSO) and Graph Estimation via Correlation Thresholding (GECT), are available for data analysis.
+The main function for high-dimensional undirected graph estimation. Three graph estimation methods, including (1) Meinshausen-Buhlmann graph estimation (\code{mb}) (2) graphical lasso (\code{glasso}) and (3) correlation thresholding graph estimation (\code{ct}), are available for data analysis.
 }
 
 \usage{
-huge(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, method = "mbgel", scr = NULL, scr.num = NULL, cov.output = FALSE, sym = "or", verbose = TRUE)
+huge(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, method = "mb", scr = NULL, scr.num = NULL, cov.output = FALSE, sym = "or", verbose = TRUE)
 }
 
 \arguments{
@@ -19,35 +19,35 @@ There are 2 options: (1) \code{x} is an \code{n} by \code{d} data matrix (2) a \
 
 }
   \item{lambda}{
-A sequence of decresing positive numbers to control the regularization in MBGEL and GLASSO, or the thresholding in GECT. Typical usage is to leave the input \code{lambda = NULL} and have the program compute its own \code{lambda} sequence based on \code{nlambda} and \code{lambda.min.ratio}. Users can also specify a sequence to override this. When \code{method = "mbgel"} use with care - it is better to supply a decreasing sequence values than a single (small) value.
+A sequence of decresing positive numbers to control the regularization when \code{method = "mb"} or \code{"glasso"}, or the thresholding in \code{method = "ct"}. Typical usage is to leave the input \code{lambda = NULL} and have the program compute its own \code{lambda} sequence based on \code{nlambda} and \code{lambda.min.ratio}. Users can also specify a sequence to override this. When \code{method = "mb"} or \code{"glasso"}, use with care - it is better to supply a decreasing sequence values than a single (small) value.
 }
   \item{nlambda}{
-The number of regularization/thresholding paramters. The default value is \code{30} if \code{method = "gect"} and \code{10} if \code{method = "mbgel"} or \code{method = "glasso"}.
+The number of regularization/thresholding paramters. The default value is \code{30} for \code{method = "ct"} and \code{10} for \code{method = "mb"} or \code{"glasso"}.
 }
   \item{lambda.min.ratio}{
-If \code{method = "mbgel"} or \code{method = "glasso"}, it is the smallest value for \code{lambda}, as a fraction of the uppperbound (\code{MAX}) of the regularization/thresholding parameter which makes all estimates equal to \code{0}. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda} starting from \code{MAX} to \code{lambda.min.ratio*MAX} in log scale. If \code{method = "gect"}, it is the largest sparsity level for estimated graphs. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda}, which makes the sparsity level of the graph path increases from \code{0} to \code{lambda.min.ratio} evenly.The default value is \code{0.1} when \code{method = "mbgel"} or \code{method = "glasso"}, and 0.05 \code{method = "gect"}.
+If \code{method = "mb"} or \code{"glasso"}, it is the smallest value for \code{lambda}, as a fraction of the uppperbound (\code{MAX}) of the regularization/thresholding parameter which makes all estimates equal to \code{0}. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda} starting from \code{MAX} to \code{lambda.min.ratio*MAX} in log scale. If \code{method = "ct"}, it is the largest sparsity level for estimated graphs. The program can automatically generate \code{lambda} as a sequence of length = \code{nlambda}, which makes the sparsity level of the graph path increases from \code{0} to \code{lambda.min.ratio} evenly.The default value is \code{0.1} when \code{method = "mb"} or \code{"glasso"}, and 0.05 \code{method = "ct"}.
 }
   \item{method}{
-Graph estimation methods with 3 options: \code{"mbgel"}, \code{"gect"} and \code{"glasso"}. The defaulty value is \code{"mbgel"}. 
+Graph estimation methods with 3 options: \code{"mb"}, \code{"ct"} and \code{"glasso"}. The defaulty value is \code{"mb"}. 
 }
   \item{scr}{
-If \code{scr = TRUE}, Graph Sure Screening (GSS) is applied to preselect the neighborhood before MBGEL. The default value is \code{TRUE} for \code{n<d} and \code{FALSE} for \code{n>=d}. ONLY applicable when \code{method = "mbgel"}.
+If \code{scr = TRUE}, the lossy screening rule is applied to preselect the neighborhood before the graph estimation. The default value is  \code{FALSE}. NOT applicable when \code{method = "ct"}.
 }
   \item{scr.num}{
-The neighborhood size after the GSS (the number of remaining neighbors per node). ONLY applicable when \code{scr = TRUE}. The default value is \code{n-1}. An alternative value is \code{n/log(n)}. ONLY applicable when \code{scr = TRUE} and \code{method = "mbgel"}.
+The neighborhood size after the lossy screening rule (the number of remaining neighbors per node). ONLY applicable when \code{scr = TRUE}. The default value is \code{n-1}. An alternative value is \code{n/log(n)}. ONLY applicable when \code{scr = TRUE} and \code{method = "mb"}.
 }
   \item{cov.output}{
-If \code{cov.output = TRUE}, the outpu will inlcude a path of estimated covariance matrices. ONLY applicable when \code{method = "glasso"}. Since the estimated covariance matrices are generally not sparse, please use it with care, or it may take much memory under high-dimensional setting. The default value is \code{FALSE}.
+If \code{cov.output = TRUE}, the output will inlcude a path of estimated covariance matrices. ONLY applicable when \code{method = "glasso"}. Since the estimated covariance matrices are generally not sparse, please use it with care, or it may take much memory under high-dimensional setting. The default value is \code{FALSE}.
 }
   \item{sym}{
-Symmetrize the output graphs. If \code{sym = "and"}, the edge between node \code{i} and node \code{j} is selected ONLY when both node \code{i} and node \code{j} are selected as neighbors for each other. If \code{sym = "or"}, the edge is selected when either node \code{i} or node \code{j} is selected as the neighbor for each other. The default value is \code{"or"}. ONLY applicable when \code{method = "mbgel"}.
+Symmetrize the output graphs. If \code{sym = "and"}, the edge between node \code{i} and node \code{j} is selected ONLY when both node \code{i} and node \code{j} are selected as neighbors for each other. If \code{sym = "or"}, the edge is selected when either node \code{i} or node \code{j} is selected as the neighbor for each other. The default value is \code{"or"}. ONLY applicable when \code{method = "mb"}.
 }
   \item{verbose}{
 If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.
 }
 }
 \details{
-The graph stucture is estimated using Meinshausen & Buhlmann Graph Estimation via Lasso (MBGEL) by default and it can be further accelerated by Graph SURE Screening (GSS) subroutine which preselects the graph neighborhood of each variable. In the case d >> n, the computation is memory optimized and is targeted on larger-scale problems. We also provide two alternative approaches for the graph estimation stage:(1) Graph Estimation via Correlation Thresholding (GECT) which is highly efficient and (2) A slightly modified Graphical Lasso (GLASSO) procedure in which the memory usage is optimized using sparse matrix output.
+The graph structure is estimated by Meinshausen-Buhlmann graph estimation or the graphical lasso, and both methods can be further accelerated via the lossy screening rule by preselecting the neighborhood of each variable by correlation thresholding. We target on high-dimensional data analysis usually d >> n, and the computation is memory-optimized using the sparse matrix output. We also provide a highly computationally efficient approaches correlation thresholding graph estimation.
 }
 \value{
 An object with S3 class \code{"huge"} is returned:  
@@ -61,13 +61,13 @@ An indicator of the sample covariance.
 The \code{scr.num} by \code{k} matrix with each column correspondsing to a variable in \code{ind.group} and contains the indices of the remaining neighbors after the GSS. ONLY applicable when \code{scr = TRUE} and \code{approx = FALSE}
 }
   \item{lambda}{
-The sequence of regularization parameters used in MBGEL or thresholding parameters in GECT.
+The sequence of regularization parameters used in mb or thresholding parameters in ct.
 }
   \item{sym}{
-The \code{sym} from the input. ONLY applicable when \code{method = "mbgel"}.
+The \code{sym} from the input. ONLY applicable when \code{method = "mb"}.
 }
   \item{scr}{
-The \code{scr} from the input. ONLY applicable when \code{method = "mbgel"}.
+The \code{scr} from the input. ONLY applicable when \code{method = "mb"} or {"glasso"}.
 }
   \item{path}{
 A list of \code{k} by \code{k} adjacency matrices of estimated graphs as a graph path corresponding to \code{lambda}.
@@ -75,35 +75,36 @@ A list of \code{k} by \code{k} adjacency matrices of estimated graphs as a graph
   \item{sparsity}{
 The sparsity levels of the graph path.
 }
-  \item{wi}{
+  \item{icov}{
 A list of \code{d} by \code{d} precision matrices as an alternative graph path (numerical path) corresponding to \code{lambda}. ONLY applicable when {method = "glasso"}
 }
-  \item{w}{
+  \item{cov}{
 A list of \code{d} by \code{d} estimated covariance matrices corresponding to \code{lambda}. ONLY applicable when \code{cov.output = TRUE} and {method = "glasso"}
 }
   \item{method}{
 The method used in the graph estimation stage.
 }
   \item{df}{
-If \code{method = "mbgel"}, it is a \code{k} by \code{nlambda} matrix. Each row contains the number of nonzero coefficients along the lasso solution path. If \code{method = "glasso"}, it is a \code{nlambda} dimensional vector containing the number of nonzero coefficients along the graph path \code{wi}.
+If \code{method = "mb"}, it is a \code{k} by \code{nlambda} matrix. Each row contains the number of nonzero coefficients along the lasso solution path. If \code{method = "glasso"}, it is a \code{nlambda} dimensional vector containing the number of nonzero coefficients along the graph path \code{icov}.
 }
   \item{loglik}{
-A \code{nlambda} dimensional vector containing the likelihood scores along the graph path (\code{wi}). ONLY applicable when \code{method = "glasso"} 
+A \code{nlambda} dimensional vector containing the likelihood scores along the graph path (\code{icov}). ONLY applicable when \code{method = "glasso"}. For an estimated inverse convariance Z, the program only calculates log(det(Z)) - trace(SZ) where S is the empirical covariance matrix. For the likelihood for n observations, please multiply by n/2.
 }
 }
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
-Maintainers: Tuo Zhao<tourzhao@gmail.com>; Han Liu <hanliu@cs.jhu.edu>
+Maintainers: Tuo Zhao<tzhao5@jhu.edu>; Han Liu <hanliu@cs.jhu.edu>
 }
 
 \references{
 1.Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. \emph{Technical Report}, Carnegie Mellon University, 2010\cr
-2.Han Liu, John Lafferty and Larry Wasserman. The Nonparanormal: Semiparametric Estimation of High Dimensional Undirected Graphs. \emph{Journal of Machine Learning Research} (JMLR), 2009 \cr
+2.Han Liu, John Lafferty and Larry Wasserman. The Nonparanormal: Semiparametric Estimation of High Dimensional Undirected Graphs. \emph{Journal of Machine Learning Research}, 2009 \cr
 3.Jianqing Fan and Jinchi Lv. Sure independence screening for ultra-high dimensional feature space (with discussion). \emph{Journal of Royal Statistical Society B}, 2008.\cr
 4.Jerome Friedman, Trevor Hastie and Rob Tibshirani. Regularization Paths for Generalized Linear Models via Coordinate Descent. \emph{Journal of Statistical Software}, 2008. \cr
-5.Onureena Banerjee, Laurent El Ghaoui, Alexandre d'Aspremont: Model Selection Through Sparse Maximum Likelihood Estimation for Multivariate Gaussian or Binary Data. \emph{Journal of Machine Learning Research} (JMLR), 2008.\cr
+5.Onureena Banerjee, Laurent El Ghaoui, Alexandre d'Aspremont: Model Selection Through Sparse Maximum Likelihood Estimation for Multivariate Gaussian or Binary Data. \emph{Journal of Machine Learning Research}, 2008.\cr
 6.Jerome Friedman, Trevor Hastie and Robert Tibshirani. Sparse inverse covariance estimation with the lasso. \emph{Biostatistics}, 2007.\cr
 7.Nicolai Meinshausen and Peter Buhlmann. High-dimensional Graphs and Variable Selection with the Lasso. \emph{The Annals of Statistics}, 2006.
+11. Daniela Witten and Jerome Friedman. A fast screening rule for the graphical lasso. \emph{Journal of Computational and Graphical Statistics}, to appear, 2011.
 }
 
 \note{
@@ -118,7 +119,7 @@ This function ONLY estimates the graph path. For more information about the opti
 #generate data
 L = huge.generator(n = 200, d = 80, graph = "hub")
 
-#graph path estimation using MBGEL
+#graph path estimation using mb
 out1 = huge(L$data)
 out1
 plot(out1)				 #Not aligned	
@@ -132,12 +133,12 @@ plot(out1)				 #Not aligned
 plot(out1, align = TRUE) #Aligned
 huge.plot(out1$path[[3]])
 
-#graph path estimation using GECT
-out2 = huge(L$data,method = "gect")
+#graph path estimation using ct
+out2 = huge(L$data,method = "ct")
 out2
 plot(out2)
 
-#graph path estimation using GLASSO
+#graph path estimation using glasso
 out3 = huge(L$data, method = "glasso")
 out3
 plot(out3)

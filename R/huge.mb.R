@@ -1,15 +1,14 @@
 #-----------------------------------------------------------------------#
-# Package: High-dimensional Undirected Graph Estimation (HUGE)          #
-# huge.mbgel(): Meinshausen & Buhlmann Graph                            #
-#				Estimation via Lasso (MBGEL)                            #
+# Package: High-dimensional Undirected Graph Estimation                 #
+# huge.mbgel(): Meinshausen & Buhlmann graph estimation (mb)            #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
-# Date: Jun 8th 2011                                                    #
-# Version: 1.0.2                                                        #
+# Emails: <tzhao5@jhu.edu> and <hanliu@cs.jhu.edu>                      #
+# Date: Jul 15th 2011                                                   #
+# Version: 1.1.0                                                        #
 #-----------------------------------------------------------------------#
 
 ## Main function
-huge.mbgel = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, scr = NULL, scr.num = NULL, idx.mat = NULL, sym = "or", verbose = TRUE)
+huge.mb = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, scr = NULL, scr.num = NULL, idx.mat = NULL, sym = "or", verbose = TRUE)
 {
 	gcinfo(FALSE)
 	n = nrow(x);
@@ -24,7 +23,7 @@ huge.mbgel = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL,
 	if(!fit$cov.input)
 	{
 		x = scale(x)
-		S = t(x)%*%x/n
+		S = cor(x)
 	}
 	
 	rm(x)
@@ -32,10 +31,8 @@ huge.mbgel = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL,
 	
 	if(is.null(idx.mat))
 	{
-		if(is.null(scr)&&(n>=d))
+		if(is.null(scr))
 			scr = FALSE
-		if(is.null(scr)&&(n<d))
-			scr = TRUE
 		
 		if(scr)
 		{
@@ -45,7 +42,7 @@ huge.mbgel = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL,
 					scr.num = n-1
 				if(n>=d)
 				{
-					if(verbose) cat("Graph SURE Screening (GSS) is skipped without specifying scr.num.\n")
+					if(verbose) cat("lossy screening is skipped without specifying scr.num.\n")
 					scr = FALSE
 				}	
 			}
@@ -79,7 +76,7 @@ huge.mbgel = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL,
    		
    		if(verbose)
    		{
-   			cat("Conducting Meinshausen & Buhlmann Graph Estimation via Lasso (MBGEL) with Graph Sure Screening....")
+   			cat("Conducting Meinshausen & Buhlmann graph estimation (mb) with lossy screening....")
         	flush.console()
    		}
 
@@ -104,7 +101,7 @@ huge.mbgel = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL,
    	{
    		if(verbose)
    		{
-   			cat("Conducting Meinshausen & Buhlmann Graph Estimation via Lasso (MBGEL)....")
+   			cat("Conducting Meinshausen & Buhlmann graph estimation (mb)....")
         	flush.console()
    		}
 		fit$idx_mat = NULL

@@ -1,11 +1,11 @@
 #-----------------------------------------------------------------------#
-# Package: High-dimensional Undirected pathraph Estimation (HUpathE)          #
+# Package: High-dimensional Undirected pathraph Estimation              #
 # huge(): Draw ROC Curve for a solution path                            #
-#         Must have a ground truth                                      #
+#         The ground truth is required                                  #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
-# Date: Feb 28th 2010                                                   #
-# Version: 1.0                                                          #
+# Emails: <tzhao5@jhu.edu> and <hanliu@cs.jhu.edu>                      #
+# Date: Jul 15th 2011                                                   #
+# Version: 1.1.0                                                        #
 #-----------------------------------------------------------------------#
 
 huge.roc = function(path, theta, verbose = TRUE){

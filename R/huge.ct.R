@@ -1,15 +1,14 @@
 #-----------------------------------------------------------------------#
-# Package: High-dimensional Undirected Graph Estimation (HUGE)          #
-# huge.gect():                                                          #                           
-# Graph Estimation via Correlation Thresholding (GECT)                  # 
+# Package: High-dimensional Undirected Graph Estimation                 #
+# huge.gect(): graph estimation via correlation thresholding (ct)       #                                                          #                           
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
-# Date: Jun 8th 2011                                                    #
-# Version: 1.0.2                                                        #
+# Emails: <tzhao5@jhu.edu> and <hanliu@cs.jhu.edu>                      #
+# Date: Jul 15th 2011                                                   #
+# Version: 1.1.0                                                        #
 #-----------------------------------------------------------------------#
 
 ##Main function
-huge.gect = function(x, nlambda = NULL, lambda.min.ratio = NULL, lambda = NULL, verbose = TRUE)
+huge.ct = function(x, nlambda = NULL, lambda.min.ratio = NULL, lambda = NULL, verbose = TRUE)
 {	
 	gcinfo(FALSE)
 	n = nrow(x);
@@ -24,7 +23,7 @@ huge.gect = function(x, nlambda = NULL, lambda.min.ratio = NULL, lambda = NULL, 
 	if(!fit$cov.input)
 	{
 		x = scale(x)
-		S = t(x)%*%x/n
+		S = cor(x)
 	}
 	
 	rm(x)
@@ -55,7 +54,7 @@ huge.gect = function(x, nlambda = NULL, lambda.min.ratio = NULL, lambda = NULL, 
 			fit$path[[i]][S.rank[1:density.all[i]]] = 1
 			if(verbose)
 			{
-   				cat(paste(c("Conducting Graph Estimation via Correlation Thresholding (GECT)....in progress:", floor(100*i/nlambda), "%"), collapse=""), "\r")
+   				cat(paste(c("Conducting the graph estimation via correlation thresholding (ct) ....in progress:", floor(100*i/nlambda), "%"), collapse=""), "\r")
             	flush.console()
             }	
 		}
@@ -75,7 +74,7 @@ huge.gect = function(x, nlambda = NULL, lambda.min.ratio = NULL, lambda = NULL, 
 			fit$sparsity[i] = sum(fit$path[[i]])/d/(d-1)
 			if(verbose)
 			{
-   				mes <- paste(c("Conducting Graph Estimation via Correlation Thresholding (GECT)....in progress:", floor(100*i/nlambda), "%"), collapse="")
+   				mes <- paste(c("Conducting the graph estimation via correlation thresholding (ct)....in progress:", floor(100*i/nlambda), "%"), collapse="")
    				cat(mes, "\r")
             	flush.console()
             }
@@ -87,7 +86,7 @@ huge.gect = function(x, nlambda = NULL, lambda.min.ratio = NULL, lambda = NULL, 
 		
 	if(verbose)
 	{
-        cat("Conducting Graph Estimation via Correlation Thresholding (GECT)....done.             \r\n")
+        cat("Conducting the graph estimation via correlation thresholding (ct)....done.             \r\n")
         flush.console()
     }
 	gc()

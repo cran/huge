@@ -1,32 +1,33 @@
-#-----------------------------------------------------------------------#
-# Package: High-dimensional Undirected Graph Estimation (HUGE)          #
-# huge.select(): (1)Rotation Information Criterion                      #
-#                (2)Stability Approach to Regularization Selection      #
-#                (3)Extended Bayesian Informaition Criterion            #
-# Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
-# Date: Apr 10th 2011                                                   #
-# Version: 1.0.1                                                        #
-#-----------------------------------------------------------------------#
+#-------------------------------------------------------------------------#
+# Package: High-dimensional Undirected Graph Estimation                   #
+# huge.select(): Model selection using:                                   #
+#			 	 1.rotation information criterion (ric)                   #
+#                2.stability approach to regularization selection (stars) #
+#                3.extended Bayesian informaition criterion (ebic)        #
+# Authors: Tuo Zhao and Han Liu                                           #
+# Emails: <tzhao5@jhu.edu> and <hanliu@cs.jhu.edu>                        #
+# Date: July 15th 2011                                                    #
+# Version: 1.1.0                                                          #
+#-------------------------------------------------------------------------#
 
 ## Main Function
-huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0.1, stars.subsample.ratio = NULL, stars.rep.num = 20, verbose = TRUE){
+huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0.1, stars.subsample.ratio = NULL, rep.num = 20, verbose = TRUE){
 
 	gcinfo(FALSE)
 	
 	if(est$cov.input){
-		cat("Model Selection is not available when using the covariance matrix as input.")
+		cat("Model selection is not available when using the covariance matrix as input.")
 		class(est) = "select"
     	return(est)
 	}
 	if(!est$cov.input)
 	{		
-		if(est$method == "mbgel"&&is.null(criterion))
+		if(est$method == "mb"&&is.null(criterion))
 			criterion = "ric"
-		if(est$method == "gect"&&is.null(criterion))
+		if(est$method == "ct"&&is.null(criterion))
 			criterion = "stars"
 		if(est$method == "glasso"&&is.null(criterion))
-			criterion = "ric"
+			criterion = "ebic"
 	
 		n = nrow(est$data)
 		d = ncol(est$data)
@@ -36,11 +37,20 @@ huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0
 		{
 			if(verbose)
 			{
-				cat("Conducting Permutation Information Criterion (RIC) selection....")
+				cat("Conducting rotation information criterion (ric) selection....")
         		flush.console()
         	}
 		
-			out=.C("RIC",X = as.double(est$data),dd = as.integer(d),nn=as.integer(n),lambda_opt = as.double(0),PACKAGE="huge")
+			if(n>rep.num){
+				nr = rep.num
+				r = sample(n,rep.num)
+			}
+			if(n<=rep.num){
+				nr = n
+				r = 1:n
+			} 
+			
+			out=.C("RIC",X = as.double(est$data),dd = as.integer(d),nn=as.integer(n),r=as.integer(r),nr=as.integer(nr),lambda_opt = as.double(0),PACKAGE="huge")
 			est$opt.lambda = out$lambda_opt/n
 			rm(out)
 			gc()
@@ -56,25 +66,25 @@ huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0
 				flush.console()
 			}
 		
-			if(est$method == "mbgel")
-				est$refit = huge.mbgel(est$data, lambda = est$opt.lambda, sym = est$sym, idx.mat = est$idx.mat, verbose = FALSE)$path[[1]]
+			if(est$method == "mb")
+				est$refit = huge.mb(est$data, lambda = est$opt.lambda, sym = est$sym, idx.mat = est$idx.mat, verbose = FALSE)$path[[1]]
 			if(est$method == "glasso")
 			{
-				if(!is.null(est$w))
+				if(!is.null(est$cov))
 				{
-					tmp = huge.glasso(est$data, lambda = est$opt.lambda, cov.output = TRUE, verbose = FALSE)
-					est$opt.w = tmp$w[[1]]
+					tmp = huge.glasso(est$data, lambda = est$opt.lambda, scr = est$scr, cov.output = TRUE, verbose = FALSE)
+					est$opt.cov = tmp$cov[[1]]
 				}
-				if(is.null(est$w))
+				if(is.null(est$cov))
 					tmp = huge.glasso(est$data, lambda = est$opt.lambda, verbose = FALSE)
 			
 				est$refit = tmp$path[[1]]
-				est$opt.wi = tmp$wi[[1]]
+				est$opt.icov = tmp$icov[[1]]
 				rm(tmp)
 				gc()
 			}
-			if(est$method == "gect")
-				est$refit = huge.gect(est$data, lambda = est$opt.lambda, verbose = FALSE)$path[[1]]
+			if(est$method == "ct")
+				est$refit = huge.ct(est$data, lambda = est$opt.lambda, verbose = FALSE)$path[[1]]
 		
 			est$opt.sparsity=sum(est$refit)/d/(d-1)
 		
@@ -86,14 +96,23 @@ huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0
 	
 		if(criterion == "ebic"&&est$method == "glasso")
 		{
-			est$EBIC.score = -2*est$loglik + log(n)*est$df + 2*EBIC.gamma*log(d*(d-1))*est$df
-			est$opt.index = which.min(est$EBIC.score)
+			if(verbose)
+			{
+				cat("Conducting extended Bayesian information criterion (ebic) selection....")
+        		flush.console()
+      }
+			est$ebic.score = -n*est$loglik + log(n)*est$df + 4*ebic.gamma*log(d)*est$df
+			est$opt.index = which.min(est$ebic.score)
 			est$refit = est$path[[est$opt.index]]
-			est$opt.wi = est$wi[[est$opt.index]]
-			if(!is.null(est$w))
-				est$opt.w = est$w[[est$opt.index]]
+			est$opt.icov = est$icov[[est$opt.index]]
+			if(est$cov.output)
+				est$opt.cov = est$cov[[est$opt.index]]
   			est$opt.lambda = est$lambda[est$opt.index]
   			est$opt.sparsity = est$sparsity[est$opt.index]
+  			if(verbose){
+				cat("done\n")
+				flush.console()
+			}
 		}		
 	
 		if(criterion == "stars"){
@@ -106,22 +125,22 @@ huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0
 			est$merge = list()
 			for(i in 1:nlambda) est$merge[[i]] = Matrix(0,d,d)
 		
-  			for(i in 1:stars.rep.num)
+  			for(i in 1:rep.num)
   			{
   				if(verbose)
   				{
-					mes <- paste(c("Conducting Subsampling....in progress:", floor(100*i/stars.rep.num), "%"), collapse="")
+					mes <- paste(c("Conducting Subsampling....in progress:", floor(100*i/rep.num), "%"), collapse="")
    					cat(mes, "\r")
             		flush.console()	
 				}
     			ind.sample = sample(c(1:n), floor(n*stars.subsample.ratio), replace=FALSE)
     		
-    			if(est$method == "mbgel")
-    				tmp = huge.mbgel(est$data[ind.sample,],lambda = est$lambda, scr = est$scr, idx.mat = est$idx.mat, sym = est$sym, verbose = FALSE)$path
-       			if(est$method == "gect")
-    				tmp = huge.gect(est$data[ind.sample,], lambda = est$lambda,verbose = FALSE)$path
+    			if(est$method == "mb")
+    				tmp = huge.mb(est$data[ind.sample,],lambda = est$lambda, scr = est$scr, idx.mat = est$idx.mat, sym = est$sym, verbose = FALSE)$path
+       			if(est$method == "ct")
+    				tmp = huge.ct(est$data[ind.sample,], lambda = est$lambda,verbose = FALSE)$path
     			if(est$method == "glasso")
-    				tmp = huge.glasso(est$data[ind.sample,], lambda = est$lambda, verbose = FALSE)$path
+    				tmp = huge.glasso(est$data[ind.sample,], lambda = est$lambda, scr = est$scr, verbose = FALSE)$path
     			
     			for(i in 1:nlambda)
     				est$merge[[i]] = est$merge[[i]] + tmp[[i]]
@@ -139,7 +158,7 @@ huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0
         
     		est$variability = rep(0,nlambda)
 			for(i in 1:nlambda){
-				est$merge[[i]] = est$merge[[i]]/stars.rep.num
+				est$merge[[i]] = est$merge[[i]]/rep.num
     			est$variability[i] = 4*sum(est$merge[[i]]*(1-est$merge[[i]]))/(d*(d-1))
     		}
     
@@ -149,9 +168,9 @@ huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0
   			est$opt.sparsity = est$sparsity[est$opt.index]
   			if(est$method == "glasso")
   			{
-  				est$opt.wi = est$wi[[est$opt.index]]
-				if(!is.null(est$w))
-					est$opt.w = est$w[[est$opt.index]]
+  				est$opt.icov = est$icov[[est$opt.index]]
+				if(!is.null(est$cov))
+					est$opt.cov = est$cov[[est$opt.index]]
   			}
 		}
     	est$criterion = criterion
@@ -167,32 +186,28 @@ huge.select = function(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0
 print.select = function(x, ...)
 {
 	if(x$cov.input){
-		cat("Model Selection is not available when using the covariance matrix as input.")
+		cat("Model selection is not available when using the covariance matrix as input.")
 	}
 	if(!x$cov.input)
 	{
-		if(x$method == "gect")
-			cat("Model: Graph Estimation via Correlation Thresholding(GECT)\n")
+		if(x$method == "ct")
+			cat("Model: graph gstimation via correlation thresholding(ct)\n")
 		if(x$method == "glasso")
-			cat("Model: Graphical Lasso (GLASSO)\n")
-		if(x$method == "mbgel")
-			cat("Model: Meinshausen & Buhlmann Graph Estimation via Lasso(MBGEL)\n")
+			cat("Model: graphical lasso (glasso)\n")
+		if(x$method == "mb")
+			cat("Model: Meinshausen & Buhlmann Graph Estimation (mb)\n")
 
 		cat("selection criterion:",x$criterion,"\n")
-		if((x$method == "mbgel")&&x$scr)
-			cat("Graph SURE Screening (GSS): on\n")
-		if(!is.null(x$theta))
-			cat("True graph: included\n")
-		if(is.null(x$theta))
-			cat("True graph: not included\n")
-		cat("Graph Dimension:",ncol(x$data),"\n")
+		if((x$method != "ct")&&x$scr)
+			cat("lossy screening: on\n")
+		cat("Graph dimension:",ncol(x$data),"\n")
 		cat("sparsity level", x$opt.sparsity,"\n")
 	}
 }
 
 plot.select = function(x, ...){
 	if(x$cov.input){
-		cat("Model Selection is not available when using the covariance matrix as input.")
+		cat("Model selection is not available when using the covariance matrix as input.")
 	}
 	if(!x$cov.input)
 	{

@@ -1,10 +1,10 @@
 #-----------------------------------------------------------------------#
-# Package: High-dimensional Undirected Graph Estimation (HUGE)          #
+# Package: High-dimensional Undirected Graph Estimation                 #
 # huge.generator(): Data generator                                      #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
-# Date: Feb 27the 2011                                                  #
-# Version: 1.0								                            #
+# Emails: <tzhao5@jhu.edu> and <hanliu@cs.jhu.edu>                      #
+# Date: July 15th 2011                                                  #
+# Version: 1.1.0								                        #
 #-----------------------------------------------------------------------#
 
 ## Main function
@@ -87,6 +87,13 @@ huge.generator = function(n = 200, d = 50, graph = "random", v = NULL, u = NULL,
 		rm(tmp)
 		gc()
 	}
+	
+	if(graph == "scale-free"){
+		if(is.null(u)) u = 0.1
+		if(is.null(v)) v = 0.3
+		out = .C("SFGen",dd0=as.integer(2),dd=as.integer(d),G=as.integer(theta),package="huge")
+		theta = matrix(as.numeric(out$G),d,d)
+	}
 	diag(theta) = 0
 	omega = theta*v
 	
@@ -134,7 +141,7 @@ print.sim = function(x, ...){
 
 plot.sim = function(x, ...){
 	gcinfo(FALSE)	
-   	par = par(mfrow = c(1, 4), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
+   	par = par(mfrow = c(2, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
    	image(as.matrix(x$theta), col = gray.colors(256),  main = "Adjacency Matrix")
 	image(x$sigma, col = gray.colors(256), main = "Covariance Matrix")
 	g = graph.adjacency(x$theta, mode="undirected", diag=FALSE)

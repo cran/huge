@@ -38,7 +38,7 @@ The user can change \code{cur.num} to plot several figures and select the best o
 
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
-Maintainers: Tuo Zhao<tourzhao@gmail.com>; Han Liu <hanliu@cs.jhu.edu>
+Maintainers: Tuo Zhao<tzhao5@jhu.edu>; Han Liu <hanliu@cs.jhu.edu>
 }
 
 \references{

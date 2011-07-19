@@ -1,10 +1,10 @@
 #-----------------------------------------------------------------------#
-# Package: High-dimensional Undirected Graph Estimation (HUGE)          #
+# Package: High-dimensional Undirected Graph Estimation                 #
 # huge.plot(): graph visualization                                      #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
-# Date: Apr 10th 2011                                                   #
-# Version: 1.0.1                                                        #
+# Emails: <tzhao5@jhu.edu> and <hanliu@cs.jhu.edu>                      #
+# Date: Jul 15th 2011                                                   #
+# Version: 1.1.0                                                        #
 #-----------------------------------------------------------------------#
 
 huge.plot = function(G, epsflag = FALSE, graph.name = "default", cur.num = 1, location=NULL){

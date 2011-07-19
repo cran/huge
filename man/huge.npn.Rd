@@ -2,7 +2,7 @@
 \alias{huge.npn}
 
 \title{
-NonparaNormal(NPN) transformation
+Nonparanormal(npn) transformation
 }
 
 \description{
@@ -21,7 +21,7 @@ The \code{n} by \code{d} data matrix representing \code{n} observations in \code
 The transformation function used in the npn transformation. If \code{npn.func = "truncation"}, the truncated ECDF is applied. If \code{npn.func = "shrinkage"}, the shrunken ECDF is applied. The default is \code{"shrinkage"}.
 }
   \item{npn.thresh}{
-The truncation threshold used in Nonparanormal transformation, ONLY applicable when \code{npn.func = "truncation"}. The default value is \code{1/(4*(n^0.25)*} \code{sqrt(pi*log(n)))}.
+The truncation threshold used in nonparanormal transformation, ONLY applicable when \code{npn.func = "truncation"}. The default value is \code{1/(4*(n^0.25)*} \code{sqrt(pi*log(n)))}.
 }
   \item{verbose}{
 If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.
@@ -29,7 +29,7 @@ If \code{verbose = FALSE}, tracing information printing is disabled. The default
 }
 
 \details{
-The NPN is a very helpful tool to relax the normality assumption. It assumes the data come from a Gaussian cornopula and computationally, fitting a high dimensional npn is no more difficult than estimating a multivariate Gaussian and one can also apply to other existing estimation algorithms. The output data are already standardized as sample mean zero and unit variance.
+The nonparanormal extends Gaussian graphical models to semiparametric Gaussian copula models.Motivated by sparse additive models, the nonparanormal method estimates the Gasussian copula by marginally transforming the variables using smooth functions.Computationally, the estimation of a nonparanormal transformation is very efficient and only requires one pass of the data matrix.
 }
 
 \value{
@@ -40,12 +40,12 @@ The \code{n} by \code{d} data matrix representing \code{n} observations in \code
 
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty and Larry Wasserman \cr
-Maintainer: Tuo Zhao<tourzhao@gmail.com>;Han Liu<hanliu@cs.jhu.edu>
+Maintainer: Tuo Zhao<tzhao5@jhu.edu>;Han Liu<hanliu@cs.jhu.edu>
 }
 
 \references{
 1.Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. \emph{Technical Report}, Carnegie Mellon University, 2010\cr
-2.Han Liu, John Lafferty and Larry Wasserman. The Nonparanormal: Semiparametric Estimation of High Dimensional Undirected Graphs. \emph{Journal of Machine Learning Research} (JMLR), 2009
+2.Han Liu, John Lafferty and Larry Wasserman. The Nonparanormal: Semiparametric Estimation of High Dimensional Undirected Graphs. \emph{Journal of Machine Learning Research}, 2009
 }
 
 \seealso{

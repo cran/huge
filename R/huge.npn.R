@@ -1,10 +1,10 @@
 #-----------------------------------------------------------------------#
-# Package: High-dimensional Undirected Graph Estimation (HUGE)          #
-# huge.npn(): NonparaNormal(NPN) transofmration                         #
+# Package: High-dimensional Undirected Graph Estimation                 #
+# huge.npn(): nonparanormal(npn) transofmration                         #
 # Authors: Tuo Zhao and Han Liu                                         #
-# Emails: <tourzhao@gmail.com>; <hanliu@cs.jhu.edu>                     #
-# Date: Jun 12th 2011                                                   #
-# Version: 1.0.3                                                        #
+# Emails: <tzhao@jhu.edu> and <hanliu@cs.jhu.edu>                       #
+# Date: Jul 15th 2011                                                   #
+# Version: 1.1.0                                                        #
 #-----------------------------------------------------------------------#
 
 ## Main function
@@ -17,7 +17,7 @@ huge.npn = function(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE
   	
   	# Shrinkaage transformation
 	if(npn.func == "shrinkage"){
-		if(verbose) cat("Conducting NonparaNormal (NPN) transformation via shrunkun ECDF....")
+		if(verbose) cat("Conducting the nonparanormal (npn) transformation via shrunkun ECDF....")
 		
 		x = qnorm(apply(x,2,rank)/(n+1))
 		x = x/sd(x[,1])
@@ -29,7 +29,7 @@ huge.npn = function(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE
 	
 	# Truncation transformation
 	if(npn.func == "truncation"){
-		if(verbose) cat("Conducting NonparaNormal (NPN) transformation via truncated ECDF....")
+		if(verbose) cat("Conducting nonparanormal (npn) transformation via truncated ECDF....")
 		if(is.null(npn.thresh)) npn.thresh = 1/(4*(n^0.25)*sqrt(pi*log(n)))
 		
 		x = qnorm(pmin(pmax(apply(x,2,rank)/n, npn.thresh), 1-npn.thresh))

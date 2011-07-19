@@ -6,12 +6,12 @@ Model selection for high-dimensional undirected graph estimation
 }
 
 \description{
-Implements the regularization parameter selection for high dimensional undirected graph estimation. The optional approaches are Rotational Information Criterion (RIC), Stability Approach to Regularization Selection (StARS) and Extended Bayesian Information Criterion(EBIC).
+Implements the regularization parameter selection for high dimensional undirected graph estimation. The optional approaches are rotation information criterion (ric), stability approach to regularization selection (stars) and extended Bayesian information criterion (ebic).
 }
 
 \usage{
-huge.select(est, criterion = NULL, EBIC.gamma = 0.5, stars.thresh = 0.1, 
-stars.subsample.ratio = NULL, stars.rep.num = 20, verbose = TRUE)
+huge.select(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0.1, 
+stars.subsample.ratio = NULL, rep.num = 20, verbose = TRUE)
 }
 
 \arguments{
@@ -19,19 +19,19 @@ stars.subsample.ratio = NULL, stars.rep.num = 20, verbose = TRUE)
 An object with S3 class \code{"huge"}
 }
   \item{criterion}{
-Model selection criterion. \code{"ric"} and \code{"stars"} are available for all 3 graph estimation methods. \code{EBIC} is only applicable for GLASSO. The default value is \code{"ric"}.
+Model selection criterion. \code{"ric"} and \code{"stars"} are available for all 3 graph estimation methods. \code{ebic} is only applicable when \code{est$method = "glasso"} in \code{huge()}. The default value is \code{"ric"}.
 }
-  \item{EBIC.gamma}{
-The tuning parameter for EBIC. The default value is 0.5. Only applicable when \code{est$method = "glasso"} and \code{criterion = "ebic"}.
+  \item{ebic.gamma}{
+The tuning parameter for ebic. The default value is 0.5. Only applicable when \code{est$method = "glasso"} and \code{criterion = "ebic"}.
 }
   \item{stars.thresh}{
-The variability threshold in StARS. The default value is \code{0.1}. An alternative value is \code{0.05}. Only applicable when \code{criterion = "stars"}.
+The variability threshold in stars. The default value is \code{0.1}. An alternative value is \code{0.05}. Only applicable when \code{criterion = "stars"}.
 }
   \item{stars.subsample.ratio}{
 The subsampling ratio. The default value is \code{10*sqrt(n)/n} when \code{n>144} and \code{0.8} when \code{n<=144}, where \code{n} is the sample size. Only applicable when \code{criterion = "stars"}.
 }
-  \item{stars.rep.num}{
-The number of subsampling for StARS. The default value is \code{20}. Only applicable when \code{criterion = "stars"}
+  \item{rep.num}{
+The number of subsamplings when \code{criterion = "stars"} or rotations when \code{criterion = "ric"}. The default value is \code{20}. NOT applicable when \code{criterion = "ebic"}
 }
   \item{verbose}{
 If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.
@@ -39,7 +39,7 @@ If \code{verbose = FALSE}, tracing information printing is disabled. The default
 }
 
 \details{
-Stability Approach to Reulgarization Selection is a natural way to select optimal regularization parameter for all three estimation methods. It selects the optimal graph by variability of subsamplings and tends to overselect edges in Gaussian graphical models. Besides selecting the regularization parameters, StARS can also provide an additional estimated graph by merging the corresponding subsampled graphs using the frequency counts. The subsampling procedure in StARS may NOT be very efficient, we also proved the recent developed highly efficient, Rotation Information Criterion approach. Instead of tuning over a grid by cross-validation or subsampling, we directly estimate the optimal regularization paramter based on random Rotations. However, RIC usually has very good empirical performances but suffers from underselections sometimes. Therefore, we suggest if user are sensitive of false negative rates, they should either consider increasing \code{r.num} or applying the StARS to model selection. Extended Bayesian Information Criterion (EBIC) is another competive approach, but the \code{EBIC.gamma} can only be tuned by experience. 
+Stability approach to reulgarization selection (stars) is a natural way to select optimal regularization parameter for all three estimation methods. It selects the optimal graph by variability of subsamplings and tends to overselect edges in Gaussian graphical models. Besides selecting the regularization parameters, stars can also provide an additional estimated graph by merging the corresponding subsampled graphs using the frequency counts. The subsampling procedure in stars may NOT be very efficient, we also proved the recent developed highly efficient, rotation information criterion approach (ric). Instead of tuning over a grid by cross-validation or subsampling, we directly estimate the optimal regularization paramter based on random Rotations. However, ric usually has very good empirical performances but suffers from underselections sometimes. Therefore, we suggest if user are sensitive of false negative rates, they should either consider increasing \code{r.num} or applying the stars to model selection. Extended Bayesian information criterion (ebic) is another competive approach, but the \code{ebic.gamma} can only be tuned by experience. 
 }
 
 \value{
@@ -47,11 +47,11 @@ An object with S3 class "select" is returned:
   \item{refit}{
 The optimal graph selected from the graph path
 }
-  \item{opt.wi}{
+  \item{opt.icov}{
 The optimal precision matrix from the path only applicable when \code{method = "glasso"}
 }
-  \item{opt.w}{
-The optimal covariance matrix from the path only applicable when \code{method = "glasso"} and \code{est$w} is avaiable.
+  \item{opt.cov}{
+The optimal covariance matrix from the path only applicable when \code{method = "glasso"} and \code{est$cov} is avaiable.
 }
   \item{merge}{
 The graph path estimated by merging the subsampling paths. Only applicable when the input \code{criterion = "stars"}.
@@ -59,7 +59,7 @@ The graph path estimated by merging the subsampling paths. Only applicable when 
   \item{variability}{
 The variability along the subsampling paths. Only applicable when the input \code{criterion = "stars"}.
 }
-  \item{EBIC.scores}{
+  \item{ebic.scores}{
 Extended BIC scores for regularization parameter selection. Only applicable when \code{criterion = "ebic"}.
 }
   \item{opt.index}{
@@ -82,13 +82,13 @@ The model selection is NOT available when the data input is the sample covarainc
 
 \author{
 Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
-Maintainers: Tuo Zhao<tourzhao@gmail.com>; Han Liu <hanliu@cs.jhu.edu>
+Maintainers: Tuo Zhao<tzhao5@jhu.edu>; Han Liu <hanliu@cs.jhu.edu>
 }
 
 \references{
 1. Tuo Zhao and Han Liu. HUGE: A Package for High-dimensional Undirected Graph Estimation. Technical Report, Carnegie Mellon University, 2010\cr
-2. Han Liu, Kathryn Roeder and Larry Wasserman. Stability Approach to Regularization Selection (StARS) for High Dimensional Graphical Models. \emph{Advances in Neural Information Processing Systems} (NIPS), 2010.\cr
-Jiahua Chen and Zehua Chen. Extended Bayesian information criterion for model selection with large model space. \emph{Biometrika}, 2008.
+2. Han Liu, Kathryn Roeder and Larry Wasserman. Stability Approach to Regularization Selection (stars) for High Dimensional Graphical Models. \emph{Advances in Neural Information Processing Systems}, 2010.\cr
+3. 7.R. Foygel and M. Drton. Extended bayesian information criteria for gaussian graphical models. \emph{Advances in Neural Information Processing Systems}, 2010.
 }
 
 \seealso{
@@ -98,19 +98,19 @@ Jiahua Chen and Zehua Chen. Extended Bayesian information criterion for model se
 \examples{
 #generate data
 L = huge.generator(d = 200, graph="hub")
-out.mbgel = huge(L$data)
-out.gect = huge(L$data, method = "gect")
+out.mb = huge(L$data)
+out.ct = huge(L$data, method = "ct")
 out.glasso = huge(L$data, method = "glasso")
 
-#model selection using RIC
-out.select = huge.select(out.mbgel)
+#model selection using ric
+out.select = huge.select(out.mb)
 plot(out.select)
 
 #model selection using stars
-out.select = huge.select(out.gect, criterion = "stars", stars.thresh = 0.05)
+out.select = huge.select(out.ct, criterion = "stars", stars.thresh = 0.05)
 plot(out.select)
 
-#model selection using EBIC
+#model selection using ebic
 out.select = huge.select(out.glasso,criterion = "ebic")
 plot(out.select)
 }

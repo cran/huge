@@ -50,7 +50,7 @@ huge.glasso = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NULL
 	fit$cov.output = cov.output	
 	if(cov.output) fit$cov = list()
 	out.glasso=NULL
-	for(i in 1:nlambda)
+	for(i in nlambda:1)
 	{	
 		z = which(rowSums(abs(S)>lambda[i])>1)
 		q = length(z)
@@ -59,10 +59,10 @@ huge.glasso = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NULL
 		{
 			if(verbose){
 				if(scr){
-					cat(paste(c("Conducting the graphical lasso (glasso) wtih lossy screening....in progress:", floor(100*(i/nlambda)), "%"), collapse=""), "\r")
+					cat(paste(c("Conducting the graphical lasso (glasso) wtih lossy screening....in progress:", floor(100*(1-i/nlambda)), "%"), collapse=""), "\r")
 				}
 				if(!scr){
-					cat(paste(c("Conducting the graphical lasso (glasso) with lossless screening....in progress:", floor(100*(i/nlambda)), "%"), collapse=""), "\r")
+					cat(paste(c("Conducting the graphical lasso (glasso) with lossless screening....in progress:", floor(100*(1-i/nlambda)), "%"), collapse=""), "\r")
 				}		
 				flush.console()
 			}
@@ -71,14 +71,14 @@ huge.glasso = function(x, lambda = NULL, lambda.min.ratio = NULL, nlambda = NULL
 				if(!is.null(out.glasso))
 					out.glasso = .C("hugeglassoscr", S = as.double(S[z,z]), W = as.double(tmp.cov[z,z]), T = as.double(tmp.icov[z,z]), dd = as.integer(q),lambda = as.double(lambda[i]), df = as.integer(0), PACKAGE="huge")
 				if(is.null(out.glasso))
-					out.glasso = .C("hugeglassoscr", S = as.double(S[z,z]), W = as.double(diag(q)), T = as.double(diag(q)), dd = as.integer(q),lambda = as.double(lambda[i]), df = as.integer(0), PACKAGE="huge")
+					out.glasso = .C("hugeglassoscr", S = as.double(S[z,z]), W = as.double(S[z,z]), T = as.double(diag(q)), dd = as.integer(q),lambda = as.double(lambda[i]), df = as.integer(0), PACKAGE="huge")
 			}	
 			
 			else {
 				if(!is.null(out.glasso))
 					out.glasso = .C("hugeglasso", S = as.double(S[z,z]), W = as.double(tmp.cov[z,z]), T = as.double(tmp.icov[z,z]), dd = as.integer(q),lambda = as.double(lambda[i]), df = as.integer(0), PACKAGE="huge")
 				if(is.null(out.glasso))
-					out.glasso = .C("hugeglasso", S = as.double(S[z,z]), W = as.double(diag(q)), T = as.double(diag(q)), dd = as.integer(q),lambda = as.double(lambda[i]), df = as.integer(0), PACKAGE="huge")
+					out.glasso = .C("hugeglasso", S = as.double(S[z,z]), W = as.double(S[z,z]), T = as.double(diag(q)), dd = as.integer(q),lambda = as.double(lambda[i]), df = as.integer(0), PACKAGE="huge")
 			}
 			
 			out.glasso$T = matrix(out.glasso$T,ncol=q)

@@ -1,4 +1,4 @@
-cfdff550b0a1b489e2044af51e3d64c9 *DESCRIPTION
+301f725f861bcb521308d5ac4b250787 *DESCRIPTION
 e3b533136c0a6dc469f36e92ac8d07e5 *NAMESPACE
 3edf8b73f1371f6185850175674f246b *R/huge.R
 7418edf11fb4c038824446ad8f235b30 *R/huge.ct.R
@@ -13,7 +13,7 @@ d0c30027b3a0eeccde28149f26bd55e5 *R/zzz.R
 3ed73a749352c5a5d9e00bd0a5d503e8 *data/datalist
 8aafdcaf9e6840b320670472eb38e223 *data/stockdata.rda
 0fd64fb6af0068acb9777c07fc5545c8 *man/huge-internal.Rd
-b4b48da77d1ddf0fa1eed6260a8cfb6c *man/huge-package.Rd
+b36927d81a8821226a5b73d87c277df4 *man/huge-package.Rd
 b26b4f4c4c3f65bf43ec6f2346c03342 *man/huge.Rd
 075da3ce0768fa584d7c9b6543619fdd *man/huge.generator.Rd
 6a007e59a851fdee076ada118321f688 *man/huge.npn.Rd
@@ -33,5 +33,5 @@ e702cbd604b3886c3ab078bbfbdc7e68 *man/stockdata.Rd
 b10cd7a70f4a0772e49935ad349b56a8 *src/SFGen.c
 1397977b2d8cd321ee5144a4fbf5c8cc *src/SPMBgraph.c
 fadb22d0c8d2a742caeaa6d8a9475def *src/SPMBscr.c
-e4d9a7f78cb3b3250c6ba0a3b9df8809 *src/hugeglasso.c
+fc577c49887cc003a6cc9c31c8bdfeb8 *src/hugeglasso.c
 ff6add537d23917034ca143eb8e90173 *src/hugeglassoscr.c

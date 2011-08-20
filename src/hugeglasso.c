@@ -19,8 +19,8 @@ void hugeglasso(double *S, double *W, double *T, int *dd, double *lambda, int *d
     
     int gap_int;
     double gap_ext,gap_act;
-    double thol_act = 1e-5;
-    double thol_ext = 1e-5;
+    double thol_act = 1e-4;
+    double thol_ext = 1e-4;
     
     int MAX_ITER_EXT = 100;
     int MAX_ITER_INT = 10000;

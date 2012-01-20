@@ -6,8 +6,8 @@
 #                3.extended Bayesian informaition criterion (ebic)        #
 # Authors: Tuo Zhao and Han Liu                                           #
 # Emails: <tzhao5@jhu.edu> and <hanliu@cs.jhu.edu>                        #
-# Date: July 15th 2011                                                    #
-# Version: 1.1.0                                                          #
+# Date: Jan 21th 2012                                                    #
+# Version: 1.2.0                                                          #
 #-------------------------------------------------------------------------#
 
 ## Main Function
@@ -65,6 +65,10 @@ huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0
 				cat("Computing the optimal graph....")
 				flush.console()
 			}
+			
+			if(est$opt.lambda>max(cor(est$data)))
+				est$refit = Matrix(0,d,d)
+			else{
 		
 			if(est$method == "mb")
 				est$refit = huge.mb(est$data, lambda = est$opt.lambda, sym = est$sym, idx.mat = est$idx.mat, verbose = FALSE)$path[[1]]
@@ -85,7 +89,7 @@ huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0
 			}
 			if(est$method == "ct")
 				est$refit = huge.ct(est$data, lambda = est$opt.lambda, verbose = FALSE)$path[[1]]
-		
+			}
 			est$opt.sparsity=sum(est$refit)/d/(d-1)
 		
 			if(verbose){

@@ -104,7 +104,7 @@ Maintainers: Tuo Zhao<tzhao5@jhu.edu>; Han Liu <hanliu@cs.jhu.edu>
 5.Onureena Banerjee, Laurent El Ghaoui, Alexandre d'Aspremont: Model Selection Through Sparse Maximum Likelihood Estimation for Multivariate Gaussian or Binary Data. \emph{Journal of Machine Learning Research}, 2008.\cr
 6.Jerome Friedman, Trevor Hastie and Robert Tibshirani. Sparse inverse covariance estimation with the lasso. \emph{Biostatistics}, 2007.\cr
 7.Nicolai Meinshausen and Peter Buhlmann. High-dimensional Graphs and Variable Selection with the Lasso. \emph{The Annals of Statistics}, 2006.
-11. Daniela Witten and Jerome Friedman. A fast screening rule for the graphical lasso. \emph{Journal of Computational and Graphical Statistics}, to appear, 2011.
+8. Daniela Witten and Jerome Friedman. A fast screening rule for the graphical lasso. \emph{Journal of Computational and Graphical Statistics}, to appear, 2011.
 }
 
 \note{

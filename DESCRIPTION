@@ -1,8 +1,8 @@
 Package: huge
 Type: Package
 Title: High-dimensional Undirected Graph Estimation
-Version: 1.2
-Date: 2012-01-20
+Version: 1.2.1
+Date: 2012-01-26
 Author: Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, Larry
         Wasserman
 Maintainer: Tuo Zhao <tzhao5@jhu.edu>, Han Liu <hanliu@cs.jhu.edu>
@@ -29,5 +29,5 @@ Description: The package "huge" provides a general framework for
         for the graphical lasso.
 License: GPL-2
 Repository: CRAN
-Date/Publication: 2012-01-22 20:25:39
-Packaged: 2012-01-22 17:11:01 UTC; tourzhao
+Date/Publication: 2012-01-27 11:03:49
+Packaged: 2012-01-26 18:38:16 UTC; tourzhao

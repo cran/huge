@@ -3,8 +3,8 @@
 # huge.npn(): nonparanormal(npn) transofmration                         #
 # Authors: Tuo Zhao and Han Liu                                         #
 # Emails: <tzhao@jhu.edu> and <hanliu@cs.jhu.edu>                       #
-# Date: Jul 15th 2011                                                   #
-# Version: 1.1.0                                                        #
+# Date: Mar 20th 2012                                                   #
+# Version: 1.2.2                                                        #
 #-----------------------------------------------------------------------#
 
 ## Main function
@@ -25,6 +25,8 @@ huge.npn = function(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE
 		if(verbose) cat("done.\n")
 		rm(n,d,verbose)
    		gc()	
+   		colnames(x) = x.col
+		rownames(x) = x.row
 	}
 	
 	# Truncation transformation
@@ -38,8 +40,19 @@ huge.npn = function(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE
     	if(verbose) cat("done.\n")
     	rm(n,d,npn.thresh,verbose)
    		gc()
+   		colnames(x) = x.col
+		rownames(x) = x.row
 	}
-	colnames(x) = x.col
-	rownames(x) = x.row
+	
+	if(npn.func == "skeptic"){
+		if(verbose) cat("Conducting nonparanormal (npn) transformation via skeptic....")
+		x = 2*sin(pi/6*cor(x,method="spearman"))
+    	if(verbose) cat("done.\n")
+    	rm(n,d,verbose)
+   		gc()
+   		colnames(x) = x.col
+		rownames(x) = x.col
+	}
+	
 	return(x)
 }

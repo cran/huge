@@ -18,7 +18,7 @@ huge.npn(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE)
 The \code{n} by \code{d} data matrix representing \code{n} observations in \code{d} dimensions
 }
   \item{npn.func}{
-The transformation function used in the npn transformation. If \code{npn.func = "truncation"}, the truncated ECDF is applied. If \code{npn.func = "shrinkage"}, the shrunken ECDF is applied. The default is \code{"shrinkage"}.
+The transformation function used in the npn transformation. If \code{npn.func = "truncation"}, the truncated ECDF is applied. If \code{npn.func = "shrinkage"}, the shrunken ECDF is applied. The default is \code{"shrinkage"}. If \code{npn.func = "skeptic"}, the nonparanormal skeptic is applied.
 }
   \item{npn.thresh}{
 The truncation threshold used in nonparanormal transformation, ONLY applicable when \code{npn.func = "truncation"}. The default value is \code{1/(4*(n^0.25)*} \code{sqrt(pi*log(n)))}.
@@ -34,7 +34,7 @@ The nonparanormal extends Gaussian graphical models to semiparametric Gaussian c
 
 \value{
 \item{data}{
-The \code{n} by \code{d} data matrix representing \code{n} observations in \code{d} transformed dimensions
+A \code{d} by \code{d} nonparanormal correlation matrix if \code{npn.func = "skeptic"}, and A \code{n} by \code{d} data matrix representing \code{n} observations in \code{d} transformed dimensions other wise.
 }
 }
 
@@ -53,12 +53,17 @@ Maintainer: Tuo Zhao<tzhao5@jhu.edu>;Han Liu<hanliu@cs.jhu.edu>
 }
 
 \examples{
-# generate data
+# generate nonparanormal data
 L = huge.generator(graph = "cluster", g = 5)
+L$data = L$data^5
 
-# transform the non-Gaussian data using the shrunken ECDF
-Q = huge.npn(L$data^5)
+# transform the data using the shrunken ECDF
+Q = huge.npn(L$data)
 
 # transform the non-Gaussian data using the truncated ECDF
-Q = huge.npn(5^(L$data), npn.func = "truncation")
+Q = huge.npn(L$data, npn.func = "truncation")
+
+# transform the non-Gaussian data using the truncated ECDF
+Q = huge.npn(L$data, npn.func = "skeptic")
+
 }

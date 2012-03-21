@@ -29,6 +29,7 @@ huge.ct = function(x, nlambda = NULL, lambda.min.ratio = NULL, lambda = NULL, ve
 	rm(x)
 	gc()
 	diag(S) = 0
+	S = abs(S)
   	S.rank = order(S,decreasing = TRUE)
 	gc()
  		

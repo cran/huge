@@ -1,7 +1,7 @@
-af8b40e020ddc215fab12d052ae5c65b *DESCRIPTION
+c6c5bc35f1aba00788c4254b3f8bfd25 *DESCRIPTION
 527d0f01922b975a34907005b858d3e1 *NAMESPACE
 3edf8b73f1371f6185850175674f246b *R/huge.R
-7418edf11fb4c038824446ad8f235b30 *R/huge.ct.R
+b35b386000d9fd1fd8915b4acd0fb28d *R/huge.ct.R
 051b4dc2e1223b8eccf8eeff5bfa6f48 *R/huge.generator.R
 9704c1ea3fddc73e5b722c44dac67891 *R/huge.glasso.R
 a9cf57935a3ed9851af3310e99c31cf2 *R/huge.mb.R
@@ -14,9 +14,9 @@ d0c30027b3a0eeccde28149f26bd55e5 *R/zzz.R
 ec90576375b24e35502847bdd1d85b6e *data/stockdata.rda
 814b91fdafd31d574c874f515a553fa2 *inst/doc/huge.pdf
 c660ea48a96d76dc9005dbaae6c06f4b *inst/doc/vignette.Rnw
-c61f2841611d62fe05d6beab3fe24fb3 *inst/doc/vignette.pdf
+ceb1a915fe3bc09b40216bfae5808bb2 *inst/doc/vignette.pdf
 0fd64fb6af0068acb9777c07fc5545c8 *man/huge-internal.Rd
-006004b1e953c11027c6fca362d34099 *man/huge-package.Rd
+aecbbe3a7f496e3f0c3c9c6c737e519e *man/huge-package.Rd
 0ba8fa5583bb51f0c9240f50ab67cfc6 *man/huge.Rd
 180057d39b52637eedd41dcbb98fef4f *man/huge.generator.Rd
 779814ac649f3b29814fe0e504671d84 *man/huge.npn.Rd

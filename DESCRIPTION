@@ -1,12 +1,12 @@
 Package: huge
 Type: Package
 Title: High-dimensional Undirected Graph Estimation
-Version: 1.2.4
-Date: 2012-08-08
+Version: 1.2.5
+Date: 2013-12-04
 Author: Tuo Zhao, Han Liu, Kathryn Roeder, John Lafferty, Larry
         Wasserman
 Maintainer: Tuo Zhao <tzhao5@jhu.edu>
-Depends: R (>= 2.10), Matrix, lattice, igraph, MASS
+Depends: R (>= 3.0.0), Matrix, lattice, igraph, MASS
 Description: The package "huge" provides a general framework for
         high-dimensional undirected graph estimation. It integrates
         data preprocessing, neighborhood screening, graph estimation,
@@ -29,5 +29,6 @@ Description: The package "huge" provides a general framework for
         for the graphical lasso.
 License: GPL-2
 Repository: CRAN
-Date/Publication: 2012-08-16 05:52:22
-Packaged: 2012-08-13 20:13:50 UTC; tourzhao
+Date/Publication: 2013-12-07 07:49:41
+Packaged: 2013-12-07 00:41:39 UTC; tourzhao
+NeedsCompilation: yes

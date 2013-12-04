@@ -10,7 +10,8 @@ The main function for high-dimensional undirected graph estimation. Three graph 
 }
 
 \usage{
-huge(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, method = "mb", scr = NULL, scr.num = NULL, cov.output = FALSE, sym = "or", verbose = TRUE)
+huge(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, method = "mb",
+scr = NULL, scr.num = NULL, cov.output = FALSE, sym = "or", verbose = TRUE)
 }
 
 \arguments{

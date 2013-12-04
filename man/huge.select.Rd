@@ -105,7 +105,7 @@ Maintainers: Tuo Zhao<tzhao5@jhu.edu>
 
 \examples{
 #generate data
-L = huge.generator(d = 200, graph="hub")
+L = huge.generator(d = 60, graph="hub")
 out.mb = huge(L$data)
 out.ct = huge(L$data, method = "ct")
 out.glasso = huge(L$data, method = "glasso")

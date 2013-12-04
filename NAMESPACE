@@ -1,5 +1,5 @@
 useDynLib("huge")
-import("Matrix")
+import("Matrix","MASS","igraph","lattice")
 export(huge,
 	huge.select,
 	huge.roc,

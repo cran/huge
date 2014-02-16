@@ -1,4 +1,4 @@
-71269bcf313fcbd57ca0c2bf09492558 *DESCRIPTION
+bb6288dcca88066da1031bffa1d67354 *DESCRIPTION
 7761e730b10d7ae559acb6c159ce41f8 *NAMESPACE
 3edf8b73f1371f6185850175674f246b *R/huge.R
 b35b386000d9fd1fd8915b4acd0fb28d *R/huge.ct.R
@@ -16,13 +16,13 @@ ec90576375b24e35502847bdd1d85b6e *data/stockdata.rda
 c660ea48a96d76dc9005dbaae6c06f4b *inst/doc/vignette.Rnw
 e72911940e21bb9de638f0d9ead9b4d7 *inst/doc/vignette.pdf
 f1c6d6feb9664f54cf4a74be54816e00 *man/huge-internal.Rd
-653c970593fd806e3485ba07cb331bc8 *man/huge-package.Rd
-38dd2bbe75484a2506b7f3ed71f00e25 *man/huge.Rd
+c02eeecdc60f7b693c6c30cf3cd964f5 *man/huge-package.Rd
+8836e4eff3a682280a1bd15bd24add62 *man/huge.Rd
 b4fe442d3e7c8c0f26cf5aefec827844 *man/huge.generator.Rd
 e25e2adbc26d573c97793131481b3400 *man/huge.npn.Rd
 f0109f8a7f79b5da7a538b8b785c6c78 *man/huge.plot.Rd
 202d01af63a2cfb7a9ac717fa96bc4b4 *man/huge.roc.Rd
-dfd95fb02801b84eb0a34f5e850581d5 *man/huge.select.Rd
+0bce5c46038fea96d7edbdc04da82573 *man/huge.select.Rd
 bb35ec166459bbc08e037bc82cfc5890 *man/plot.huge.Rd
 9920e37bb35b5f154d70437a0a135984 *man/plot.roc.Rd
 e8ae8fc8f82a378b7f595e9a7bc47b14 *man/plot.select.Rd
@@ -33,7 +33,7 @@ bcc7ee2698948ba80f77fa51c4362761 *man/print.select.Rd
 7ba815cd746c93b789fda2174bcc7184 *man/print.sim.Rd
 92a2a28cd1d9cd4c6ae4fd5129d27ba4 *man/stockdata.Rd
 5df1536379011d55be8c2e6b4ffa7050 *src/RIC.c
-b10cd7a70f4a0772e49935ad349b56a8 *src/SFGen.c
+63100601c92fa92017717b3669e13e39 *src/SFGen.c
 1397977b2d8cd321ee5144a4fbf5c8cc *src/SPMBgraph.c
 fadb22d0c8d2a742caeaa6d8a9475def *src/SPMBscr.c
 fc577c49887cc003a6cc9c31c8bdfeb8 *src/hugeglasso.c

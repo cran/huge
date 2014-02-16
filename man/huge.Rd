@@ -123,7 +123,7 @@ This function ONLY estimates the graph path. For more information about the opti
 
 \examples{
 #generate data
-L = huge.generator(n = 200, d = 80, graph = "hub")
+L = huge.generator(n = 100, d = 30, graph = "hub", g = 6)
 
 #graph path estimation using mb
 out1 = huge(L$data)

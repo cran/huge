@@ -1,6 +1,10 @@
 #include<R.h>
-void SFGen(int *dd0, int*dd, int *G){
-	int i,j;
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+void SFGen(int *dd0, int*dd, int *G, int *seed){
+    int i,j;
     int d0,d;
     d0 = dd0[0];
     d = dd[0];
@@ -9,7 +13,9 @@ void SFGen(int *dd0, int*dd, int *G){
     int tmp;
     int total;
 
-	for(i=0;i<(d0-1);i++){
+    srand(*seed);
+
+    for(i=0;i<(d0-1);i++){
         G[i*d+i+1] = 1;
         G[(i+1)*d+i] = 1;
     }
@@ -25,7 +31,7 @@ void SFGen(int *dd0, int*dd, int *G){
     total = 2*d0;
     
     for(i=d0;i<d;i++){
-        x = (double) rand()/2147483647*total;
+        x = (double) total*rand()/RAND_MAX;
         tmp = 0;
         j = 0;
         while(tmp<x&&j<i){

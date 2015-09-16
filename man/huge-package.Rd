@@ -2,7 +2,7 @@
 \alias{huge-package}
 \docType{package}
 \title{
-High-dimensional Undirected Graph Estimation
+High-Dimensional Undirected Graph Estimation
 }
 \description{
 A package for high-dimensional undirected graph estimation
@@ -11,8 +11,8 @@ A package for high-dimensional undirected graph estimation
 \tabular{ll}{
 Package: \tab huge\cr
 Type: \tab Package\cr
-Version: \tab 1.2.6\cr
-Date: \tab 2013-02-16\cr
+Version: \tab 1.2.7\cr
+Date: \tab 2015-09-14\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }

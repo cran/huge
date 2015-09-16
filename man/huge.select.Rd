@@ -115,8 +115,8 @@ out.select = huge.select(out.mb)
 plot(out.select)
 
 #model selection using stars
-out.select = huge.select(out.ct, criterion = "stars", stars.thresh = 0.05,rep.num=10)
-plot(out.select)
+#out.select = huge.select(out.ct, criterion = "stars", stars.thresh = 0.05,rep.num=10)
+#plot(out.select)
 
 #model selection using ebic
 out.select = huge.select(out.glasso,criterion = "ebic")

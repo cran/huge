@@ -1,12 +1,14 @@
 Package: huge
 Type: Package
 Title: High-Dimensional Undirected Graph Estimation
-Version: 1.2.7
-Author: Tuo Zhao, Xingguo Li, Han Liu, Kathryn Roeder, John Lafferty, Larry
-        Wasserman
-Maintainer: Tuo Zhao <tzhao5@jhu.edu>
-Depends: R (>= 3.0.0), Matrix, lattice, igraph, MASS
-Imports: grDevices, graphics, methods, stats, utils
+Version: 1.3.0
+Author: Haoming Jiang, Xinyu Fei, Yukun Ma, Xingguo Li, Han Liu, Kathryn Roeder, John Lafferty, Larry
+        Wasserman, Tuo Zhao
+Maintainer: Haoming Jiang <jianghm.ustc@gmail.com>
+Depends: R (>= 3.0.0)
+Imports: Matrix, igraph, MASS, grDevices, graphics, methods, stats,
+        utils, Rcpp
+LinkingTo: Rcpp, RcppEigen
 Description: Provides a general framework for
         high-dimensional undirected graph estimation. It integrates
         data preprocessing, neighborhood screening, graph estimation,
@@ -30,5 +32,7 @@ Description: Provides a general framework for
 License: GPL-2
 Repository: CRAN
 NeedsCompilation: yes
-Packaged: 2015-09-15 17:56:38 UTC; tuozhao
-Date/Publication: 2015-09-16 10:05:23
+RoxygenNote: 6.1.0
+Encoding: UTF-8
+Packaged: 2019-02-20 07:45:15 UTC; Haoming
+Date/Publication: 2019-02-22 07:00:03 UTC

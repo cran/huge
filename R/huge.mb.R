@@ -78,7 +78,6 @@ huge.mb = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, sc
     rm(lambda.max,lambda.min,lambda.min.ratio)
     gc()
   }
-  maxdf = min(d,n);
 
   if(scr)
   {
@@ -133,7 +132,7 @@ huge.mb = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, sc
     if(sym == "or")
       fit$path[[i]] = sign(fit$path[[i]] + t(as.matrix(fit$path[[i]])))
     if(sym == "and")
-      fit$path[[i]] = sign(fit$path[[i]] * t(fit$path[[i]]))
+      fit$path[[i]] = sign(fit$path[[i]] * t(as.matrix(fit$path[[i]])))
     fit$sparsity[i] = sum(fit$path[[i]])/d/(d-1)
   }
   rm(x, G, out)

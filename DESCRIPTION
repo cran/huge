@@ -1,10 +1,18 @@
 Package: huge
 Type: Package
 Title: High-Dimensional Undirected Graph Estimation
-Version: 1.3.5
-Author: Haoming Jiang, Xinyu Fei, Han Liu, Kathryn Roeder, John Lafferty, Larry
-        Wasserman,  Xingguo Li, and Tuo Zhao
-Maintainer: Haoming Jiang <jianghm.ustc@gmail.com>
+Version: 1.4
+Authors@R: c(
+    person("Haoming", "Jiang", role = "aut"),
+    person("Xinyu", "Fei", role = "aut"),
+    person("Han", "Liu", role = "aut"),
+    person("Kathryn", "Roeder", role = "aut"),
+    person("John", "Lafferty", role = "aut"),
+    person("Larry", "Wasserman", role = "aut"),
+    person("Xingguo", "Li", role = "aut"),
+    person("Tuo", "Zhao", role = c("aut", "cre"), email = "tourzhao@gatech.edu")
+  )
+Maintainer: Tuo Zhao <tourzhao@gatech.edu>
 Depends: R (>= 3.0.0)
 Imports: Matrix, igraph, MASS, grDevices, graphics, methods, stats,
         utils, Rcpp
@@ -32,7 +40,15 @@ Description: Provides a general framework for
 License: GPL-2
 Repository: CRAN
 NeedsCompilation: yes
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Encoding: UTF-8
-Packaged: 2021-06-30 19:55:18 UTC; jhaoming
-Date/Publication: 2021-06-30 20:20:02 UTC
+Packaged: 2026-02-18 18:00:54 UTC; tourzhao
+Author: Haoming Jiang [aut],
+  Xinyu Fei [aut],
+  Han Liu [aut],
+  Kathryn Roeder [aut],
+  John Lafferty [aut],
+  Larry Wasserman [aut],
+  Xingguo Li [aut],
+  Tuo Zhao [aut, cre]
+Date/Publication: 2026-02-19 08:50:02 UTC

@@ -129,7 +129,7 @@ huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0
         est$refit = Matrix(0,d,d)
       else{
         if(est$method == "mb")
-          est$refit = huge.mb(est$data, lambda = est$opt.lambda, sym = est$sym, idx.mat = est$idx.mat, verbose = FALSE)$path[[1]]
+          est$refit = huge.mb(est$data, lambda = est$opt.lambda, sym = est$sym, idx.mat = est$idx_mat, verbose = FALSE)$path[[1]]
         if(est$method == "glasso")
         {
           if(!is.null(est$cov))
@@ -185,28 +185,28 @@ huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0
         if(n<=144) stars.subsample.ratio = 0.8
       }
 
-      est$merge = list()
-      for(i in 1:nlambda) est$merge[[i]] = Matrix(0,d,d)
+      est$merge = vector("list", nlambda)
+      for(lambda_idx in 1:nlambda) est$merge[[lambda_idx]] = Matrix(0,d,d)
 
-      for(i in 1:rep.num)
+      for(rep_idx in 1:rep.num)
       {
         if(verbose)
         {
-          mes <- paste(c("Conducting Subsampling....in progress:", floor(100*i/rep.num), "%"), collapse="")
+          mes <- paste(c("Conducting Subsampling....in progress:", floor(100*rep_idx/rep.num), "%"), collapse="")
           cat(mes, "\r")
           flush.console()
         }
         ind.sample = sample(c(1:n), floor(n*stars.subsample.ratio), replace=FALSE)
 
         if(est$method == "mb")
-          tmp = huge.mb(est$data[ind.sample,],lambda = est$lambda, scr = est$scr, idx.mat = est$idx.mat, sym = est$sym, verbose = FALSE)$path
+          tmp = huge.mb(est$data[ind.sample,],lambda = est$lambda, scr = est$scr, idx.mat = est$idx_mat, sym = est$sym, verbose = FALSE)$path
            if(est$method == "ct")
           tmp = huge.ct(est$data[ind.sample,], lambda = est$lambda,verbose = FALSE)$path
         if(est$method == "glasso")
           tmp = huge.glasso(est$data[ind.sample,], lambda = est$lambda, scr = est$scr, verbose = FALSE)$path
 
-        for(i in 1:nlambda)
-          est$merge[[i]] = est$merge[[i]] + tmp[[i]]
+        for(lambda_idx in 1:nlambda)
+          est$merge[[lambda_idx]] = est$merge[[lambda_idx]] + tmp[[lambda_idx]]
 
         rm(ind.sample,tmp)
         gc()
@@ -221,12 +221,16 @@ huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0
       }
 
       est$variability = rep(0,nlambda)
-      for(i in 1:nlambda){
-        est$merge[[i]] = est$merge[[i]]/rep.num
-        est$variability[i] = 4*sum(est$merge[[i]]*(1-est$merge[[i]]))/(d*(d-1))
+      for(lambda_idx in 1:nlambda){
+        est$merge[[lambda_idx]] = est$merge[[lambda_idx]]/rep.num
+        est$variability[lambda_idx] = 4*sum(est$merge[[lambda_idx]]*(1-est$merge[[lambda_idx]]))/(d*(d-1))
       }
 
-      est$opt.index = max(which.max(est$variability >= stars.thresh)[1]-1,1)
+      stars.cross = which(est$variability >= stars.thresh)
+      if(length(stars.cross) == 0)
+        est$opt.index = nlambda
+      else
+        est$opt.index = max(stars.cross[1]-1,1)
       est$refit = est$path[[est$opt.index]]
       est$opt.lambda = est$lambda[est$opt.index]
       est$opt.sparsity = est$sparsity[est$opt.index]

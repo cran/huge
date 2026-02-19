@@ -1,19 +1,25 @@
 #include "math.h"
-#include <RcppEigen.h>
 #include <Rcpp.h>
 #include <RcppEigen.h>
+#include <algorithm>
+#include <vector>
 using namespace Rcpp;
 using namespace std;
 using namespace Eigen;
 //[[Rcpp::depends(RcppEigen)]]
 //[[Rcpp::plugins(openmp)]
 
-
-double threshold(double x, double thr);
-
 //[[Rcpp::export]]
 List SPMBscr(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda, int d, int maxdf, IntegerMatrix idx_scr, int nscr)
 {
+    if(d <= 0 || nlambda <= 0 || maxdf <= 0 || nscr < 0){
+        int d_safe = d > 0 ? d : 0;
+        return List::create(
+          _["col_cnz"] = IntegerVector(d_safe + 1),
+          _["row_idx"] = IntegerVector(0),
+          _["x"] = NumericVector(0)
+        );
+    }
     NumericVector x(d*maxdf*nlambda);
     IntegerVector col_cnz(d+1);
     col_cnz[0] = 0;
@@ -31,10 +37,10 @@ List SPMBscr(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda, i
     double thol = 1e-4;
     int MAX_ITER = 10000;
 
-    double *w0 = (double*) malloc(d*sizeof(double));
-    double *w1 = (double*) malloc(d*sizeof(double));
-    int *idx_a = (int*) malloc(nscr*sizeof(int)); //sizes of active sets
-    int *idx_i = (int*) malloc(nscr*sizeof(int)); //sizes of active sets
+    std::vector<double> w0(d, 0.0);
+    std::vector<double> w1(d, 0.0);
+    std::vector<int> idx_a(nscr); //sizes of active sets
+    std::vector<int> idx_i(nscr); //sizes of active sets
 
     cnz = 0;
 
@@ -45,8 +51,8 @@ List SPMBscr(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda, i
         for(j=0;j<nscr;j++)
             idx_i[j] = idx_scr[m*nscr+j];
 
-        for(j=0;j<d;j++)
-            w0[j] = 0;
+        std::fill(w0.begin(), w0.end(), 0.0);
+        std::fill(w1.begin(), w1.end(), 0.0);
 
         for(i=0;i<nlambda;i++)
         {
@@ -77,7 +83,7 @@ List SPMBscr(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda, i
                             idx_i[j] = -1;
                         }
 
-                        if(r < -ilambda)
+                        else if(r < -ilambda)
                         {
                             w1[w_idx] = r + ilambda;
                             idx_a[size_a] = w_idx;
@@ -114,7 +120,7 @@ List SPMBscr(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda, i
                             tmp2 += fabs(w1[w_idx]);
                         }
 
-                        else if(r <-ilambda)
+                        else if(r < -ilambda)
                         {
                             w1[w_idx] = r + ilambda;
                             tmp2 += fabs(w1[w_idx]);
@@ -125,7 +131,10 @@ List SPMBscr(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda, i
                         tmp1 += fabs(w1[w_idx] - w0[w_idx]);
                         w0[w_idx] = w1[w_idx];
                     }
-                    gap_int = tmp1/tmp2;
+                    if(tmp2 > 0)
+                        gap_int = tmp1/tmp2;
+                    else
+                        gap_int = 0;
                     iter_int++;
                 }
                 iter_ext++;
@@ -140,10 +149,6 @@ List SPMBscr(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda, i
         }
         col_cnz[m+1]=cnz;
     }
-    free(w0);
-    free(w1);
-    free(idx_a);
-    free(idx_i);
     return List::create(
       _["col_cnz"] = col_cnz,
       _["row_idx"] = row_idx,
@@ -154,6 +159,14 @@ List SPMBscr(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda, i
 //[[Rcpp::export]]
 List SPMBgraph(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda, int d, int maxdf)
 {
+    if(d <= 0 || nlambda <= 0 || maxdf <= 0){
+        int d_safe = d > 0 ? d : 0;
+        return List::create(
+          _["col_cnz"] = IntegerVector(d_safe + 1),
+          _["row_idx"] = IntegerVector(0),
+          _["x"] = NumericVector(0)
+        );
+    }
     NumericVector x(d*maxdf*nlambda);
     IntegerVector col_cnz(d+1);
     col_cnz[0] = 0;
@@ -175,10 +188,10 @@ List SPMBgraph(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda,
     double thol = 1e-4;
     int MAX_ITER = 10000;
 
-    double *w0 = (double*) malloc(d*sizeof(double));
-    double *w1 = (double*) malloc(d*sizeof(double));
-    int *idx_a = (int*) malloc(d*sizeof(int)); //sizes of active sets
-    int *idx_i = (int*) malloc(d*sizeof(int)); //sizes of active sets
+    std::vector<double> w0(d, 0.0);
+    std::vector<double> w1(d, 0.0);
+    std::vector<int> idx_a(d); //sizes of active sets
+    std::vector<int> idx_i(d); //sizes of active sets
 
     cnz = 0;
 
@@ -191,8 +204,8 @@ List SPMBgraph(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda,
             idx_i[j] = 1;
 
         size_a = 0;
-        for(j=0;j<d;j++)
-            w0[j] = 0;
+        std::fill(w0.begin(), w0.end(), 0.0);
+        std::fill(w1.begin(), w1.end(), 0.0);
 
         for(i=0;i<nlambda;i++)
         {
@@ -220,7 +233,7 @@ List SPMBgraph(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda,
                             size_a++;
                             idx_i[j] = 0;
                         }
-                        else if(r <-ilambda)
+                        else if(r < -ilambda)
                         {
                             w1[j] = r + ilambda;
                             idx_a[size_a] = j;
@@ -260,7 +273,7 @@ List SPMBgraph(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda,
                                 w1[w_idx] = r - ilambda;
                                 tmp2 += fabs(w1[w_idx]);
                             }
-                            else if(r <-ilambda){
+                            else if(r < -ilambda){
                                 w1[w_idx] = r + ilambda;
                                 tmp2 += fabs(w1[w_idx]);
                             }
@@ -271,7 +284,10 @@ List SPMBgraph(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda,
                             w0[w_idx] = w1[w_idx];
                         }
                     }
-                    gap_int = tmp1/tmp2;
+                    if(tmp2 > 0)
+                        gap_int = tmp1/tmp2;
+                    else
+                        gap_int = 0;
                     iter_int++;
                 }
                 junk_a = 0;
@@ -298,10 +314,6 @@ List SPMBgraph(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda,
         }
         col_cnz[m+1]=cnz;
     }
-    free(w0);
-    free(w1);
-    free(idx_a);
-    free(idx_i);
     return List::create(
     _["col_cnz"] = col_cnz,
     _["row_idx"] = row_idx,

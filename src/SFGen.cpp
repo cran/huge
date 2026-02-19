@@ -6,6 +6,8 @@ using namespace Rcpp;
 
 //[[Rcpp::export]]
 List SFGen(int d0, int d){
+    if(d <= 0 || d0 <= 0 || d0 > d)
+        stop("Invalid input: require 0 < d0 <= d.");
     IntegerMatrix G(d,d);
     int i,j;
     double x;
@@ -28,23 +30,23 @@ List SFGen(int d0, int d){
     }
     total = 2*d0;
 
+    GetRNGstate();
     for(i=d0;i<d;i++){
-        GetRNGstate();
         x = (double) total*unif_rand();
-        PutRNGstate();
         tmp = 0;
         j = 0;
         while(tmp<x&&j<i){
             tmp += size_a[j];
             j++;
         }
-        j = j-1;
+        if(j > 0) j = j-1;
         G(j,i) = 1;
         G(i,j) = 1;
         total+=2;
         size_a[j]++;
         size_a[i]++;
     }
+    PutRNGstate();
     R_Free(size_a);
 
     return List::create(

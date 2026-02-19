@@ -74,8 +74,7 @@ huge.inference = function(data, T, adj, alpha = 0.05, type = "Gaussian", method 
         W_n[j, k] = sqrt(n)*W[j, k]/sigma[j, k]
       }
     }
-    p<-matrix(0,d,d)
-    p<-apply(W_n, 1, function(x) 2*(1 - pnorm(abs(x))))
+    p<-2*(1 - pnorm(abs(W_n)))
     rm(sigma,W_n)
   }
   if(type == "Nonparanormal")
@@ -141,15 +140,17 @@ huge.inference = function(data, T, adj, alpha = 0.05, type = "Gaussian", method 
           T_h[j, k]=0
           S[j, k] = t(ej)%*%t(T_h)%*%U%*%T_h%*%ek/(T[j, j]*T[k, k])
 
+          idx <- (k - 1) * d + j
+
           #w
-          temp1<-T_k[,j*k]
-          temp1<-temp1[-j*k]
-          w<-as.matrix((-temp1)/T_k[j*k, j*k])
+          temp1<-T_k[,idx]
+          temp1<-temp1[-idx]
+          w<-as.matrix((-temp1)/T_k[idx, idx])
 
           #sigma
-          temp2<-R[j*k,]
-          temp2<-as.matrix(temp2[-j*k])
-          sigma[j, k] = sqrt(R[j*k, j*k] - 2*t(temp2)%*%w + t(w)%*%R[-j*k, -j*k]%*%w)
+          temp2<-R[idx,]
+          temp2<-as.matrix(temp2[-idx])
+          sigma[j, k] = sqrt(R[idx, idx] - 2*t(temp2)%*%w + t(w)%*%R[-idx, -idx]%*%w)
 
           ST_n[j, k] = S[j, k]*sqrt(n)/(2*sigma[j, k])
 
@@ -157,8 +158,7 @@ huge.inference = function(data, T, adj, alpha = 0.05, type = "Gaussian", method 
       }
 
       #p-value
-      p<-matrix(0,d,d)
-      p<-apply(ST_n, 1, function(x) 2*(1 - pnorm(abs(x))))
+      p<-2*(1 - pnorm(abs(ST_n)))
       rm(temp1,temp2,ST_n,S)
     }
 
@@ -174,15 +174,17 @@ huge.inference = function(data, T, adj, alpha = 0.05, type = "Gaussian", method 
       {
         for(k in 1:d)
         {
+          idx <- (k - 1) * d + j
+
           #w
-          temp3<-T_k[,j*k]
-          temp3<-temp3[-j*k]
-          w<-as.matrix((-temp3)/T_k[j*k,j*k])
+          temp3<-T_k[,idx]
+          temp3<-temp3[-idx]
+          w<-as.matrix((-temp3)/T_k[idx,idx])
 
           #sigma
-          temp4<-R[j*k,]
-          temp4<-as.matrix(temp4[-j*k])
-          sigma[j, k] = sqrt(R[j*k, j*k] - 2*t(temp4)%*%w + t(w)%*%R[-j*k, -j*k]%*%w)
+          temp4<-R[idx,]
+          temp4<-as.matrix(temp4[-idx])
+          sigma[j, k] = sqrt(R[idx, idx] - 2*t(temp4)%*%w + t(w)%*%R[-idx, -idx]%*%w)
 
           #T_W
           ej<-matrix(0,d,1)
@@ -197,8 +199,7 @@ huge.inference = function(data, T, adj, alpha = 0.05, type = "Gaussian", method 
 
 
       #p-value
-      p<-matrix(0,d,d)
-      p<-apply(W_n, 1, function(x) 2*(1 - pnorm(abs(x))))
+      p<-2*(1 - pnorm(abs(W_n)))
       rm(temp1,temp2,temp3,temp4,T_W,W_n)
     }
     rm(R,F,G,w,T_k)

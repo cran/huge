@@ -1,0 +1,11 @@
+% \VignetteIndexEntry{huge}
+% \VignetteKeywords{graphical models, high-dimensional}
+% \VignettePackage{huge}
+
+\documentclass[a4paper]{article}
+\usepackage{hyperref}
+\usepackage{pdfpages}
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\includepdf[fitpaper=true,pages=-]{huge-content.pdf}
+\end{document}

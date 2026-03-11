@@ -32,18 +32,12 @@
 #' huge.plot(L$theta, epsflag = TRUE, cur.num = 5, location = tempdir())
 #' @export
 huge.plot = function(G, epsflag = FALSE, graph.name = "default", cur.num = 1, location=NULL){
-  gcinfo(FALSE)
   if(missing(location))  location = tempdir()
-  oldlocation = getwd()
-  setwd(location)
-  g = graph.adjacency(as.matrix(G!=0), mode="undirected", diag=FALSE)
-  layout.grid = layout.fruchterman.reingold(g)
+  g = graph_from_adjacency_matrix(as.matrix(G!=0), mode="undirected", diag=FALSE)
+  layout.grid = layout_with_fr(g)
 
-  if(epsflag == TRUE)  postscript(paste(paste(graph.name, cur.num, sep=""), "eps", sep="."), width = 8.0, height = 8.0)
+  if(epsflag == TRUE)  postscript(file.path(location, paste(paste(graph.name, cur.num, sep=""), "eps", sep=".")), width = 8.0, height = 8.0)
     par(mfrow = c(1,1))
   plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=2, vertex.label=NA)
-  rm(g,location)
-  gc()
   if(epsflag == TRUE) dev.off()
-  setwd(oldlocation)
 }

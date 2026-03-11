@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------#
-# Package: High-dimensional Undirected pathraph Estimation              #
+# Package: High-dimensional Undirected Graph Estimation                 #
 # huge(): Draw ROC Curve for a solution path                            #
 #         The ground truth is required                                  #
 #-----------------------------------------------------------------------#
@@ -41,7 +41,7 @@
 #' max(Z1$F1)
 #' @export
 huge.roc = function(path, theta, verbose = TRUE){
-  gcinfo(verbose = FALSE)
+
   ROC = list()
 
   theta = as.matrix(theta)
@@ -70,19 +70,14 @@ huge.roc = function(path, theta, verbose = TRUE){
   }
   if(verbose) cat("done.\n")
 
-  rm(precision,recall,tp.all,fp.all,path,theta,fn)
-     gc()
-
   ord.fp = order(ROC$fp)
 
   tmp1 = ROC$fp[ord.fp]
   tmp2 = ROC$tp[ord.fp]
   par(mfrow = c(1,1))
-  plot(tmp1,tmp2,type="b",main = "ROC Curve", xlab = "False Postive Rate", ylab = "True Postive Rate",ylim = c(0,1))
+  plot(tmp1,tmp2,type="b",main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate",ylim = c(0,1))
   ROC$AUC = sum(diff(tmp1)*(tmp2[-1]+tmp2[-length(tmp2)]))/2
 
-  rm(ord.fp, tmp1, tmp2)
-  gc()
   class(ROC) = "roc"
   return(ROC)
 }
@@ -96,7 +91,7 @@ huge.roc = function(path, theta, verbose = TRUE){
 #' @seealso \code{\link{huge.roc}}
 #' @export
 print.roc = function(x, ...){
-  cat("True Postive Rate: from",min(x$tp),"to",max(x$tp),"\n")
+  cat("True Positive Rate: from",min(x$tp),"to",max(x$tp),"\n")
   cat("False Positive Rate: from",min(x$fp),"to",max(x$fp),"\n")
   cat("Area under Curve:",x$AUC,"\n")
   cat("Maximum F1 Score:",max(x$F1),"\n")
@@ -113,5 +108,5 @@ print.roc = function(x, ...){
 plot.roc = function(x, ...){
   ord.fp = order(x$fp)
   par(mfrow = c(1,1))
-  plot(x$fp[ord.fp],x$tp[ord.fp],type="b",main = "ROC Curve", xlab = "False Postive Rate", ylab = "True Postive Rate",ylim = c(0,1))
+  plot(x$fp[ord.fp],x$tp[ord.fp],type="b",main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate",ylim = c(0,1))
 }

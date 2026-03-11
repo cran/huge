@@ -1,6 +1,6 @@
 #-----------------------------------------------------------------------#
 # Package: High-dimensional Undirected Graph Estimation                 #
-# huge.npn(): nonparanormal(npn) transofmration                         #
+# huge.npn(): nonparanormal(npn) transformation                         #
 #-----------------------------------------------------------------------#
 
 #' Nonparanormal(npn) transformation
@@ -34,7 +34,6 @@
 #' Q = huge.npn(L$data, npn.func = "skeptic")
 #' @export
 huge.npn = function(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE, na.last = "keep"){
-  gcinfo(FALSE)
   n = nrow(x)
   d = ncol(x)
   x.col = colnames(x)
@@ -45,16 +44,14 @@ huge.npn = function(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE
     sweep(z, 2, z.sd, "/")
   }
 
-    # Shrinkaage transformation
+    # Shrinkage transformation
   if(npn.func == "shrinkage"){
-    if(verbose) cat("Conducting the nonparanormal (npn) transformation via shrunkun ECDF....")
+    if(verbose) cat("Conducting the nonparanormal (npn) transformation via shrunken ECDF....")
 
     x = qnorm(apply(x,2,rank,na.last=na.last)/(n+1))
     x = normalize.columns(x)
 
     if(verbose) cat("done.\n")
-    rm(n,d,verbose)
-       gc()
        colnames(x) = x.col
     rownames(x) = x.row
   }
@@ -68,8 +65,6 @@ huge.npn = function(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE
       x = normalize.columns(x)
 
       if(verbose) cat("done.\n")
-      rm(n,d,npn.thresh,verbose)
-       gc()
        colnames(x) = x.col
     rownames(x) = x.row
   }
@@ -78,10 +73,8 @@ huge.npn = function(x, npn.func = "shrinkage", npn.thresh = NULL, verbose = TRUE
     if(verbose) cat("Conducting nonparanormal (npn) transformation via skeptic....")
     x = 2*sin(pi/6*cor(x,method="spearman"))
       if(verbose) cat("done.\n")
-      rm(n,d,verbose)
-       gc()
-       colnames(x) = x.col
-    rownames(x) = x.col
+         colnames(x) = x.col
+    rownames(x) = x.row
   }
 
   return(x)

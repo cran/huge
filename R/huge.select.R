@@ -3,17 +3,17 @@
 # huge.select(): Model selection using:                                   #
 #                1.rotation information criterion (ric)                   #
 #                2.stability approach to regularization selection (stars) #
-#                3.extended Bayesian informaition criterion (ebic)        #
+#                3.extended Bayesian information criterion (ebic)        #
 #-------------------------------------------------------------------------#
 
 #' Model selection for high-dimensional undirected graph estimation
 #'
 #' Implements the regularization parameter selection for high dimensional undirected graph estimation. The optional approaches are rotation information criterion (ric), stability approach to regularization selection (stars) and extended Bayesian information criterion (ebic).
 #'
-#' Stability approach to regularization selection (stars) is a natural way to select optimal regularization parameter for all three estimation methods. It selects the optimal graph by variability of subsamplings and tends to overselect edges in Gaussian graphical models. Besides selecting the regularization parameters, stars can also provide an additional estimated graph by merging the corresponding subsampled graphs using the frequency counts. The subsampling procedure in stars may NOT be very efficient, we also provide the recent developed highly efficient, rotation information criterion approach (ric). Instead of tuning over a grid by cross-validation or subsampling, we directly estimate the optimal regularization parameter based on random Rotations. However, ric usually has very good empirical performances but suffers from underselections sometimes. Therefore, we suggest if user are sensitive of false negative rates, they should either consider increasing \code{r.num} or applying the stars to model selection. Extended Bayesian information criterion (ebic) is another competitive approach, but the \code{ebic.gamma} can only be tuned by experience.
+#' Stability approach to regularization selection (stars) is a natural way to select optimal regularization parameter for all four estimation methods. It selects the optimal graph by variability of subsamplings and tends to overselect edges in Gaussian graphical models. Besides selecting the regularization parameters, stars can also provide an additional estimated graph by merging the corresponding subsampled graphs using the frequency counts. The subsampling procedure in stars may NOT be very efficient, we also provide the recent developed highly efficient, rotation information criterion approach (ric). Instead of tuning over a grid by cross-validation or subsampling, we directly estimate the optimal regularization parameter based on random Rotations. However, ric usually has very good empirical performances but suffers from underselections sometimes. Therefore, we suggest if user are sensitive of false negative rates, they should either consider increasing \code{rep.num} or applying the stars to model selection. Extended Bayesian information criterion (ebic) is another competitive approach, but the \code{ebic.gamma} can only be tuned by experience.
 #'
 #' @param est An object with S3 class \code{"huge"}.
-#' @param criterion Model selection criterion. \code{"ric"} and \code{"stars"} are available for all 3 graph estimation methods. \code{ebic} is only applicable when \code{est$method = "glasso"} in \code{huge()}. The default value is \code{"ric"}.
+#' @param criterion Model selection criterion. \code{"ric"} and \code{"stars"} are available for all 4 graph estimation methods. \code{ebic} is only applicable when \code{est$method = "glasso"} in \code{huge()}. The default value is \code{"ric"}.
 #' @param ebic.gamma The tuning parameter for ebic. The default value is 0.5. Only applicable when \code{est$method = "glasso"} and \code{criterion = "ebic"}.
 #' @param stars.thresh The variability threshold in stars. The default value is \code{0.1}. An alternative value is \code{0.05}. Only applicable when \code{criterion = "stars"}.
 #' @param stars.subsample.ratio The subsampling ratio. The default value is \code{10*sqrt(n)/n} when \code{n>144} and \code{0.8} when \code{n<=144}, where \code{n} is the sample size. Only applicable when \code{criterion = "stars"}.
@@ -74,8 +74,6 @@
 #' @export
 huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0.1, stars.subsample.ratio = NULL, rep.num = 20, verbose = TRUE){
 
-  gcinfo(FALSE)
-
   if(est$cov.input){
     cat("Model selection is not available when using the covariance matrix as input.")
     class(est) = "select"
@@ -85,9 +83,9 @@ huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0
   {
     if(est$method == "mb"&&is.null(criterion))
       criterion = "ric"
-    if(est$method == "ct"&&is.null(criterion))
+    else if(est$method == "ct"&&is.null(criterion))
       criterion = "stars"
-    if(est$method == "glasso"&&is.null(criterion))
+    else if(est$method == "glasso"&&is.null(criterion))
       criterion = "ebic"
 
     n = nrow(est$data)
@@ -112,8 +110,6 @@ huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0
       }
 
       est$opt.lambda = .Call("_huge_RIC", est$data,d,n,r,nr)*1.0/n
-      gc()
-
       if(verbose){
         cat("done\n")
         flush.console()
@@ -142,8 +138,6 @@ huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0
 
           est$refit = tmp$path[[1]]
           est$opt.icov = tmp$icov[[1]]
-          rm(tmp)
-          gc()
         }
         if(est$method == "ct")
           est$refit = huge.ct(est$data, lambda = est$opt.lambda, verbose = FALSE)$path[[1]]
@@ -208,8 +202,6 @@ huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0
         for(lambda_idx in 1:nlambda)
           est$merge[[lambda_idx]] = est$merge[[lambda_idx]] + tmp[[lambda_idx]]
 
-        rm(ind.sample,tmp)
-        gc()
       }
 
       if(verbose)
@@ -267,7 +259,7 @@ print.select = function(x, ...)
   if(!x$cov.input)
   {
     if(x$method == "ct")
-      cat("Model: graph gstimation via correlation thresholding(ct)\n")
+      cat("Model: graph estimation via correlation thresholding (ct)\n")
     if(x$method == "glasso")
       cat("Model: graphical lasso (glasso)\n")
     if(x$method == "mb")
@@ -297,8 +289,8 @@ plot.select = function(x, ...){
   {
     par(mfrow=c(1,2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
 
-      g = graph.adjacency(as.matrix(x$refit), mode="undirected", diag=FALSE)
-    layout.grid = layout.fruchterman.reingold(g)
+      g = graph_from_adjacency_matrix(as.matrix(x$refit), mode="undirected", diag=FALSE)
+    layout.grid = layout_with_fr(g)
 
     plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=3, vertex.label=NA)
       plot(x$lambda, x$sparsity, log = "x", xlab = "Regularization Parameter", ylab = "Sparsity Level", type = "l",xlim = rev(range(x$lambda)), main = "Solution path sparsity levels")

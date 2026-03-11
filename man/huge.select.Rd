@@ -17,7 +17,7 @@ huge.select(
 \arguments{
 \item{est}{An object with S3 class \code{"huge"}.}
 
-\item{criterion}{Model selection criterion. \code{"ric"} and \code{"stars"} are available for all 3 graph estimation methods. \code{ebic} is only applicable when \code{est$method = "glasso"} in \code{huge()}. The default value is \code{"ric"}.}
+\item{criterion}{Model selection criterion. \code{"ric"} and \code{"stars"} are available for all 4 graph estimation methods. \code{ebic} is only applicable when \code{est$method = "glasso"} in \code{huge()}. The default value is \code{"ric"}.}
 
 \item{ebic.gamma}{The tuning parameter for ebic. The default value is 0.5. Only applicable when \code{est$method = "glasso"} and \code{criterion = "ebic"}.}
 
@@ -65,7 +65,7 @@ and anything else included in the input \code{est}
 Implements the regularization parameter selection for high dimensional undirected graph estimation. The optional approaches are rotation information criterion (ric), stability approach to regularization selection (stars) and extended Bayesian information criterion (ebic).
 }
 \details{
-Stability approach to regularization selection (stars) is a natural way to select optimal regularization parameter for all three estimation methods. It selects the optimal graph by variability of subsamplings and tends to overselect edges in Gaussian graphical models. Besides selecting the regularization parameters, stars can also provide an additional estimated graph by merging the corresponding subsampled graphs using the frequency counts. The subsampling procedure in stars may NOT be very efficient, we also provide the recent developed highly efficient, rotation information criterion approach (ric). Instead of tuning over a grid by cross-validation or subsampling, we directly estimate the optimal regularization parameter based on random Rotations. However, ric usually has very good empirical performances but suffers from underselections sometimes. Therefore, we suggest if user are sensitive of false negative rates, they should either consider increasing \code{r.num} or applying the stars to model selection. Extended Bayesian information criterion (ebic) is another competitive approach, but the \code{ebic.gamma} can only be tuned by experience.
+Stability approach to regularization selection (stars) is a natural way to select optimal regularization parameter for all four estimation methods. It selects the optimal graph by variability of subsamplings and tends to overselect edges in Gaussian graphical models. Besides selecting the regularization parameters, stars can also provide an additional estimated graph by merging the corresponding subsampled graphs using the frequency counts. The subsampling procedure in stars may NOT be very efficient, we also provide the recent developed highly efficient, rotation information criterion approach (ric). Instead of tuning over a grid by cross-validation or subsampling, we directly estimate the optimal regularization parameter based on random Rotations. However, ric usually has very good empirical performances but suffers from underselections sometimes. Therefore, we suggest if user are sensitive of false negative rates, they should either consider increasing \code{rep.num} or applying the stars to model selection. Extended Bayesian information criterion (ebic) is another competitive approach, but the \code{ebic.gamma} can only be tuned by experience.
 }
 \note{
 The model selection is NOT available when the data input is the sample covariance matrix.

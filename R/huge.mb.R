@@ -19,24 +19,11 @@
 #' @export
 huge.mb = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, scr = NULL, scr.num = NULL, idx.mat = NULL, sym = "or", verbose = TRUE)
 {
-  gcinfo(FALSE)
-  n = nrow(x);
-  d = ncol(x);
-  maxdf = min(d,n);
+  inp = .huge_preprocess(x, verbose)
+  x = inp$x; S = inp$S; n = inp$n; d = inp$d
+  maxdf = min(d,n)
   fit = list()
-  fit$cov.input = isSymmetric(x);
-  if(fit$cov.input)
-  {
-    if(verbose) cat("The input is identified as the covariance matrix.\n")
-    S = cov2cor(x);
-  }
-  if(!fit$cov.input)
-  {
-    x = scale(x)
-    S = cor(x)
-  }
-
-  gc()
+  fit$cov.input = inp$cov.input
 
   if(is.null(idx.mat))
   {
@@ -66,19 +53,8 @@ huge.mb = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, sc
     scr.num = nrow(idx.mat)
   }
 
-  if(!is.null(lambda)) nlambda = length(lambda)
-  if(is.null(lambda))
-  {
-    if(is.null(nlambda))
-      nlambda = 10
-    if(is.null(lambda.min.ratio))
-      lambda.min.ratio = 0.1
-    lambda.max = max(max(S-diag(d)),-min(S-diag(d)))
-    lambda.min = lambda.min.ratio*lambda.max
-    lambda = exp(seq(log(lambda.max), log(lambda.min), length = nlambda))
-    rm(lambda.max,lambda.min,lambda.min.ratio)
-    gc()
-  }
+  lam = .huge_default_lambda(S, d, nlambda, lambda.min.ratio, lambda)
+  lambda = lam$lambda; nlambda = lam$nlambda
 
   if(scr)
   {
@@ -136,8 +112,6 @@ huge.mb = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, sc
       fit$path[[i]] = sign(fit$path[[i]] * t(as.matrix(fit$path[[i]])))
     fit$sparsity[i] = sum(fit$path[[i]])/d/(d-1)
   }
-  rm(x, G, out)
-
   fit$lambda = lambda
 
   if(verbose)
@@ -146,7 +120,5 @@ huge.mb = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, sc
       flush.console()
   }
 
-  rm(verbose,nlambda)
-  gc()
   return(fit)
 }

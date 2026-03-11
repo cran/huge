@@ -3,32 +3,24 @@
 \docType{package}
 \name{huge-package}
 \alias{huge-package}
-\alias{_PACKAGE}
 \title{High-Dimensional Undirected Graph Estimation}
 \description{
 A package for high-dimensional undirected graph estimation
 }
 \details{
-\tabular{ll}{
-  Package: \tab huge\cr
-  Type: \tab Package\cr
-  Version: \tab 1.2.7\cr
-  Date: \tab 2015-09-14\cr
-  License: \tab GPL-2\cr
-  LazyLoad: \tab yes\cr
-}
-The package "huge" provides 8 main functions:\cr
+The package "huge" provides 9 main functions:\cr
 (1) the data generator creates random samples from multivariate normal distributions with different graph structures. Please refer to \code{\link{huge.generator}}.\cr
 (2) the nonparanormal (npn) transformation helps relax the normality assumption. Please refer to \code{\link{huge.npn}}.\cr
 (3) The correlation thresholding graph estimation. Please refer to \code{\link{huge}}.\cr
 (4) The Meinshausen-Buhlmann graph estimation. Please refer to \code{\link{huge}}.\cr
-(5) The graphical Lasso algorithm using lossless screening rule. Please refer and \code{\link{huge}}.\cr
+(5) The graphical Lasso algorithm using lossless screening rule. Please refer to \code{\link{huge}}.\cr
+(6) The tuning-insensitive graph estimation (tiger). Please refer to \code{\link{huge.tiger}}.\cr
 \cr
-**Both (4) and (5) can be further accelerated by the lossy screening rule preselecting the neighborhood of each node via thresholding sample correlation.
+Both (4) and (5) can be further accelerated by the lossy screening rule preselecting the neighborhood of each node via thresholding sample correlation.
 \cr
-(6) The model selection using the stability approach to regularization selection. Please refer to \code{\link{huge.select}}.\cr
-(7) The model selection using the rotation information criterion. Please refer to \code{\link{huge.select}}.\cr
-(8) The model selection using the extended Bayesian information criterion. Please refer to \code{\link{huge.select}}.\cr
+(7) The model selection using the stability approach to regularization selection. Please refer to \code{\link{huge.select}}.\cr
+(8) The model selection using the rotation information criterion. Please refer to \code{\link{huge.select}}.\cr
+(9) The model selection using the extended Bayesian information criterion. Please refer to \code{\link{huge.select}}.\cr
 }
 \references{
 1.  T. Zhao and H. Liu. The huge Package for High-dimensional Undirected Graph Estimation in R. \emph{Journal of Machine Learning Research}, 2012\cr
@@ -44,9 +36,9 @@ The package "huge" provides 8 main functions:\cr
 11. N. Meinshausen and P. Buhlmann. High-dimensional Graphs and Variable Selection with the Lasso. \emph{The Annals of Statistics}, 2006.\cr
 }
 \seealso{
-\code{\link{huge.generator}}, \code{\link{huge.npn}}, \code{\link{huge}}, \code{\link{huge.plot}} and \code{\link{huge.roc}}
+\code{\link{huge.generator}}, \code{\link{huge.npn}}, \code{\link{huge}}, \code{\link{huge.tiger}}, \code{\link{huge.select}}, \code{\link{huge.plot}} and \code{\link{huge.roc}}
 }
 \author{
 Tuo Zhao, Han Liu, Haoming Jiang, Kathryn Roeder, John Lafferty, and Larry Wasserman \cr
-Maintainers: Haoming Jiang<hjiang98@gatech.edu>;
+Maintainer: Tuo Zhao <tourzhao@gatech.edu>
 }

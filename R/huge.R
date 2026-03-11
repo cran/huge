@@ -1,11 +1,12 @@
 #-----------------------------------------------------------------------#
-# Package: High-dimensional Undirecte d Graph Estimation                #
-# huge(): The user interface for huge.mb(), huge.glasso() and huge.ct() #
+# Package: High-dimensional Undirected Graph Estimation                 #
+# huge(): The user interface for huge.mb(), huge.glasso(), huge.ct()    #
+#         and huge.tiger()                                              #
 #-----------------------------------------------------------------------#
 
 #' High-dimensional undirected graph estimation
 #'
-#' The main function for high-dimensional undirected graph estimation. Three graph estimation methods, including (1) Meinshausen-Buhlmann graph estimation (\code{mb}) (2) graphical lasso (\code{glasso}) (3) correlation thresholding graph estimation (\code{ct}) and (4) tuning-insensitive graph estimation (\code{tiger}), are available for data analysis.
+#' The main function for high-dimensional undirected graph estimation. Four graph estimation methods, including (1) Meinshausen-Buhlmann graph estimation (\code{mb}) (2) graphical lasso (\code{glasso}) (3) correlation thresholding graph estimation (\code{ct}) and (4) tuning-insensitive graph estimation (\code{tiger}), are available for data analysis.
 #'
 #' The graph structure is estimated by Meinshausen-Buhlmann graph estimation or the graphical lasso, and both methods can be further accelerated via the lossy screening rule by preselecting the neighborhood of each variable by correlation thresholding. We target on high-dimensional data analysis usually d >> n, and the computation is memory-optimized using the sparse matrix output. We also provide a highly computationally efficient approaches correlation thresholding graph estimation.
 #'
@@ -28,7 +29,7 @@
 #'   An indicator of the sample covariance.
 #' }
 #' \item{ind.mat}{
-#'   The \code{scr.num} by \code{k} matrix with each column corresponding to a variable in \code{ind.group} and contains the indices of the remaining neighbors after the GSS. ONLY applicable when \code{scr = TRUE} and \code{approx = FALSE}
+#'   The \code{scr.num} by \code{k} matrix with each column corresponding to a variable in \code{ind.group} and contains the indices of the remaining neighbors after the screening. ONLY applicable when \code{scr = TRUE}.
 #' }
 #' \item{lambda}{
 #'   The sequence of regularization parameters used in mb or thresholding parameters in ct.
@@ -72,32 +73,10 @@
 #' plot(out1)         #Not aligned
 #' plot(out1, align = TRUE) #Aligned
 #' huge.plot(out1$path[[3]])
-#'
-#' #graph path estimation using the sample covariance matrix as the input.
-#' #out1 = huge(cor(L$data), method = "glasso")
-#' #out1
-#' #plot(out1)         #Not aligned
-#' #plot(out1, align = TRUE) #Aligned
-#' #huge.plot(out1$path[[3]])
-#'
-#' #graph path estimation using ct
-#' #out2 = huge(L$data,method = "ct")
-#' #out2
-#' #plot(out2)
-#'
-#' #graph path estimation using glasso
-#' #out3 = huge(L$data, method = "glasso")
-#' #out3
-#' #plot(out3)
-#'
-#' #graph path estimation using tiger
-#' #out4 = huge(L$data, method = "tiger")
-#' #out4
-#' #plot(out4)
 #' @export
 huge = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, method = "mb", scr = NULL, scr.num = NULL, cov.output = FALSE, sym = "or", verbose = TRUE)
 {
-	gcinfo(FALSE)
+
 	est = list()
 	est$method = method
 
@@ -108,11 +87,8 @@ huge = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, metho
 		est$lambda = fit$lambda
 		est$sparsity = fit$sparsity
 		est$cov.input = fit$cov.input
-		rm(fit)
-		gc()
-	}
 
-	if(method == "mb")
+	} else if(method == "mb")
 	{
 		fit = huge.mb(x, lambda = lambda, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, scr = scr, scr.num = scr.num, sym = sym, verbose = verbose)
 		est$path = fit$path
@@ -124,12 +100,8 @@ huge = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, metho
 		est$sym = sym
 		est$scr = fit$scr
 		est$cov.input = fit$cov.input
-		rm(fit,sym)
-		gc()
-	}
 
-
-	if(method == "glasso")
+	} else if(method == "glasso")
 	{
 		fit = huge.glasso(x, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, lambda = lambda, scr = scr, cov.output = cov.output, verbose = verbose)
 		est$path = fit$path
@@ -143,11 +115,8 @@ huge = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, metho
 		est$cov.input = fit$cov.input
 		est$cov.output = fit$cov.output
 		est$scr = fit$scr
-		rm(fit)
-		gc()
-	}
 
-	if(method == "tiger")
+	} else if(method == "tiger")
 	{
 	  fit = huge.tiger(x, lambda = lambda, nlambda = nlambda, lambda.min.ratio = lambda.min.ratio, sym = sym, verbose = verbose)
 	  est$path = fit$path
@@ -159,14 +128,10 @@ huge = function(x, lambda = NULL, nlambda = NULL, lambda.min.ratio = NULL, metho
 	  est$scr = fit$scr
 	  est$cov.input = fit$cov.input
 	  est$icov = fit$icov;
-	  rm(fit,sym)
-	  gc()
 	}
 
 	est$data = x
 
-	rm(x,scr,lambda,lambda.min.ratio,nlambda,cov.output,verbose)
-	gc()
 	class(est) = "huge"
 	return(est)
 }
@@ -183,11 +148,11 @@ print.huge = function(x, ...)
 {
 	if(x$method == "ct")
 		cat("Model: graph estimation via correlation thresholding (ct)\n")
-	if(x$method == "glasso")
+	else if(x$method == "glasso")
 		cat("Model: graphical lasso (glasso)\n")
-	if(x$method == "mb")
+	else if(x$method == "mb")
 		cat("Model: Meinshausen & Buhlmann graph estimation (mb)\n")
-  if(x$method == "tiger")
+	else if(x$method == "tiger")
     cat("Model: tuning-insensitive approach\n")
 
 	if((x$method == "glasso")&&(x$scr)) cat("lossy screening: on\n")
@@ -210,8 +175,6 @@ print.huge = function(x, ...)
 #' @seealso \code{\link{huge}}
 #' @export
 plot.huge = function(x, align = FALSE, ...){
-  gcinfo(FALSE)
-
 	if(length(x$lambda) == 1)	par(mfrow = c(1, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
 	if(length(x$lambda) == 2)	par(mfrow = c(1, 3), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
 	if(length(x$lambda) >= 3)	par(mfrow = c(1, 4), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
@@ -241,8 +204,7 @@ plot.huge = function(x, align = FALSE, ...){
 
 		if(length(z.unique) == 3) z.final = z.unique
 
-		rm(z.max,z.min,z,z.unique)
-		gc()
+	
 
 	}
 	plot(x$lambda, x$sparsity, log = "x", xlab = "Regularization Parameter", ylab = "Sparsity Level", type = "l",xlim = rev(range(x$lambda)), main = "Sparsity vs. Regularization")
@@ -250,22 +212,17 @@ plot.huge = function(x, align = FALSE, ...){
 	lines(x$lambda[z.final],x$sparsity[z.final],type = "p")
 
 	if(align){
-		layout.grid = layout.fruchterman.reingold(graph.adjacency(as.matrix(x$path[[z.final[length(z.final)]]]), mode="undirected", diag=FALSE))
+		layout.grid = layout_with_fr(graph_from_adjacency_matrix(as.matrix(x$path[[z.final[length(z.final)]]]), mode="undirected", diag=FALSE))
 		for(i in z.final){
-			g = graph.adjacency(as.matrix(x$path[[i]]), mode="undirected", diag=FALSE)
+			g = graph_from_adjacency_matrix(as.matrix(x$path[[i]]), mode="undirected", diag=FALSE)
 			plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=3, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[i],3)),sep = ""))
-			rm(g)
-			gc()
 		}
-	rm(layout.grid)
 	}
 	if(!align){
 		for(i in z.final){
-			g = graph.adjacency(as.matrix(x$path[[i]]), mode="undirected", diag=FALSE)
-			layout.grid = layout.fruchterman.reingold(g)
+			g = graph_from_adjacency_matrix(as.matrix(x$path[[i]]), mode="undirected", diag=FALSE)
+			layout.grid = layout_with_fr(g)
 			plot(g, layout=layout.grid, edge.color='gray50',vertex.color="red", vertex.size=3, vertex.label=NA, main = paste("lambda = ",as.character(round(x$lambda[i],3)),sep = ""))
-			rm(g,layout.grid)
-			gc()
 		}
 	}
 	if(align) cat("Three plotted graphs are aligned according to the third graph\n")

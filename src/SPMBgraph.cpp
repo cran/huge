@@ -1,322 +1,62 @@
-#include "math.h"
+// Rcpp thin wrapper for MB graph estimation — delegates to huge::mb() / huge::mb_scr()
 #include <Rcpp.h>
-#include <RcppEigen.h>
-#include <algorithm>
-#include <vector>
+#include "huge/huge_core.h"
 using namespace Rcpp;
-using namespace std;
-using namespace Eigen;
-//[[Rcpp::depends(RcppEigen)]]
-//[[Rcpp::plugins(openmp)]
 
-//[[Rcpp::export]]
-List SPMBscr(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda, int d, int maxdf, IntegerMatrix idx_scr, int nscr)
-{
-    if(d <= 0 || nlambda <= 0 || maxdf <= 0 || nscr < 0){
-        int d_safe = d > 0 ? d : 0;
-        return List::create(
-          _["col_cnz"] = IntegerVector(d_safe + 1),
-          _["row_idx"] = IntegerVector(0),
-          _["x"] = NumericVector(0)
-        );
-    }
-    NumericVector x(d*maxdf*nlambda);
-    IntegerVector col_cnz(d+1);
+// Helper: convert core ColResult vector to R sparse-like output
+static List mb_result_to_list(const huge::MBResult& res, int d) {
+    int total_nnz = 0;
+    for (int m = 0; m < d; m++) total_nnz += res.columns[m].vals.size();
+
+    NumericVector x(total_nnz);
+    IntegerVector col_cnz(d + 1), row_idx(total_nnz);
     col_cnz[0] = 0;
-    IntegerVector row_idx(d*maxdf*nlambda);int m,i,j,k;
-    int cnz;
-    int w_idx,rss_idx,size_a,size_a_prev;
-
-    double ilambda;
-    double r,tmp1,tmp2;
-
-    int iter_ext,iter_int;
-    int gap_ext;
-    double gap_int;
-
-    double thol = 1e-4;
-    int MAX_ITER = 10000;
-
-    std::vector<double> w0(d, 0.0);
-    std::vector<double> w1(d, 0.0);
-    std::vector<int> idx_a(nscr); //sizes of active sets
-    std::vector<int> idx_i(nscr); //sizes of active sets
-
-    cnz = 0;
-
-    for(m=0;m<d;m++)
-    {
-        size_a = 0;
-
-        for(j=0;j<nscr;j++)
-            idx_i[j] = idx_scr[m*nscr+j];
-
-        std::fill(w0.begin(), w0.end(), 0.0);
-        std::fill(w1.begin(), w1.end(), 0.0);
-
-        for(i=0;i<nlambda;i++)
-        {
-            ilambda = lambda[i];
-            gap_ext = 1;
-            iter_ext = 0;
-            while(iter_ext<MAX_ITER && gap_ext>0)
-            {
-                size_a_prev = size_a;
-                for(j=0;j<nscr;j++)
-                {
-                    w_idx = idx_i[j];
-                    if(w_idx!=-1)
-                    {
-                        r = S(m,w_idx);
-
-                        for(k=0;k<size_a;k++)
-                        {
-                            rss_idx = idx_a[k];
-                            r = r - S(w_idx,rss_idx)*w0[rss_idx];
-                        }
-
-                        if(r > ilambda)
-                        {
-                            w1[w_idx] = r - ilambda;
-                            idx_a[size_a] = w_idx;
-                            size_a++;
-                            idx_i[j] = -1;
-                        }
-
-                        else if(r < -ilambda)
-                        {
-                            w1[w_idx] = r + ilambda;
-                            idx_a[size_a] = w_idx;
-                            size_a++;
-                            idx_i[j] = -1;
-                        }
-                        else w1[w_idx] = 0;
-                        w0[w_idx] = w1[w_idx];
-                    }
-                }
-
-                gap_ext = size_a - size_a_prev;
-
-                gap_int = 1;
-                iter_int = 0;
-                while(gap_int>thol && iter_int<MAX_ITER)
-                {
-                    tmp1 = 0;
-                    tmp2 = 0;
-                    for(j=0;j<size_a;j++)
-                    {
-                        w_idx = idx_a[j];
-                        r = S(m,w_idx) + w0[w_idx];
-
-                        for(k=0;k<size_a;k++)
-                        {
-                            rss_idx = idx_a[k];
-                            r = r - S(w_idx,rss_idx)*w0[rss_idx];
-                        }
-
-                        if(r > ilambda)
-                        {
-                            w1[w_idx] = r - ilambda;
-                            tmp2 += fabs(w1[w_idx]);
-                        }
-
-                        else if(r < -ilambda)
-                        {
-                            w1[w_idx] = r + ilambda;
-                            tmp2 += fabs(w1[w_idx]);
-                        }
-
-                        else w1[w_idx] = 0;
-
-                        tmp1 += fabs(w1[w_idx] - w0[w_idx]);
-                        w0[w_idx] = w1[w_idx];
-                    }
-                    if(tmp2 > 0)
-                        gap_int = tmp1/tmp2;
-                    else
-                        gap_int = 0;
-                    iter_int++;
-                }
-                iter_ext++;
-            }
-            for(j=0;j<size_a;j++)
-            {
-                w_idx = idx_a[j];
-                x[cnz] = w1[w_idx];
-                row_idx[cnz] = i*d+w_idx;
-                cnz++;
-            }
+    int cnz = 0;
+    for (int m = 0; m < d; m++) {
+        const huge::ColResult& col = res.columns[m];
+        for (size_t j = 0; j < col.vals.size(); j++) {
+            x[cnz] = col.vals[j];
+            row_idx[cnz] = col.indices[j];
+            cnz++;
         }
-        col_cnz[m+1]=cnz;
+        col_cnz[m + 1] = cnz;
     }
     return List::create(
-      _["col_cnz"] = col_cnz,
-      _["row_idx"] = row_idx,
-      _["x"] = x
+        _["col_cnz"] = col_cnz,
+        _["row_idx"] = row_idx,
+        _["x"] = x
     );
 }
 
 //[[Rcpp::export]]
-List SPMBgraph(Eigen::Map<Eigen::MatrixXd> S, NumericVector lambda, int nlambda, int d, int maxdf)
+List SPMBscr(NumericMatrix S, NumericVector lambda, int nlambda, int d, int maxdf, IntegerMatrix idx_scr, int nscr)
 {
-    if(d <= 0 || nlambda <= 0 || maxdf <= 0){
+    if (d <= 0 || nlambda <= 0 || maxdf <= 0 || nscr < 0) {
         int d_safe = d > 0 ? d : 0;
         return List::create(
-          _["col_cnz"] = IntegerVector(d_safe + 1),
-          _["row_idx"] = IntegerVector(0),
-          _["x"] = NumericVector(0)
+            _["col_cnz"] = IntegerVector(d_safe + 1),
+            _["row_idx"] = IntegerVector(0),
+            _["x"] = NumericVector(0)
         );
     }
-    NumericVector x(d*maxdf*nlambda);
-    IntegerVector col_cnz(d+1);
-    col_cnz[0] = 0;
-    IntegerVector row_idx(d*maxdf*nlambda);
-    int m,i,j,k;
 
-    int cnz,junk_a;
-    int w_idx,rss_idx,size_a;
-    int size_a_prev;
+    huge::MBResult res = huge::mb_scr(S.begin(), d, lambda.begin(), nlambda,
+                                      idx_scr.begin(), nscr);
+    return mb_result_to_list(res, d);
+}
 
-    double ilambda;
-    double tmp1,tmp2;
-    double r;
-
-    int iter_ext,iter_int;
-    int gap_ext;
-    double gap_int;
-
-    double thol = 1e-4;
-    int MAX_ITER = 10000;
-
-    std::vector<double> w0(d, 0.0);
-    std::vector<double> w1(d, 0.0);
-    std::vector<int> idx_a(d); //sizes of active sets
-    std::vector<int> idx_i(d); //sizes of active sets
-
-    cnz = 0;
-
-    for(m=0;m<d;m++)
-    {
-        idx_i[m] = 0;
-        for(j=0;j<m;j++)
-            idx_i[j] = 1;
-        for(j=m+1;j<d;j++)
-            idx_i[j] = 1;
-
-        size_a = 0;
-        std::fill(w0.begin(), w0.end(), 0.0);
-        std::fill(w1.begin(), w1.end(), 0.0);
-
-        for(i=0;i<nlambda;i++)
-        {
-            ilambda = lambda[i];
-            gap_ext = 1;
-            iter_ext = 0;
-            while(gap_ext !=0 && iter_ext<MAX_ITER)
-            {
-                size_a_prev = size_a;
-                for(j=0;j<d;j++)
-                {
-                    if(idx_i[j]==1)
-                    {
-                        r = S(m,j);
-                        for(k=0;k<size_a;k++)
-                        {
-                            rss_idx = idx_a[k];
-                            r = r - S(j,rss_idx)*w0[rss_idx];
-                        }
-
-                        if(r > ilambda)
-                        {
-                            w1[j] = r - ilambda;
-                            idx_a[size_a] = j;
-                            size_a++;
-                            idx_i[j] = 0;
-                        }
-                        else if(r < -ilambda)
-                        {
-                            w1[j] = r + ilambda;
-                            idx_a[size_a] = j;
-                            size_a++;
-                            idx_i[j] = 0;
-                        }
-
-                        else w1[j] = 0;
-
-                        w0[j] = w1[j];
-                    }
-                }
-
-                gap_ext = size_a - size_a_prev;
-    
-                gap_int = 1;
-                iter_int = 0;
-                while(gap_int>thol && iter_int<MAX_ITER)
-                {
-                    tmp1 = 0;
-                    tmp2 = 0;
-                    for(j=0;j<size_a;j++)
-                    {
-                        //if(w_idx!=-1)
-                        {
-                            w_idx = idx_a[j];
-                            r = S(m,w_idx) + w0[w_idx];
-    
-                            for(k=0;k<size_a;k++)
-                            {
-                                rss_idx = idx_a[k];
-                                r = r - S(w_idx,rss_idx)*w0[rss_idx];
-                            }
-    
-                            if(r > ilambda)
-                            {
-                                w1[w_idx] = r - ilambda;
-                                tmp2 += fabs(w1[w_idx]);
-                            }
-                            else if(r < -ilambda){
-                                w1[w_idx] = r + ilambda;
-                                tmp2 += fabs(w1[w_idx]);
-                            }
-    
-                            else w1[w_idx] = 0;
-    
-                            tmp1 += fabs(w1[w_idx] - w0[w_idx]);
-                            w0[w_idx] = w1[w_idx];
-                        }
-                    }
-                    if(tmp2 > 0)
-                        gap_int = tmp1/tmp2;
-                    else
-                        gap_int = 0;
-                    iter_int++;
-                }
-                junk_a = 0;
-                for(j=0;j<size_a;j++)
-                {
-                    w_idx = idx_a[j];
-                    if(w1[w_idx]==0){
-                        junk_a++;
-                        idx_i[w_idx] = 1;
-                        //idx_a[j] = -1;
-                    }
-                    else idx_a[j-junk_a] = w_idx;
-                }
-                size_a = size_a - junk_a;
-                iter_ext++;
-            }
-            for(j=0;j<size_a;j++)
-            {
-                w_idx = idx_a[j];
-                x[cnz] = w1[w_idx];
-                row_idx[cnz] = i*d+w_idx;
-                cnz++;
-            }
-        }
-        col_cnz[m+1]=cnz;
+//[[Rcpp::export]]
+List SPMBgraph(NumericMatrix S, NumericVector lambda, int nlambda, int d, int maxdf)
+{
+    if (d <= 0 || nlambda <= 0 || maxdf <= 0) {
+        int d_safe = d > 0 ? d : 0;
+        return List::create(
+            _["col_cnz"] = IntegerVector(d_safe + 1),
+            _["row_idx"] = IntegerVector(0),
+            _["x"] = NumericVector(0)
+        );
     }
-    return List::create(
-    _["col_cnz"] = col_cnz,
-    _["row_idx"] = row_idx,
-    _["x"] = x
-    );
+
+    huge::MBResult res = huge::mb(S.begin(), d, lambda.begin(), nlambda);
+    return mb_result_to_list(res, d);
 }

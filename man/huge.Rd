@@ -47,7 +47,7 @@ An object with S3 class \code{"huge"} is returned:
   An indicator of the sample covariance.
 }
 \item{ind.mat}{
-  The \code{scr.num} by \code{k} matrix with each column corresponding to a variable in \code{ind.group} and contains the indices of the remaining neighbors after the GSS. ONLY applicable when \code{scr = TRUE} and \code{approx = FALSE}
+  The \code{scr.num} by \code{k} matrix with each column corresponding to a variable in \code{ind.group} and contains the indices of the remaining neighbors after the screening. ONLY applicable when \code{scr = TRUE}.
 }
 \item{lambda}{
   The sequence of regularization parameters used in mb or thresholding parameters in ct.
@@ -81,7 +81,7 @@ An object with S3 class \code{"huge"} is returned:
 }
 }
 \description{
-The main function for high-dimensional undirected graph estimation. Three graph estimation methods, including (1) Meinshausen-Buhlmann graph estimation (\code{mb}) (2) graphical lasso (\code{glasso}) (3) correlation thresholding graph estimation (\code{ct}) and (4) tuning-insensitive graph estimation (\code{tiger}), are available for data analysis.
+The main function for high-dimensional undirected graph estimation. Four graph estimation methods, including (1) Meinshausen-Buhlmann graph estimation (\code{mb}) (2) graphical lasso (\code{glasso}) (3) correlation thresholding graph estimation (\code{ct}) and (4) tuning-insensitive graph estimation (\code{tiger}), are available for data analysis.
 }
 \details{
 The graph structure is estimated by Meinshausen-Buhlmann graph estimation or the graphical lasso, and both methods can be further accelerated via the lossy screening rule by preselecting the neighborhood of each variable by correlation thresholding. We target on high-dimensional data analysis usually d >> n, and the computation is memory-optimized using the sparse matrix output. We also provide a highly computationally efficient approaches correlation thresholding graph estimation.

@@ -36,7 +36,7 @@
 #' \item{variability}{
 #'   The variability along the subsampling paths. Only applicable when the input \code{criterion = "stars"}.
 #' }
-#' \item{ebic.scores}{
+#' \item{ebic.score}{
 #'   Extended BIC scores for regularization parameter selection. Only applicable when \code{criterion = "ebic"}.
 #' }
 #' \item{opt.index}{
@@ -87,6 +87,8 @@ huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0
       criterion = "stars"
     else if(est$method == "glasso"&&is.null(criterion))
       criterion = "ebic"
+    else if(est$method == "tiger"&&is.null(criterion))
+      criterion = "ric"
 
     n = nrow(est$data)
     d = ncol(est$data)
@@ -141,6 +143,12 @@ huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0
         }
         if(est$method == "ct")
           est$refit = huge.ct(est$data, lambda = est$opt.lambda, verbose = FALSE)$path[[1]]
+        if(est$method == "tiger")
+        {
+          tmp = huge.tiger(est$data, lambda = est$opt.lambda, sym = est$sym, verbose = FALSE)
+          est$refit = tmp$path[[1]]
+          est$opt.icov = tmp$icov[[1]]
+        }
       }
       est$opt.sparsity=sum(est$refit)/d/(d-1)
 
@@ -194,10 +202,12 @@ huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0
 
         if(est$method == "mb")
           tmp = huge.mb(est$data[ind.sample,],lambda = est$lambda, scr = est$scr, idx.mat = est$idx_mat, sym = est$sym, verbose = FALSE)$path
-           if(est$method == "ct")
+        if(est$method == "ct")
           tmp = huge.ct(est$data[ind.sample,], lambda = est$lambda,verbose = FALSE)$path
         if(est$method == "glasso")
           tmp = huge.glasso(est$data[ind.sample,], lambda = est$lambda, scr = est$scr, verbose = FALSE)$path
+        if(est$method == "tiger")
+          tmp = huge.tiger(est$data[ind.sample,], lambda = est$lambda, sym = est$sym, verbose = FALSE)$path
 
         for(lambda_idx in 1:nlambda)
           est$merge[[lambda_idx]] = est$merge[[lambda_idx]] + tmp[[lambda_idx]]
@@ -232,6 +242,8 @@ huge.select = function(est, criterion = NULL, ebic.gamma = 0.5, stars.thresh = 0
         if(!is.null(est$cov))
           est$opt.cov = est$cov[[est$opt.index]]
       }
+      if(est$method == "tiger")
+        est$opt.icov = est$icov[[est$opt.index]]
     }
     est$criterion = criterion
     class(est) = "select"
@@ -264,6 +276,8 @@ print.select = function(x, ...)
       cat("Model: graphical lasso (glasso)\n")
     if(x$method == "mb")
       cat("Model: Meinshausen & Buhlmann Graph Estimation (mb)\n")
+    if(x$method == "tiger")
+      cat("Model: tuning-insensitive approach (tiger)\n")
 
     cat("selection criterion:",x$criterion,"\n")
     if((x$method != "ct")&&x$scr)

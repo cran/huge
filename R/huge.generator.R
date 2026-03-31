@@ -189,7 +189,8 @@ print.sim = function(x, ...){
 #' @seealso \code{\link{huge.generator}} and \code{\link{huge}}
 #' @export
 plot.sim = function(x, ...){
-     par = par(mfrow = c(2, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
+     old.par = par(mfrow = c(2, 2), pty = "s", omi=c(0.3,0.3,0.3,0.3), mai = c(0.3,0.3,0.3,0.3))
+     on.exit(par(old.par))
      image(as.matrix(x$theta), col = gray.colors(256),  main = "Adjacency Matrix")
   image(x$sigma, col = gray.colors(256), main = "Covariance Matrix")
   g = graph_from_adjacency_matrix(x$theta, mode="undirected", diag=FALSE)

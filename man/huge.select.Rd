@@ -46,7 +46,7 @@ An object with S3 class "select" is returned:
 \item{variability}{
   The variability along the subsampling paths. Only applicable when the input \code{criterion = "stars"}.
 }
-\item{ebic.scores}{
+\item{ebic.score}{
   Extended BIC scores for regularization parameter selection. Only applicable when \code{criterion = "ebic"}.
 }
 \item{opt.index}{

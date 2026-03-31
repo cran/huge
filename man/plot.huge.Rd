@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{An object with S3 class \code{"huge"}}
 
-\item{align}{If \code{align = FALSE}, 3 plotted graphs are aligned}
+\item{align}{If \code{align = TRUE}, 3 plotted graphs are aligned to the same sparsity levels. The default value is \code{FALSE}.}
 
 \item{\dots}{System reserved (No specific usage)}
 }

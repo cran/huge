@@ -42,6 +42,7 @@ static void glasso_sub(Matrix& S, Matrix& W, Matrix& T, int d,
     std::vector<int> size_a(static_cast<size_t>(d), 0);
     std::vector<double> w1(static_cast<size_t>(d), 0.0);
     std::vector<double> ww(static_cast<size_t>(d), 0.0);
+    std::vector<double> temp(static_cast<size_t>(d), 0.0);  // reused in W-update
 
     auto idx_a_col = [&](int col) -> int* { return idx_a.data() + static_cast<size_t>(col) * d; };
     auto idx_i_col = [&](int col) -> int* { return idx_i.data() + static_cast<size_t>(col) * d; };
@@ -159,7 +160,7 @@ static void glasso_sub(Matrix& S, Matrix& W, Matrix& T, int d,
             size_a[i] = active_size;
 
             // Update W from current T column: W[:,i] = W * T[:,i]
-            std::vector<double> temp(d, 0.0);
+            std::fill(temp.begin(), temp.end(), 0.0);
             dgemv_(&BLAS_N, &d, &d, &BLAS_ONE, W.v.data(), &d,
                    T_col, &BLAS_1, &BLAS_ZERO, temp.data(), &BLAS_1);
             for (int j = 0; j < d; j++) {
@@ -188,41 +189,31 @@ static void glasso_sub(Matrix& S, Matrix& W, Matrix& T, int d,
 }
 
 // Determinant via Gaussian elimination (for log-likelihood)
-static double det_gaussian(const Matrix& m) {
+// Column-major LU without row-major copy; uses BLAS daxpy for the rank-1 update.
+// Returns log|det(m)|, or -inf if m is singular.
+static double log_det_colmajor(const Matrix& m) {
     const int n = m.rows;
-    if (n != m.cols) return 0.0;
-    double det_sign = 1.0, det_val = 1.0;
-    constexpr double eps = 1e-15;
-    // Row-major copy for pivot
-    std::vector<double> rm(static_cast<size_t>(n) * n);
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
-            rm[static_cast<size_t>(i) * n + j] = m(i, j);
-
+    if (n <= 0 || n != m.cols) return -std::numeric_limits<double>::infinity();
+    std::vector<double> A(m.v);   // contiguous column-major copy
+    double ldet = 0.0;
     for (int k = 0; k < n; k++) {
-        int pivot = k;
-        double max_abs = std::fabs(rm[static_cast<size_t>(k) * n + k]);
-        for (int i = k + 1; i < n; i++) {
-            double av = std::fabs(rm[static_cast<size_t>(i) * n + k]);
-            if (av > max_abs) { max_abs = av; pivot = i; }
-        }
-        if (max_abs <= eps) return 0.0;
-        if (pivot != k) {
-            for (int j = k; j < n; j++)
-                std::swap(rm[static_cast<size_t>(k) * n + j],
-                          rm[static_cast<size_t>(pivot) * n + j]);
-            det_sign = -det_sign;
-        }
-        double diag = rm[static_cast<size_t>(k) * n + k];
-        det_val *= diag;
-        for (int i = k + 1; i < n; i++) {
-            double factor = rm[static_cast<size_t>(i) * n + k] / diag;
+        double* col_k = A.data() + static_cast<size_t>(k) * n;
+        double diag = col_k[k];
+        if (std::fabs(diag) < 1e-15) return -std::numeric_limits<double>::infinity();
+        ldet += std::log(std::fabs(diag));
+        int below = n - k - 1;
+        if (below <= 0) continue;
+        double inv_diag = 1.0 / diag;
+        for (int i = k + 1; i < n; i++) col_k[i] *= inv_diag;   // scale pivot column
+        for (int j = k + 1; j < n; j++) {
+            double* col_j = A.data() + static_cast<size_t>(j) * n;
+            double factor = col_j[k];
             if (factor == 0.0) continue;
-            for (int j = k + 1; j < n; j++)
-                rm[static_cast<size_t>(i) * n + j] -= factor * rm[static_cast<size_t>(k) * n + j];
+            double neg_factor = -factor;
+            daxpy_(&below, &neg_factor, col_k + k + 1, &BLAS_1, col_j + k + 1, &BLAS_1);
         }
     }
-    return det_sign * det_val;
+    return ldet;
 }
 
 static double trace_matmul(const Matrix& a, const Matrix& b) {
@@ -284,51 +275,22 @@ GlassoResult glasso(const double* S_data, int d,
     const Matrix* prev_cov_ptr = nullptr;
     Matrix prev_cov_buffer;
 
-    double prev_lambda = -1.0;
 
     for (int i = nlambda - 1; i >= 0; i--) {
         double lambda_i = lambda[i];
 
-        // --- Strong Rule screening for active rows ---
-        // For the first lambda (no previous solution), use basic screening.
-        // For subsequent lambdas, use strong rule: include row_i if any
-        // off-diagonal |S(row_i,col_i) - W_prev(row_i,col_i)| >= strong_thresh,
-        // where strong_thresh = 2*lambda_i - prev_lambda.
-        bool use_strong_rule = (prev_cov_ptr != nullptr && prev_lambda > 0);
-        double strong_thresh = use_strong_rule
-            ? std::max(0.0, 2.0 * lambda_i - prev_lambda) : 0.0;
-
-        auto compute_active_set = [&](bool strong) -> std::vector<int> {
-            std::vector<int> active;
-            active.reserve(d);
-            for (int row_i = 0; row_i < d; row_i++) {
-                bool include = false;
-                if (strong) {
-                    // Strong rule: check gradient gap from previous W
-                    for (int col_i = 0; col_i < d; col_i++) {
-                        if (col_i == row_i) continue;
-                        double gap = std::fabs(S(row_i, col_i)
-                                               - (*prev_cov_ptr)(row_i, col_i));
-                        if (gap >= strong_thresh) { include = true; break; }
-                    }
-                } else {
-                    // Basic screening: include if >=2 entries exceed lambda
-                    int cnt = 0;
-                    for (int col_i = 0; col_i < d; col_i++) {
-                        if (std::fabs(S(row_i, col_i)) > lambda_i) {
-                            if (++cnt > 1) { include = true; break; }
-                        }
-                    }
+        // Basic screening: include row_i if >=2 off-diagonal entries exceed lambda_i.
+        std::vector<int> z;
+        z.reserve(d);
+        for (int row_i = 0; row_i < d; row_i++) {
+            int cnt = 0;
+            for (int col_i = 0; col_i < d; col_i++) {
+                if (std::fabs(S(row_i, col_i)) > lambda_i) {
+                    if (++cnt > 1) { z.push_back(row_i); break; }
                 }
-                if (include) active.push_back(row_i);
             }
-            return active;
-        };
+        }
 
-        std::vector<int> z = compute_active_set(use_strong_rule);
-
-        // Solve sub-problem with KKT safety check for strong rule.
-        // If strong rule wrongly excluded rows, expand z and re-solve once.
         int q = static_cast<int>(z.size());
         Matrix sub_S(q, q), sub_W(q, q), sub_T(q, q);
         int sub_df = 0;
@@ -358,33 +320,6 @@ GlassoResult glasso(const double* S_data, int d,
         };
 
         fill_and_solve();
-
-        // KKT check: only needed when strong rule was used
-        if (use_strong_rule) {
-            std::vector<bool> in_z(d, false);
-            for (int idx : z) in_z[idx] = true;
-
-            bool violation = false;
-            for (int row_i = 0; row_i < d; row_i++) {
-                if (in_z[row_i]) continue;
-                // Excluded rows have W off-diag = 0, so KKT check
-                // reduces to basic screening: |S(row_i,col_i)| > lambda_i
-                int cnt = 0;
-                for (int col_i = 0; col_i < d; col_i++) {
-                    if (std::fabs(S(row_i, col_i)) > lambda_i) {
-                        if (++cnt > 1) {
-                            z.push_back(row_i);
-                            violation = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (violation) {
-                std::sort(z.begin(), z.end());
-                fill_and_solve();
-            }
-        }
 
         // Build full-size output matrices
         Matrix& cur_icov = tmp_icov[i];
@@ -418,14 +353,13 @@ GlassoResult glasso(const double* S_data, int d,
             }
             res.sparsity[i] = sub_df / sparsity_denom;
             res.df[i] = sub_df / 2;
-            double det_t = det_gaussian(sub_T);
+            double ldet = log_det_colmajor(sub_T);
             double tr = trace_matmul(sub_T, sub_S);
-            res.loglik[i] = (det_t > 0) ? (std::log(det_t) - tr - (d - q))
-                                         : -std::numeric_limits<double>::infinity();
+            res.loglik[i] = std::isfinite(ldet) ? (ldet - tr - (d - q))
+                                                 : -std::numeric_limits<double>::infinity();
         }
         prev_icov_ptr = &cur_icov;
         prev_cov_ptr = cur_cov_ptr;
-        prev_lambda = lambda_i;
     }
 
     res.path = std::move(tmp_path);
@@ -640,17 +574,20 @@ TigerResult tiger(const double* data_colmajor, int n, int d,
     const int num_relaxation_round = 3;
     const double eps = 1e-12;
 
-    // Accessor for data (column-major)
-    auto x_at = [&](int r, int c) -> double {
-        return data_colmajor[static_cast<size_t>(c) * n + r];
-    };
+    // Precompute squared column norms: xx_dot[j] = sum_t X[t,j]^2
+    // Immutable; shared safely across OMP threads.
+    std::vector<double> xx_dot(d);
+    for (int j = 0; j < d; j++)
+        xx_dot[j] = ddot_(&n, data_colmajor + static_cast<size_t>(j) * n, &BLAS_1,
+                               data_colmajor + static_cast<size_t>(j) * n, &BLAS_1);
 
     #ifdef _OPENMP
     #pragma omp parallel
     {
     #endif
+    // Thread-local workspaces
     std::vector<double> Xb(n, 0.0), r_vec(n, 0.0), grad(d, 0.0), w1(d, 0.0);
-    std::vector<double> Y(n, 0.0), gr(d, 0.0);
+    std::vector<double> Y(n, 0.0), gr(d, 0.0), rx(n, 0.0);
     std::vector<double> Xb_master(n, 0.0), w1_master(d, 0.0);
     std::vector<int> actset_indcat(d, 0), actset_indcat_master(d, 0);
     std::vector<int> actset_idx;
@@ -673,12 +610,12 @@ TigerResult tiger(const double* data_colmajor, int n, int d,
         std::fill(old_coef.begin(), old_coef.end(), 0.0);
         std::fill(grad_master.begin(), grad_master.end(), 0.0);
 
-        for (int t = 0; t < n; t++) Y[t] = x_at(t, m);
+        const double* Y_col = data_colmajor + static_cast<size_t>(m) * n;
+        std::memcpy(Y.data(), Y_col, n * sizeof(double));
 
         double L = 0, sum_r2 = 0;
         auto refresh_residual = [&]() {
-            sum_r2 = 0;
-            for (int t = 0; t < n; t++) sum_r2 += r_vec[t] * r_vec[t];
+            sum_r2 = ddot_(&n, r_vec.data(), &BLAS_1, r_vec.data(), &BLAS_1);
             if (sum_r2 < eps) sum_r2 = eps;
             L = std::sqrt(sum_r2 / n);
             if (L < eps) L = eps;
@@ -716,24 +653,21 @@ TigerResult tiger(const double* data_colmajor, int n, int d,
 
             double tmp_change = 0, local_change = 0;
 
+            // update_coordinate: uses precomputed xx_dot[ci] and BLAS ddot for speed.
+            // rx is a thread-local temp buffer (size n).
             auto update_coordinate = [&](int ci) {
                 const double* x_col = data_colmajor + static_cast<size_t>(ci) * n;
-                double sum_wxx = 0, sum_g = 0;
-                double inv_sum_r2 = 1.0 / sum_r2;
-                for (int t = 0; t < n; t++) {
-                    double xv = x_col[t];
-                    double rv = r_vec[t];
-                    double wxx_val = (1.0 - rv * rv * inv_sum_r2) * xv * xv;
-                    sum_wxx += wxx_val;
-                    sum_g += wxx_val * w1[ci] + rv * xv;
-                }
-                double g = sum_g / (n * L);
+                // rx = r .* x  (simple elementwise multiply, auto-vectorized)
+                for (int t = 0; t < n; t++) rx[t] = r_vec[t] * x_col[t];
+                double dot_rxrx = ddot_(&n, rx.data(),     &BLAS_1, rx.data(),     &BLAS_1);
+                double dot_rx   = ddot_(&n, r_vec.data(),  &BLAS_1, x_col,         &BLAS_1);
+                double sum_wxx  = xx_dot[ci] - dot_rxrx / sum_r2;
                 double a = sum_wxx / (n * L);
+                double g = (sum_wxx * w1[ci] + dot_rx) / (n * L);
                 double oldv = w1[ci];
                 w1[ci] = (std::fabs(a) > eps) ? threshold_l1(g, stage_lambda) / a : 0.0;
                 double delta = w1[ci] - oldv;
                 if (delta != 0) {
-                    // Xb += delta * X[:,ci];  r_vec -= delta * X[:,ci]
                     daxpy_(&n, &delta, x_col, &BLAS_1, Xb.data(), &BLAS_1);
                     double neg_delta = -delta;
                     daxpy_(&n, &neg_delta, x_col, &BLAS_1, r_vec.data(), &BLAS_1);
@@ -763,19 +697,15 @@ TigerResult tiger(const double* data_colmajor, int n, int d,
                     while (loopcnt_level_2 < max_iter) {
                         loopcnt_level_2++;
                         bool term2 = true;
-                        for (size_t k = 0; k < actset_idx.size(); k++) {
+                        for (int k = 0; k < static_cast<int>(actset_idx.size()); k++) {
                             int idx = actset_idx[k];
                             double old_w1 = w1[idx];
                             update_coordinate(idx);
                             tmp_change = old_w1 - w1[idx];
                             const double* xc = data_colmajor + static_cast<size_t>(idx) * n;
-                            double hsum = 0;
-                            double inv_LLn = 1.0 / (L * L * n);
-                            for (int t = 0; t < n; t++) {
-                                double xv = xc[t];
-                                double rv = r_vec[t];
-                                hsum += xv * xv * (1.0 - rv * rv * inv_LLn);
-                            }
+                            for (int t = 0; t < n; t++) rx[t] = r_vec[t] * xc[t];
+                            double drxrx = ddot_(&n, rx.data(), &BLAS_1, rx.data(), &BLAS_1);
+                            double hsum = xx_dot[idx] - drxrx / sum_r2;
                             double h = std::fabs(hsum / (n * L));
                             local_change = h * tmp_change * tmp_change / (2.0 * L * n);
                             if (local_change > dev_thr) term2 = false;
@@ -789,13 +719,9 @@ TigerResult tiger(const double* data_colmajor, int n, int d,
                         int idx = actset_idx[k];
                         tmp_change = old_coef[idx] - w1[idx];
                         const double* xc = data_colmajor + static_cast<size_t>(idx) * n;
-                        double hsum = 0;
-                        double inv_LLn = 1.0 / (L * L * n);
-                        for (int t = 0; t < n; t++) {
-                            double xv = xc[t];
-                            double rv = r_vec[t];
-                            hsum += xv * xv * (1.0 - rv * rv * inv_LLn);
-                        }
+                        for (int t = 0; t < n; t++) rx[t] = r_vec[t] * xc[t];
+                        double drxrx = ddot_(&n, rx.data(), &BLAS_1, rx.data(), &BLAS_1);
+                        double hsum = xx_dot[idx] - drxrx / sum_r2;
                         double h = std::fabs(hsum / (n * L));
                         local_change = h * tmp_change * tmp_change / (2.0 * L * n);
                         if (local_change > dev_thr) term1 = false;

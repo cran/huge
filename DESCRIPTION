@@ -1,7 +1,7 @@
 Package: huge
 Type: Package
 Title: High-Dimensional Undirected Graph Estimation
-Version: 1.5
+Version: 1.5.1
 Authors@R: c(
     person("Haoming", "Jiang", role = "aut"),
     person("Xinyu", "Fei", role = "aut"),
@@ -46,7 +46,7 @@ Repository: CRAN
 NeedsCompilation: yes
 RoxygenNote: 7.3.3
 Encoding: UTF-8
-Packaged: 2026-03-11 09:07:46 UTC; tourzhao
+Packaged: 2026-03-30 19:00:45 UTC; tourzhao
 Author: Haoming Jiang [aut],
   Xinyu Fei [aut],
   Han Liu [aut],
@@ -55,4 +55,4 @@ Author: Haoming Jiang [aut],
   Larry Wasserman [aut],
   Xingguo Li [aut],
   Tuo Zhao [aut, cre]
-Date/Publication: 2026-03-11 10:00:02 UTC
+Date/Publication: 2026-03-31 05:10:25 UTC

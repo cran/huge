@@ -1,6 +1,6 @@
-1f87b4525dd52aea0ef35e88a412dc0b *DESCRIPTION
+3192bf1ad6ce706cefec21369d8869b4 *DESCRIPTION
 6897c77f29e73a506627e87761777822 *NAMESPACE
-feac7dfd0b2cea52c75ae51dcd2cd97c *NEWS.md
+16a1d722273f85a9fb766ec408c24a26 *NEWS.md
 e2b77a642602698de6276deddb0a3b97 *R/RcppExports.R
 6746c9e580392ec07ab228bf5d3c04a1 *R/huge-internal.R
 d01b70295c50d23a9f931fc637e36b3d *R/huge-package.R
@@ -12,7 +12,7 @@ cb2fe0fb9973296d128f5052f8dfb9c5 *R/huge.glasso.R
 a38cdc9680cb0ad9158ffe731c082dc9 *R/huge.mb.R
 bea0d3c0752f6e5a60bfb2673024701a *R/huge.npn.R
 cbc59d83018199e1951432ec28396173 *R/huge.plot.R
-cae51055f4c8adf9ab1ce6c235bfab23 *R/huge.roc.R
+99c6b8898c6a23b2b078ef377f854a78 *R/huge.roc.R
 98a65e4a23ae0688ca75732368d2431b *R/huge.select.R
 2f65294d60b687c313a3b58f8711b4ef *R/huge.tiger.R
 e221a8dc8d99c2a194c13e57d584a1a2 *cleanup

@@ -1,5 +1,8 @@
-# huge 1.5.1
+# huge 1.6
 
+* Fixed `huge.roc()` F1 score: precision was computed from rates instead of
+  counts, inflating F1 in sparse graphs (TP rate and FP rate were correct;
+  only F1 was affected).
 * Fixed `huge.select()` missing support for tiger method (no default criterion,
   RIC/StARS refit, or opt.icov extraction).
 * Fixed C++ performance regression for glasso (3-4x) and tiger (7x) vs 1.4:

@@ -57,16 +57,17 @@ huge.roc = function(path, theta, verbose = TRUE){
        tmp = as.matrix(path[[r]])
        tp.all = (theta!=0)*(tmp!=0)
        diag(tp.all) = 0
-    ROC$tp[r] <- sum(tp.all!=0)/pos.total
+    tp.count = sum(tp.all!=0)
+    ROC$tp[r] <- tp.count/pos.total
     fp.all = (theta==0)*(tmp!=0)
     diag(fp.all) = 0
-    ROC$fp[r] <- sum(fp.all!=0)/neg.total
+    fp.count = sum(fp.all!=0)
+    ROC$fp[r] <- fp.count/neg.total
 
-    fn = 1 - ROC$tp[r]
-    precision = ROC$tp[r]/(ROC$tp[r]+ROC$fp[r])
-    recall = ROC$tp[r]/(ROC$tp[r]+fn)
-    ROC$F1[r] = 2*precision*recall/(precision+recall)
-    if(is.na(ROC$F1[r]))  ROC$F1[r] = 0
+    pred.count = tp.count + fp.count
+    precision = if(pred.count > 0) tp.count / pred.count else 0
+    recall = ROC$tp[r]
+    ROC$F1[r] = if(precision + recall > 0) 2*precision*recall/(precision+recall) else 0
   }
   if(verbose) cat("done.\n")
 
